@@ -14,7 +14,7 @@ trait ValidatesRecaptcha
      */
     protected function validateRecaptcha(?string $token): bool
     {
-        if (config('app.env') === 'local') {
+        if (config('app.env') === 'local' || !config('services.recaptcha.site') || !config('services.recaptcha.secret')) {
             return true; 
         }
 

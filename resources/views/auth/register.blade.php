@@ -121,7 +121,7 @@
 @endsection
 
 @push('scripts')
-@if(!app()->environment('local'))
+@if(!app()->environment('local') && config('services.recaptcha.site') && config('services.recaptcha.secret'))
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site') }}"></script>
     <script>
         document.getElementById('register-form').addEventListener('submit', function(e) {

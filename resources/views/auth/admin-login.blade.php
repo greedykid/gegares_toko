@@ -120,7 +120,7 @@
         <p class="mt-6 text-center text-xs text-slate-600">&copy; {{ date('Y') }} Gegares Admin</p>
     </div>
 
-    @if(!app()->environment('local'))
+    @if(!app()->environment('local') && config('services.recaptcha.site') && config('services.recaptcha.secret'))
         <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site') }}"></script>
         <script>
             document.getElementById('admin-login-form').addEventListener('submit', function(e) {
