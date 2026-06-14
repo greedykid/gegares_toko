@@ -1,0 +1,240 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Enterprise Primary (Base #072C2C at 700) */
+    --color-primary-50: #e6efef;
+    --color-primary-100: #ccdcdc;
+    --color-primary-200: #99b9b9;
+    --color-primary-300: #669696;
+    --color-primary-400: #337373;
+    --color-primary-500: #0a5050;
+    --color-primary-600: #084040;
+    --color-primary-700: #072c2c;
+    --color-primary-800: #052020;
+    --color-primary-900: #031010;
+    --color-primary-950: #010808;
+
+    /* Enterprise Secondary/Accent (Base #FF5F03 at 500) */
+    --color-accent-50: #fff5ee;
+    --color-accent-100: #ffe6d7;
+    --color-accent-200: #ffcdb0;
+    --color-accent-300: #ffb389;
+    --color-accent-400: #ff8d51;
+    --color-accent-500: #ff5f03;
+    --color-accent-600: #e65603;
+    --color-accent-700: #c04803;
+    --color-accent-800: #993a02;
+    --color-accent-900: #7d2f02;
+    --color-accent-950: #471b01;
+
+    /* Enterprise Surface */
+    --color-surface: #edeade;
+    --color-surface-dark: #111827;
+}
+
+html {
+    overflow-x: clip;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* ─── Global Custom Scrollbar ─── */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 transparent;
+}
+html.dark {
+    scrollbar-color: #64748b #1e293b;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+.dark ::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-400 rounded-full;
+}
+.dark ::-webkit-scrollbar-thumb {
+    @apply bg-slate-500 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-500;
+}
+
+/* ─── Base Styles ─── */
+@layer base {
+    body {
+        @apply font-sans text-slate-900 bg-surface antialiased transition-colors duration-300;
+    }
+    .dark body {
+        @apply text-slate-100 bg-slate-950;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-display tracking-wide uppercase;
+    }
+}
+
+/* ─── Toast Animations ─── */
+@keyframes toast-slide-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes toast-slide-out {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(100%); opacity: 0; }
+}
+.toast-enter { animation: toast-slide-in 0.3s ease-out forwards; }
+.toast-exit  { animation: toast-slide-out 0.3s ease-in forwards; }
+
+/* ─── Skeleton Loading ─── */
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 0.5rem;
+}
+.dark .skeleton {
+    background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+}
+
+/* ─── Drawer Overlay ─── */
+.drawer-overlay {
+    @apply fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300;
+}
+
+/* ─── Custom Scrollbar ─── */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-700 rounded-full; }
+
+/* ─── Chatbot Prose Typography ─── */
+#chat-messages .prose {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    max-width: none;
+}
+#chat-messages .prose p {
+    margin-top: 0.375rem;
+    margin-bottom: 0.375rem;
+}
+#chat-messages .prose p:first-child {
+    margin-top: 0;
+}
+#chat-messages .prose p:last-child {
+    margin-bottom: 0;
+}
+#chat-messages .prose ol {
+    list-style-type: decimal;
+    padding-left: 1.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+#chat-messages .prose ul {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+#chat-messages .prose li {
+    margin-top: 0.125rem;
+    margin-bottom: 0.125rem;
+    padding-left: 0.25rem;
+}
+#chat-messages .prose li::marker {
+    @apply text-primary-500 font-bold;
+}
+#chat-messages .prose strong {
+    @apply font-bold;
+}
+#chat-messages .prose h1,
+#chat-messages .prose h2,
+#chat-messages .prose h3 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+#chat-messages .prose blockquote {
+    @apply border-l-2 border-primary-400 pl-3 italic opacity-80;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+#chat-messages .prose code {
+    font-size: 0.75rem;
+    @apply bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded;
+}
+#chat-messages .prose hr {
+    @apply border-slate-200 dark:border-slate-700;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ─── Chatbot Typing Dots ─── */
+@keyframes chatbot-dot-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+.chatbot-dot-1 { animation: chatbot-dot-bounce 1.4s ease-in-out infinite; }
+.chatbot-dot-2 { animation: chatbot-dot-bounce 1.4s ease-in-out 0.2s infinite; }
+.chatbot-dot-3 { animation: chatbot-dot-bounce 1.4s ease-in-out 0.4s infinite; }
+
+/* ─── Chatbot Message Entry ─── */
+#chat-messages > div {
+    animation: chatbot-msg-in 0.3s ease-out;
+}
+@keyframes chatbot-msg-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Stock Badge ─── */
+.product-out-of-stock img { @apply opacity-50 grayscale; }
+
+/* ─── Star Rating ─── */
+.star-filled { color: #f59e0b; }
+.star-empty  { color: #d1d5db; }
+.dark .star-empty { color: #334155; }
+
+/* ─── Scroll Reveal Animations ─── */
+.reveal {
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal-up { transform: translateY(30px); }
+.reveal-left { transform: translateX(30px); }
+.reveal-right { transform: translateX(-30px); }
+
+.reveal.active {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+/* Staggered Delay Utilities */
+.delay-100 { transition-delay: 100ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }

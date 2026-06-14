@@ -1,0 +1,109 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Services\CartService;
+use App\Services\MidtransService;
+use Illuminate\Http\Request;
+
+class CheckoutController extends Controller
+{
+    public function index(CartService $cartService)
+    {
+        $cartItems = $cartService->getItems();
+
+        if (empty($cartItems)) {
+            return redirect()->route('products.index')
+                ->with('error', 'Keranjang Anda kosong.');
+        }
+
+        $errors = $cartService->validateStock();
+        if (!empty($errors)) {
+            return redirect()->back()
+                ->with('warning', implode(' ', $errors));
+        }
+
+        $subtotal = $cartService->getSubtotal();
+        $discountAmount = $cartService->getDiscountAmount();
+        $coupon = $cartService->getCoupon();
+        $addresses = auth()->user()->addresses()->orderByDesc('is_primary')->get();
+
+        return view('checkout.index', compact('cartItems', 'subtotal', 'discountAmount', 'coupon', 'addresses'));
+    }
+
+    public function store(Request $request, CartService $cartService, MidtransService $midtransService)
+    {
+        $request->validate([
+            'address_id' => 'required|exists:addresses,id',
+            'shipping_courier' => 'required|string',
+            'shipping_service' => 'required|string',
+            'shipping_cost' => 'required|numeric|min:0',
+            'payment_method' => 'required|string|in:midtrans',
+            'notes' => 'nullable|string',
+        ]);
+        
+        $addressId = $request->address_id;
+
+        $cartItems = $cartService->getItems();
+        if (empty($cartItems)) {
+            return back()->with('error', 'Keranjang kosong.');
+        }
+
+        $errors = $cartService->validateStock();
+        if (!empty($errors)) {
+            return back()->with('error', implode(' ', $errors));
+        }
+
+        $subtotal = $cartService->getSubtotal();
+        $shippingCost = $request->shipping_cost;
+        $coupon = $cartService->getCoupon();
+        $discountAmount = $cartService->getDiscountAmount();
+        
+        $total = $subtotal + $shippingCost - $discountAmount;
+
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'order_number' => Order::generateOrderNumber(),
+            'address_id' => $addressId,
+            'coupon_id' => $coupon['id'] ?? null,
+            'discount_amount' => $discountAmount,
+            'subtotal' => $subtotal,
+            'shipping_cost' => $shippingCost,
+            'total' => $total,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => $request->payment_method,
+            'shipping_courier' => $request->shipping_courier,
+            'shipping_service' => $request->shipping_service,
+            'notes' => $request->notes,
+        ]);
+
+        if ($coupon) {
+            \App\Models\Coupon::where('id', $coupon['id'])->increment('used_count');
+        }
+
+        foreach ($cartItems as $item) {
+            $order->items()->create([
+                'product_id' => $item['product_id'],
+                'product_variant_id' => $item['variant_id'] ?? null,
+                'product_name' => $item['name'],
+                'variant_name' => $item['variant_name'] ?? null,
+                'product_price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['price'] * $item['quantity'],
+            ]);
+        }
+
+        $snapToken = $midtransService->createSnapToken($order);
+
+        if (!$snapToken) {
+            $order->delete();
+            return back()->with('error', 'Gagal membuat transaksi pembayaran. Silakan coba lagi.');
+        }
+
+        $cartService->clear();
+
+        return redirect()->route('orders.payment', $order);
+    }
+}
