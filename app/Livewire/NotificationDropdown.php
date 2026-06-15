@@ -140,8 +140,8 @@ class NotificationDropdown extends Component
             }
         }
 
-        // 3. Fallback welcome notification if no notifications exist
-        if ($list->isEmpty()) {
+        // 3. Fallback welcome notification if no notifications exist and user has enabled at least one channel
+        if ($list->isEmpty() && ($showOrderUpdates || $showPromos)) {
             $systemTime = now()->subDay();
             $isUnread = $lastReadAt === null || $systemTime->gt($lastReadAt);
 

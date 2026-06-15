@@ -28,41 +28,41 @@
 
         {{-- Items List --}}
         <div class="divide-y divide-slate-100 dark:divide-slate-800/40 max-h-96 overflow-y-auto custom-scrollbar">
-            @foreach($notificationsList as $notification)
+            @forelse($notificationsList as $notification)
                 <a href="{{ $notification['url'] }}" 
                    class="flex gap-4 p-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all duration-200 group border-l-4 {{ $notification['is_unread'] ? 'border-primary-500 bg-primary-50/15 dark:bg-primary-950/10' : 'border-transparent' }}">
                     
                     {{-- Status Icon Container --}}
                     @if($notification['icon'] === 'primary')
-                        <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/40 flex items-center justify-center shrink-0 border border-primary-100/50 dark:border-primary-900/30 text-primary-600 dark:text-primary-400">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                {!! $notification['svg'] !!}
-                            </svg>
-                        </div>
+                         <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/40 flex items-center justify-center shrink-0 border border-primary-100/50 dark:border-primary-900/30 text-primary-600 dark:text-primary-400">
+                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                 {!! $notification['svg'] !!}
+                             </svg>
+                         </div>
                     @elseif($notification['icon'] === 'amber')
-                        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center shrink-0 border border-amber-100/50 dark:border-amber-900/30 text-amber-500 dark:text-amber-450">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                {!! $notification['svg'] !!}
-                            </svg>
-                        </div>
+                         <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center shrink-0 border border-amber-100/50 dark:border-amber-900/30 text-amber-500 dark:text-amber-450">
+                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                 {!! $notification['svg'] !!}
+                             </svg>
+                         </div>
                     @elseif($notification['icon'] === 'emerald')
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-450">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                {!! $notification['svg'] !!}
-                            </svg>
-                        </div>
+                         <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-450">
+                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                 {!! $notification['svg'] !!}
+                             </svg>
+                         </div>
                     @elseif($notification['icon'] === 'indigo')
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center shrink-0 border border-indigo-100/50 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                {!! $notification['svg'] !!}
-                            </svg>
-                        </div>
+                         <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center shrink-0 border border-indigo-100/50 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                 {!! $notification['svg'] !!}
+                             </svg>
+                         </div>
                     @elseif($notification['icon'] === 'red')
-                        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center shrink-0 border border-red-100/30 text-red-500 dark:text-red-400">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                {!! $notification['svg'] !!}
-                            </svg>
-                        </div>
+                         <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center shrink-0 border border-red-100/30 text-red-500 dark:text-red-400">
+                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                 {!! $notification['svg'] !!}
+                             </svg>
+                         </div>
                     @endif
 
                     {{-- Text Info --}}
@@ -79,7 +79,17 @@
                         <p class="text-xs text-slate-500 dark:text-slate-350 mt-1 leading-relaxed font-medium">{!! $notification['description'] !!}</p>
                     </div>
                 </a>
-            @endforeach
+            @empty
+                <div class="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <div class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-400 dark:text-slate-600 mb-3 border border-slate-100 dark:border-slate-800/50">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                        </svg>
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Tidak Ada Notifikasi</p>
+                    <p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 leading-relaxed max-w-[240px]">Semua pemberitahuan Anda akan muncul di sini.</p>
+                </div>
+            @endforelse
         </div>
 
         {{-- Footer --}}

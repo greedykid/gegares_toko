@@ -1,6 +1,9 @@
 <div x-data="{ isOpen: false }"
     @toggle-cart.window="isOpen = !isOpen"
-    x-effect="document.querySelector('main') && (isOpen ? document.querySelector('main').classList.add('cart-open-blur') : document.querySelector('main').classList.remove('cart-open-blur'))"
+    x-effect="
+        document.querySelector('main') && (isOpen ? document.querySelector('main').classList.add('cart-open-blur') : document.querySelector('main').classList.remove('cart-open-blur'));
+        document.body && (isOpen ? document.body.classList.add('overflow-hidden') : document.body.classList.remove('overflow-hidden'));
+    "
     x-cloak
     class="relative z-50">
     

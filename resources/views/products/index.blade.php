@@ -22,8 +22,8 @@
              class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden"
              style="display: none;"></div>
 
-        <aside x-cloak :class="filterOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'" 
-               class="fixed inset-y-0 right-0 z-50 w-80 max-w-full bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto transition-transform duration-300 lg:static lg:w-64 lg:h-auto lg:shadow-none lg:p-0 lg:bg-transparent lg:dark:bg-transparent lg:border-none lg:overflow-visible lg:transition-none">
+        <aside x-cloak x-show="filterOpen" :class="filterOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'" 
+               class="fixed inset-y-0 right-0 z-50 w-80 max-w-full bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto transition-transform duration-300 lg:static lg:w-64 lg:h-auto lg:shadow-none lg:p-0 lg:bg-transparent lg:dark:bg-transparent lg:border-none lg:overflow-visible lg:transition-none lg:!block">
             <form id="filter-form" method="GET" action="{{ route('products.index') }}" 
                   class="space-y-6 lg:bg-white lg:dark:bg-slate-900 lg:border lg:border-slate-100 lg:dark:border-slate-800 lg:shadow-sm lg:rounded-2xl lg:p-6 transition-colors duration-300 lg:sticky lg:top-24">
                 

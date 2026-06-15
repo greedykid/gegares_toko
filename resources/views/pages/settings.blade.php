@@ -191,7 +191,10 @@
                         
                         <div class="space-y-6">
                             @php
-                                $settings = $user->notification_settings ?? ['order_updates' => true, 'promos' => true, 'newsletter' => false];
+                                $settings = $user->notification_settings ?? [];
+                                $orderUpdates = $settings['order_updates'] ?? true;
+                                $promos = $settings['promos'] ?? true;
+                                $newsletter = $settings['newsletter'] ?? false;
                             @endphp
                             
                             <div class="flex items-center justify-between py-2 group">
@@ -200,7 +203,7 @@
                                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Dapatkan notifikasi real-time tentang status pengiriman paket.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                    <input type="checkbox" name="order_updates" value="1" {{ ($settings['order_updates'] ?? false) ? 'checked' : '' }} class="sr-only peer">
+                                    <input type="checkbox" name="order_updates" value="1" {{ $orderUpdates ? 'checked' : '' }} class="sr-only peer">
                                     <div class="w-14 h-7 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary-600 shadow-inner"></div>
                                 </label>
                             </div>
@@ -213,7 +216,7 @@
                                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Jangan lewatkan diskon menarik dan penawaran spesial artisan.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                    <input type="checkbox" name="promos" value="1" {{ ($settings['promos'] ?? false) ? 'checked' : '' }} class="sr-only peer">
+                                    <input type="checkbox" name="promos" value="1" {{ $promos ? 'checked' : '' }} class="sr-only peer">
                                     <div class="w-14 h-7 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary-600 shadow-inner"></div>
                                 </label>
                             </div>
@@ -226,7 +229,7 @@
                                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Info jajanan terbaru dan tips kuliner mingguan eksklusif.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                    <input type="checkbox" name="newsletter" value="1" {{ ($settings['newsletter'] ?? false) ? 'checked' : '' }} class="sr-only peer">
+                                    <input type="checkbox" name="newsletter" value="1" {{ $newsletter ? 'checked' : '' }} class="sr-only peer">
                                     <div class="w-14 h-7 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary-600 shadow-inner"></div>
                                 </label>
                             </div>
