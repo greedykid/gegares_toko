@@ -143,20 +143,14 @@
             class="hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 sticky top-0 h-screen transition-all duration-300 ease-in-out shrink-0"
             :class="sidebarOpen ? 'w-64' : 'w-20'">
             {{-- Logo --}}
-            <div class="flex items-center justify-between px-6 h-16 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center px-6 h-16 border-b border-slate-100 dark:border-slate-800"
+                 :class="sidebarOpen ? 'justify-start' : 'justify-center'">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
                     <span class="text-xl font-extrabold text-primary-700 dark:text-primary-400" x-show="sidebarOpen"
                         x-transition>gegares</span>
                     <span class="text-xl font-extrabold text-primary-700 dark:text-primary-400" x-show="!sidebarOpen"
                         x-transition>G</span>
                 </a>
-                <button @click="sidebarOpen = !sidebarOpen"
-                    class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                    </svg>
-                </button>
             </div>
 
             {{-- Menu --}}
@@ -207,8 +201,8 @@
             {{-- Top Navbar --}}
             <header
                 class="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200/60 dark:border-slate-800/60 h-16 flex items-center px-6 transition-colors duration-300">
-                <button @click="sidebarMobile = !sidebarMobile"
-                    class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 mr-3">
+                <button @click="window.innerWidth >= 1024 ? (sidebarOpen = !sidebarOpen) : (sidebarMobile = !sidebarMobile)"
+                    class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 mr-3 transition-colors duration-200">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />

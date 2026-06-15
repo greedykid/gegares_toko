@@ -54,9 +54,9 @@
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.orders.report', request()->all()) }}" 
                target="_blank"
-               class="px-4 py-2 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-all flex items-center gap-2 shadow-sm">
-                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM14.25 15h.008v.008H14.25V15zm0 2.25h.008v.008H14.25v-.008z" />
+               class="px-4 py-2.5 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 hover:shadow-md hover:shadow-primary-600/10 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 duration-200">
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.617 0-1.11-.461-1.12-1.078L6.34 18m11.32 0a1.152 1.152 0 0 0 1.059-1.086L19.5 8.25m-14 8.75a1.152 1.152 0 0 1-1.059-1.086L3.5 8.25m16 0a2.25 2.25 0 0 0-2.247-2.118H6.247A2.25 2.25 0 0 0 4 8.25m16 0V6a2.25 2.25 0 0 0-2.25-2.25h-7.5A2.25 2.25 0 0 0 8 6v2.25m4-3.037.01-.011m-.01.011-.01-.011m0 .011.011-.011" />
                 </svg>
                 Cetak Laporan PDF
             </a>
@@ -128,12 +128,18 @@
             
             <div class="lg:col-span-2">
                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Periode</label>
-                <div class="flex items-center gap-2">
-                    <input type="date" name="from_date" value="{{ request('from_date') }}" 
-                           class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none text-slate-600 dark:text-slate-400 bg-slate-50/30 dark:bg-slate-950/50">
-                    <span class="text-slate-300 dark:text-slate-700 text-xs">-</span>
-                    <input type="date" name="to_date" value="{{ request('to_date') }}" 
-                           class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none text-slate-600 dark:text-slate-400 bg-slate-50/30 dark:bg-slate-950/50">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-600">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                        </svg>
+                    </div>
+                    <input type="text" id="date_range_picker" 
+                           placeholder="Pilih rentang tanggal..." 
+                           readonly
+                           class="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer">
+                    <input type="hidden" name="from_date" id="from_date" value="{{ request('from_date') }}">
+                    <input type="hidden" name="to_date" id="to_date" value="{{ request('to_date') }}">
                 </div>
             </div>
 
@@ -453,32 +459,32 @@
                     <h3 class="text-lg font-extrabold text-slate-900 dark:text-slate-100" x-text="selectedOrder?.order_number"></h3>
                     <p class="text-xs text-slate-500 font-medium mt-0.5" x-text="'Dipesan pada ' + new Date(selectedOrder?.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})"></p>
                 </div>
-                <button @click="showDetail = false" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">
+                <button @click="showDetail = false" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
             {{-- Modal Body --}}
-            <div class="flex-1 overflow-y-auto p-6 space-y-8">
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 {{-- NEW: Prominent Tracking Number Bar (Solid) --}}
                 <template x-if="selectedOrder?.tracking_number">
-                    <div class="p-4 rounded-2xl bg-slate-900 dark:bg-black flex items-center justify-between overflow-hidden shadow-sm border border-slate-800 transition-colors">
+                    <div class="p-4 rounded-2xl bg-slate-950 dark:bg-black flex items-center justify-between overflow-hidden shadow-sm border border-slate-800 transition-colors">
                         <div>
-                            <p class="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] mb-1 transition-colors">Nomor Resi Pelacakan</p>
+                            <p class="text-[10px] font-black text-slate-450 dark:text-slate-550 uppercase tracking-[0.2em] mb-1 transition-colors">Nomor Resi Pelacakan</p>
                             <h2 class="text-xl font-mono font-black text-white tracking-wider select-all transition-colors" x-text="selectedOrder.tracking_number"></h2>
                         </div>
                         <div class="flex flex-col items-end gap-1">
-                            <span class="px-2 py-1 rounded-lg bg-white/10 dark:bg-white/5 text-white text-[10px] font-bold uppercase tracking-widest transition-colors" x-text="selectedOrder?.shipping_courier?.toUpperCase() ?? 'KURIER'"></span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white/10 dark:bg-white/5 text-white text-[10px] font-bold uppercase tracking-widest transition-colors" x-text="selectedOrder?.shipping_courier?.toUpperCase() ?? 'KURIER'"></span>
                             <span class="text-[10px] font-bold text-slate-500 dark:text-slate-700 uppercase transition-colors" x-text="selectedOrder?.shipping_service?.toUpperCase() ?? 'REGULAR'"></span>
                         </div>
                     </div>
                 </template>
 
                 {{-- Customer & Shipping --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
                         <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Informasi Pelanggan</h4>
-                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100/50 dark:border-slate-800/50 transition-all duration-300">
+                        <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm transition-all duration-300">
                             <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100 transition-colors" x-text="selectedOrder?.user?.name"></p>
                             <p class="text-xs text-slate-500 dark:text-slate-500 mt-0.5" x-text="selectedOrder?.user?.email"></p>
                             <template x-if="selectedOrder?.address?.phone">
@@ -486,109 +492,117 @@
                                     <p class="text-xs text-slate-500 dark:text-slate-500" x-text="selectedOrder.address.phone"></p>
                                     <a :href="`https://wa.me/${selectedOrder.address.phone.replace(/[^0-9]/g, '')}`" 
                                        target="_blank"
-                                       class="p-1 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-colors"
+                                       class="p-1 rounded-md bg-emerald-100/50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200/50 dark:hover:bg-emerald-900 transition-colors"
                                        title="Tanya via WA">
-                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                                     </a>
                                 </div>
                             </template>
                         </div>
                     </div>
-                    <div class="space-y-3">
+                    
+                    <div class="space-y-2">
                         <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Alamat Pengiriman</h4>
-                        <div class="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/30 dark:border-indigo-900/30">
-                            <p class="text-sm font-extrabold text-indigo-900 dark:text-indigo-300 transition-colors" x-text="selectedOrder?.address?.recipient_name"></p>
-                            <p class="text-xs text-indigo-700/80 dark:text-indigo-400/80 mt-1 leading-relaxed transition-colors" 
+                        <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm transition-all duration-300">
+                            <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100 transition-colors" x-text="selectedOrder?.address?.recipient_name"></p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed transition-colors" 
                                x-text="`${selectedOrder?.address?.address_line}, ${selectedOrder?.address?.city}, ${selectedOrder?.address?.province} - ${selectedOrder?.address?.postal_code}`">
                             </p>
-                            <div class="mt-3 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold uppercase tracking-tight transition-colors">
+                            <div class="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 text-[10px] font-extrabold uppercase tracking-tight transition-colors">
                                 <span x-text="selectedOrder?.shipping_courier?.toUpperCase() ?? 'KURIER'"></span>
-                                <span class="w-1 h-1 rounded-full bg-indigo-300 dark:bg-indigo-700"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-300 dark:bg-indigo-700"></span>
                                 <span x-text="selectedOrder?.shipping_service?.toUpperCase() ?? 'REGULAR'"></span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-3">
+                    <div class="space-y-2">
                         <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Metode Pembayaran</h4>
-                        <div class="p-4 rounded-2xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100/30 dark:border-orange-900/30 flex items-center justify-between transition-colors">
-                            <span class="text-xs font-extrabold text-orange-900 dark:text-orange-300 uppercase tracking-wider transition-colors" x-text="selectedOrder?.payment_type?.replace(/_/g, ' ') || 'MIDTRANS'"></span>
-                            <div class="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 text-[9px] font-black uppercase tracking-tighter transition-colors">Verified</div>
+                        <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm flex items-center justify-between transition-colors">
+                            <span class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider transition-colors" x-text="selectedOrder?.payment_method?.toUpperCase() || 'MIDTRANS'"></span>
+                            <div class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter transition-colors border"
+                                 :class="{
+                                     'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-650 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30': selectedOrder?.payment_status === 'paid',
+                                     'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30': selectedOrder?.payment_status === 'pending',
+                                     'bg-red-50 dark:bg-red-950/50 text-red-655 dark:text-red-400 border-red-100 dark:border-red-900/30': selectedOrder?.payment_status === 'failed' || selectedOrder?.payment_status === 'expired',
+                                     'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700': !selectedOrder?.payment_status
+                                 }"
+                                 x-text="selectedOrder?.payment_status === 'unpaid' ? 'BELUM BAYAR' : (selectedOrder?.payment_status?.toUpperCase() || 'BELUM BAYAR')"></div>
                         </div>
                     </div>
 
                     {{-- NEW: Order Notes --}}
                     <template x-if="selectedOrder?.notes">
-                        <div class="space-y-3">
+                        <div class="space-y-2">
                             <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Catatan Pesanan</h4>
-                            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 transition-colors">
-                                <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed italic" x-text="`'${selectedOrder.notes}'`"></p>
+                            <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm transition-colors">
+                                <p class="text-[11px] text-slate-650 dark:text-slate-350 leading-relaxed italic" x-text="`'${selectedOrder.notes}'`"></p>
                             </div>
                         </div>
                     </template>
 
                     {{-- NEW: Driver Info Section --}}
                     <template x-if="trackingData">
-                        <div class="space-y-3 md:col-span-2">
+                        <div class="space-y-2 md:col-span-2">
                             <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Informasi Kurir</h4>
-                            <div class="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/30 dark:border-emerald-900/30 relative overflow-hidden transition-all duration-300">
+                            <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm relative overflow-hidden transition-all duration-300">
                                 <div class="flex items-center gap-4 relative z-10">
                                     <div class="w-12 h-12 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900 shrink-0 transition-colors">
                                         <img :src="trackingData.courier.photo" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
-                                            <p class="text-sm font-extrabold text-emerald-900 dark:text-emerald-300 truncate transition-colors" x-text="trackingData.courier.name"></p>
-                                            <span class="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-[9px] font-black uppercase tracking-tighter transition-colors" x-text="trackingData.courier.plate_number"></span>
+                                            <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100 truncate transition-colors" x-text="trackingData.courier.name"></p>
+                                            <span class="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-650 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[9px] font-black uppercase tracking-tighter transition-colors" x-text="trackingData.courier.plate_number"></span>
                                         </div>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600/80 dark:text-emerald-400/80 transition-colors">
+                                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 transition-colors">
                                                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
                                                 <span x-text="trackingData.courier.phone"></span>
                                                 <a :href="`https://wa.me/${trackingData.courier.phone.replace(/[^0-9]/g, '')}`" 
                                                    target="_blank"
-                                                   class="p-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors"
+                                                   class="p-0.5 rounded bg-emerald-100/50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200/50 dark:hover:bg-emerald-900 transition-colors"
                                                    title="Hubungi Kurir via WA">
                                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                                                </a>
-                                            </div>
-                                            <span class="w-1 h-1 rounded-full bg-emerald-200 dark:bg-emerald-800 transition-colors"></span>
-                                            <p class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase transition-colors">STATUS: <span x-text="trackingData.status_label || 'SEDANG DIPROSES'"></span></p>
-                                        </div>
-                                    </div>
-                                    <div class="shrink-0 ml-2 flex flex-col gap-2">
-                                        <a :href="trackingData.link" target="_blank" 
-                                           class="p-2 rounded-xl bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-900/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-all duration-200"
-                                           title="Lacak Live">
-                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                                        </a>
-                                        <button type="button" @click="fetchTracking()" 
-                                                class="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 shadow-sm border border-slate-100 dark:border-slate-800 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200"
-                                                title="Sinkronkan Status">
-                                            <svg class="w-5 h-5" :class="{ 'animate-spin': loadingTracking }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                {{-- Decorative Background Icon --}}
-                                <div class="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.07] rotate-12 transition-opacity">
-                                    <svg class="w-24 h-24 text-emerald-900 dark:text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19,10H17V7c0-1.1-.9-2-2-2H9C7.9,5,7,5.9,7,7v3H5c-1.1,0-2,.9-2,2v5h2c0,1.66,1.34,3,3,3s3-1.34,3-3h2c0,1.66,1.34,3,3,3s3-1.34,3-3h2v-5C21,10.9,20.1,10,19,10z M8,18c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,18,8,18z M17,18c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S17.55,18,17,18z M19,13h-4v-2h4V13z"/></svg>
-                                </div>
-                            </div>
+                                                 </a>
+                                             </div>
+                                             <span class="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 transition-colors"></span>
+                                             <p class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase transition-colors">STATUS: <span x-text="trackingData.status_label || 'SEDANG DIPROSES'"></span></p>
+                                         </div>
+                                     </div>
+                                     <div class="shrink-0 ml-2 flex flex-col gap-2">
+                                         <a :href="trackingData.link" target="_blank" 
+                                            class="p-2 rounded-xl bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-100 dark:border-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-all duration-200"
+                                            title="Lacak Live">
+                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                                         </a>
+                                         <button type="button" @click="fetchTracking()" 
+                                                 class="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 shadow-sm border border-slate-100 dark:border-slate-800/80 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200"
+                                                 title="Sinkronkan Status">
+                                             <svg class="w-5 h-5" :class="{ 'animate-spin': loadingTracking }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                                         </button>
+                                     </div>
+                                 </div>
+                                 {{-- Decorative Background Icon --}}
+                                 <div class="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.07] rotate-12 transition-opacity">
+                                     <svg class="w-24 h-24 text-slate-900 dark:text-slate-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19,10H17V7c0-1.1-.9-2-2-2H9C7.9,5,7,5.9,7,7v3H5c-1.1,0-2,.9-2,2v5h2c0,1.66,1.34,3,3,3s3-1.34,3-3h2c0,1.66,1.34,3,3,3s3-1.34,3-3h2v-5C21,10.9,20.1,10,19,10z M8,18c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,18,8,18z M17,18c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S17.55,18,17,18z M19,13h-4v-2h4V13z"/></svg>
+                                 </div>
+                             </div>
 
-                            {{-- Shipment History Timeline --}}
-                            <div class="mt-4 border-l-2 border-emerald-100 dark:border-emerald-900/50 ml-6 pl-6 space-y-4 transition-colors">
-                                <template x-for="(event, index) in trackingData.history" :key="index + '-' + event.status">
-                                    <div class="relative">
-                                        <div class="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-emerald-500 dark:bg-emerald-600 border-2 border-white dark:border-slate-900 shadow-sm transition-all duration-300"></div>
-                                        <div class="flex flex-col">
-                                            <p class="text-[10px] font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-tighter transition-colors" x-text="event.note"></p>
-                                            <p class="text-[9px] text-slate-400 dark:text-slate-600 font-medium transition-colors" x-text="event.time"></p>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
+                             {{-- Shipment History Timeline --}}
+                             <div class="mt-4 border-l-2 border-emerald-100 dark:border-emerald-900/50 ml-6 pl-6 space-y-4 transition-colors">
+                                 <template x-for="(event, index) in trackingData.history" :key="index + '-' + event.status">
+                                     <div class="relative">
+                                         <div class="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-600 border-2 border-white dark:border-slate-900 shadow-sm transition-all duration-300"></div>
+                                         <div class="flex flex-col">
+                                             <p class="text-[10px] font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-tighter transition-colors" x-text="event.note"></p>
+                                             <p class="text-[9px] text-slate-400 dark:text-slate-600 font-medium transition-colors" x-text="event.time"></p>
+                                         </div>
+                                     </div>
+                                 </template>
+                             </div>
+                         </div>
+                     </template>
                 </div>
 
                 {{-- Order Items --}}
@@ -695,3 +709,174 @@
     </form>
 </div>
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Custom styling for flatpickr calendar */
+    .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        border-radius: 1rem !important;
+        font-family: 'Quicksand', sans-serif !important;
+    }
+    .dark .flatpickr-calendar {
+        background: #0f172a !important; /* bg-slate-900 */
+        border: 1px solid #1e293b !important; /* border-slate-800 */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+    }
+    .flatpickr-months .flatpickr-month {
+        color: #0f172a !important;
+        background: transparent !important;
+    }
+    .dark .flatpickr-months .flatpickr-month {
+        color: #f1f5f9 !important;
+        background: transparent !important;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        font-weight: 700 !important;
+        color: inherit !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0.375rem !important;
+        padding: 2px 6px !important;
+        cursor: pointer !important;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+    .dark .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+    .flatpickr-monthDropdown-months option {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+    .dark .flatpickr-monthDropdown-months option {
+        background-color: #0f172a !important;
+        color: #cbd5e1 !important;
+    }
+    .flatpickr-current-month input.cur-year {
+        font-weight: 700 !important;
+        color: inherit !important;
+        background: transparent !important;
+        border-radius: 0.375rem !important;
+        padding: 2px 6px !important;
+    }
+    .flatpickr-current-month input.cur-year:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+    .dark .flatpickr-current-month input.cur-year:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        color: #475569 !important;
+        fill: currentColor !important;
+    }
+    .dark .flatpickr-months .flatpickr-prev-month, .dark .flatpickr-months .flatpickr-next-month {
+        color: #cbd5e1 !important;
+        fill: currentColor !important;
+    }
+    .flatpickr-weekday {
+        font-weight: 700 !important;
+        color: #94a3b8 !important;
+    }
+    .flatpickr-day {
+        color: #334155 !important;
+        border-radius: 0.5rem !important;
+        font-weight: 600 !important;
+    }
+    .dark .flatpickr-day {
+        color: #cbd5e1 !important;
+    }
+    .flatpickr-day:hover {
+        background: #f1f5f9 !important;
+    }
+    .dark .flatpickr-day:hover {
+        background: #1e293b !important;
+    }
+    .flatpickr-day.today {
+        border-color: #0a5050 !important;
+        color: #0a5050 !important;
+    }
+    .dark .flatpickr-day.today {
+        border-color: #337373 !important;
+        color: #337373 !important;
+    }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+        background: #0a5050 !important;
+        border-color: #0a5050 !important;
+        color: #ffffff !important;
+    }
+    .dark .flatpickr-day.selected, .dark .flatpickr-day.startRange, .dark .flatpickr-day.endRange {
+        background: #0a5050 !important;
+        border-color: #0a5050 !important;
+        color: #ffffff !important;
+    }
+    .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover {
+        background: #084040 !important;
+        border-color: #084040 !important;
+    }
+    .flatpickr-day.inRange {
+        background: rgba(10, 80, 80, 0.1) !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    .dark .flatpickr-day.inRange {
+        background: rgba(10, 80, 80, 0.2) !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    .flatpickr-day.flatpickr-disabled, .flatpickr-day.notAllowed {
+        color: #cbd5e1 !important;
+    }
+    .dark .flatpickr-day.flatpickr-disabled, .dark .flatpickr-day.notAllowed {
+        color: #475569 !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/flatpickr/dist/flatpickr.min.js"></script>
+<script src="https://unpkg.com/flatpickr/dist/l10n/id.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fromDateEl = document.getElementById('from_date');
+        const toDateEl = document.getElementById('to_date');
+        const dateRangeInput = document.getElementById('date_range_picker');
+
+        // Initial date values
+        let defaultDates = [];
+        if (fromDateEl.value) {
+            defaultDates.push(fromDateEl.value);
+        }
+        if (toDateEl.value) {
+            defaultDates.push(toDateEl.value);
+        }
+
+        flatpickr(dateRangeInput, {
+            mode: 'range',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'j M Y',
+            locale: 'id',
+            defaultDate: defaultDates,
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    // Set values to hidden inputs
+                    fromDateEl.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                    toDateEl.value = instance.formatDate(selectedDates[1], 'Y-m-d');
+                } else if (selectedDates.length === 1) {
+                    // If only one date is selected, set it for both (or handle accordingly)
+                    fromDateEl.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                    toDateEl.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                } else {
+                    fromDateEl.value = '';
+                    toDateEl.value = '';
+                }
+            }
+        });
+    });
+</script>
+@endpush

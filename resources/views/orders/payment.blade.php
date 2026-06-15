@@ -71,7 +71,7 @@
                         <div
                             class="px-2 py-0.5 rounded pl-1.5 border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20">
                             <span class="w-1.5 h-1.5 inline-block mr-0.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span class="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-500">Unpaid</span>
+                            <span class="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-500">Belum Bayar</span>
                         </div>
                     </div>
 
