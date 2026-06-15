@@ -231,34 +231,39 @@
                      </div>
                      
                      <div class="p-6 sm:p-8 space-y-8" role="status" aria-live="polite">
-                         {{-- Driver Card --}}
-                         <div class="flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/20 dark:shadow-none border border-slate-100 dark:border-slate-800">
-                             <div class="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-slate-800 shadow-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 relative">
-                                 <img :src="trackingData.courier.photo" class="w-full h-full object-cover" alt="Foto Kurir">
-                                 <div class="absolute inset-0 rounded-full ring-1 ring-inset ring-slate-900/10"></div>
-                             </div>
-                             <div class="flex-1 min-w-0">
-                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-                                     <p class="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate" x-text="trackingData.courier.name"></p>
-                                     <span class="self-start sm:self-auto px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest border border-emerald-200 dark:border-emerald-800/50 shadow-sm" x-text="trackingData.courier.plate_number"></span>
-                                 </div>
-                                 <div class="flex items-center gap-1.5 mt-2">
-                                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                     <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest" x-text="trackingData.status_label"></p>
-                                 </div>
-                             </div>
-                             <div class="shrink-0 pl-2 border-l border-slate-100 dark:border-slate-800">
-                                 <a :href="trackingData.link" target="_blank" 
-                                    class="relative group overflow-hidden flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 transition-colors"
-                                    title="Lacak Live">
-                                     <svg class="w-7 h-7 relative z-10 transition-transform group-hover:scale-110" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                         <path d="M7 10V21C7 23.2091 8.79086 25 11 25H22" stroke="#8b31ff" stroke-width="5" stroke-linecap="round"/>
-                                         <path d="M10 7H21C23.2091 7 25 8.79086 25 11V22" stroke="#00c0a5" stroke-width="5" stroke-linecap="round"/>
-                                     </svg>
-                                     <span class="text-xs font-bold uppercase mt-1 relative z-10 tracking-widest">Lacak di Biteship</span>
-                                 </a>
-                             </div>
-                         </div>
+                          {{-- Driver Card --}}
+                          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/20 dark:shadow-none border border-slate-100 dark:border-slate-800">
+                              {{-- Left: Driver Identity --}}
+                              <div class="flex items-center gap-4 flex-1 min-w-0">
+                                  <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-slate-50 dark:border-slate-800 shadow-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 relative">
+                                      <img :src="trackingData.courier.photo" class="w-full h-full object-cover" alt="Foto Kurir">
+                                      <div class="absolute inset-0 rounded-full ring-1 ring-inset ring-slate-900/10"></div>
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                      <div class="flex flex-wrap items-center gap-2 mb-1">
+                                          <p class="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate" x-text="trackingData.courier.name"></p>
+                                          <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-widest border border-emerald-200 dark:border-emerald-800/50 shadow-sm" x-text="trackingData.courier.plate_number"></span>
+                                      </div>
+                                      <div class="flex items-center gap-1.5 mt-1.5">
+                                          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                          <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest" x-text="trackingData.status_label"></p>
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                              {{-- Right: Live Map Button --}}
+                              <div class="w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800/80 sm:pl-4 flex shrink-0">
+                                  <a :href="trackingData.link" target="_blank" 
+                                     class="relative group overflow-hidden w-full sm:w-auto flex sm:flex-col items-center justify-center gap-2 sm:gap-1 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 transition-colors"
+                                     title="Lacak Live">
+                                      <svg class="w-6 h-6 sm:w-7 sm:h-7 relative z-10 transition-transform group-hover:scale-110" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M7 10V21C7 23.2091 8.79086 25 11 25H22" stroke="#8b31ff" stroke-width="5" stroke-linecap="round"/>
+                                          <path d="M10 7H21C23.2091 7 25 8.79086 25 11V22" stroke="#00c0a5" stroke-width="5" stroke-linecap="round"/>
+                                      </svg>
+                                      <span class="text-xs font-bold uppercase relative z-10 tracking-widest">Lacak di Biteship</span>
+                                  </a>
+                              </div>
+                          </div>
  
                          {{-- Timeline --}}
                          <div class="relative border-l-2 border-slate-200 dark:border-slate-700 ml-4 sm:ml-8 pl-5 sm:pl-8 space-y-8 py-2">
