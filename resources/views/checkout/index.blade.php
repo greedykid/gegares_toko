@@ -14,7 +14,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm">
+    <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" @submit="loading = true">
         @csrf
         {{-- Hidden Fields --}}
         <input type="hidden" name="address_id" x-model="addressId">
@@ -182,10 +182,19 @@
                     </div>
 
                     {{-- Submit Button --}}
-                    <button type="submit" class="relative group overflow-hidden w-full mt-6 flex items-center justify-center gap-2 py-4 bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary-500/30 dark:shadow-none hover:bg-primary-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" x-bind:disabled="shippingCost === 0 || !paymentMethod">
-                        <span class="relative z-10">Bayar Pesanan</span>
-                        <svg class="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"/></svg>
-                        <div class="absolute inset-0 h-full w-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    <button type="submit" 
+                        class="relative group overflow-hidden w-full mt-6 flex items-center justify-center gap-2 py-4 bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary-500/30 dark:shadow-none hover:bg-primary-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
+                        x-bind:disabled="shippingCost === 0 || !paymentMethod || loading"
+                        :class="loading ? 'opacity-70 cursor-not-allowed' : ''">
+                        <svg x-show="loading" class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display:none;">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <svg x-show="!loading" class="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"/>
+                        </svg>
+                        <span class="relative z-10" x-text="loading ? 'Memproses Pesanan...' : 'Bayar Pesanan'">Bayar Pesanan</span>
+                        <div x-show="!loading" class="absolute inset-0 h-full w-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                     </button>
 
                     <div x-show="shippingCost === 0 || !paymentMethod" class="flex items-center gap-2 mt-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" style="display:none;">
@@ -222,6 +231,7 @@ function registerCheckoutFlow() {
             shippingService: '',
             shippingInfo: '',
             paymentMethod: 'pakasir',
+            loading: false,
 
             init() {
                 this.addressId = this.$el.dataset.addressId;
