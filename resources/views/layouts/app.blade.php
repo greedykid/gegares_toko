@@ -309,7 +309,7 @@
                                 </div>
                             @else
                                 <div class="grid grid-cols-2 gap-3">
-                                    <a href="{{ route('login') }}" @click="mobileMenu = false" class="flex items-center justify-center px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors rounded-xl">Masuk</a>
+                                    <a href="{{ route('login') }}" @click="mobileMenu = false" class="flex items-center justify-center px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors rounded-xl">Masuk</a>
                                     <a href="{{ route('register') }}" @click="mobileMenu = false" class="flex items-center justify-center px-4 py-2.5 text-xs font-bold bg-primary-600 text-white hover:bg-primary-700 transition-colors rounded-xl">Daftar</a>
                                 </div>
                             @endauth
@@ -322,7 +322,7 @@
                                 @php $isActive = request()->routeIs($item['route']); @endphp
                                 <a href="{{ route($item['route']) }}" @click="mobileMenu = false"
                                    class="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold transition-all duration-200 
-                                          {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-extrabold' : 'text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850/30' }}">
+                                          {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-extrabold' : 'text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/30' }}">
                                     <span>{{ $item['label'] }}</span>
                                     <svg class="w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
                                 </a>
@@ -336,7 +336,7 @@
                                 
                                 {{-- Wishlist Link --}}
                                 <a href="#" @click.prevent="mobileMenu = false; $dispatch('toggle-wishlist')"
-                                   class="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all">
+                                   class="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all">
                                     <div class="flex items-center gap-3">
                                         <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg>
                                         <span>Wishlist</span>
@@ -346,7 +346,7 @@
 
                                 {{-- Notifications Link --}}
                                 <a href="{{ route('settings.index') }}#notifications" @click="mobileMenu = false"
-                                   class="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all">
+                                   class="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all">
                                     <div class="flex items-center gap-3">
                                         <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
@@ -361,17 +361,17 @@
                         {{-- 5. Quick Theme Toggle Card --}}
                         <div class="space-y-1 pt-2 border-t border-slate-100 dark:border-slate-800/60">
                             <p class="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 mb-2.5">Preferensi Tampilan</p>
-                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-850">
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                                 <span class="text-xs font-bold text-slate-600 dark:text-slate-350 pl-2">Mode Tampilan</span>
                                 
                                 <div class="flex gap-1 bg-slate-200/50 dark:bg-slate-800/80 p-0.5 rounded-lg">
-                                    <button @click="setTheme('light')" :class="theme === 'light' ? 'bg-white dark:bg-slate-700 text-amber-500 shadow-xs' : 'text-slate-450 hover:text-slate-750 dark:hover:text-slate-200'" class="p-1.5 rounded-md transition-all">
+                                    <button @click="setTheme('light')" :class="theme === 'light' ? 'bg-white dark:bg-slate-700 text-amber-500 shadow-xs' : 'text-slate-450 hover:text-slate-800 dark:hover:text-slate-200'" class="p-1.5 rounded-md transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/></svg>
                                     </button>
-                                    <button @click="setTheme('dark')" :class="theme === 'dark' ? 'bg-white dark:bg-slate-700 text-indigo-500 shadow-xs' : 'text-slate-450 hover:text-slate-750 dark:hover:text-slate-200'" class="p-1.5 rounded-md transition-all">
+                                    <button @click="setTheme('dark')" :class="theme === 'dark' ? 'bg-white dark:bg-slate-700 text-indigo-500 shadow-xs' : 'text-slate-450 hover:text-slate-800 dark:hover:text-slate-200'" class="p-1.5 rounded-md transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998z"/></svg>
                                     </button>
-                                    <button @click="setTheme('system')" :class="theme === 'system' ? 'bg-white dark:bg-slate-700 text-primary-500 shadow-xs' : 'text-slate-450 hover:text-slate-750 dark:hover:text-slate-200'" class="p-1.5 rounded-md transition-all">
+                                    <button @click="setTheme('system')" :class="theme === 'system' ? 'bg-white dark:bg-slate-700 text-primary-500 shadow-xs' : 'text-slate-450 hover:text-slate-800 dark:hover:text-slate-200'" class="p-1.5 rounded-md transition-all">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"/></svg>
                                     </button>
                                 </div>

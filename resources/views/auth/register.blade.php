@@ -105,7 +105,7 @@
 
             {{-- Google Login Button --}}
             <a href="{{ route('auth.google') }}" 
-               class="flex items-center justify-center gap-3 w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-200 shadow-sm">
+               class="flex items-center justify-center gap-3 w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-200 shadow-sm">
                 <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                     <path fill="#ea4335" d="M5.2662 9.76451C6.1982 6.95542 8.8542 4.90909 12 4.90909C13.6909 4.90909 15.2182 5.50909 16.4182 6.49091L19.9091 3C17.7818 1.14545 15.0545 0 12 0C7.27273 0 3.19091 2.69091 1.24545 6.65455L5.2662 9.76451Z"/>
                     <path fill="#34a853" d="M16.0409 18.0136C14.8705 18.7159 13.4841 19.0909 12 19.0909C8.8542 19.0909 6.1982 17.0455 5.2662 14.2364L1.24545 17.3455C3.19091 21.3091 7.27273 24 12 24C15.0545 24 17.7818 23.0182 19.9318 21.3273L16.0409 18.0136Z"/>

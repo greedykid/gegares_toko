@@ -402,7 +402,7 @@
                         </td>
                         <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title="{{ $product->description ?: '-' }}">{{ $product->description ?: '-' }}</td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-750">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700">
                                 {{ $product->category->name ?? '-' }}
                             </span>
                         </td>

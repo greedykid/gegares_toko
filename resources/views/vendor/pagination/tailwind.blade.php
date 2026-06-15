@@ -24,23 +24,7 @@
         </div>
 
         {{-- Desktop View --}}
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {!! __('Menampilkan') !!}
-                    @if ($paginator->firstItem())
-                        <span class="font-extrabold text-slate-900 dark:text-white">{{ $paginator->firstItem() }}</span>
-                        {!! __('hingga') !!}
-                        <span class="font-extrabold text-slate-900 dark:text-white">{{ $paginator->lastItem() }}</span>
-                    @else
-                        {{ $paginator->count() }}
-                    @endif
-                    {!! __('dari') !!}
-                    <span class="font-extrabold text-slate-900 dark:text-white">{{ $paginator->total() }}</span>
-                    {!! __('hasil') !!}
-                </p>
-            </div>
-
+        <div class="hidden sm:flex sm:justify-center">
             <div>
                 <span class="inline-flex gap-1.5 shadow-sm rounded-xl">
                     {{-- Previous Page Link --}}
