@@ -221,6 +221,39 @@ class BiteshipService
                 ];
             })->toArray();
 
+            $courierCompany = strtolower($order->shipping_courier);
+            $courierType = strtolower($order->shipping_service);
+
+            $deliveryType = 'now';
+            $deliveryDate = null;
+            $deliveryTime = null;
+
+            // Check if it's a same day service (Grab/Gojek sameday) and check if we are outside the service hours
+            $isSameDay = in_array($courierCompany, ['grab', 'gojek']) && in_array($courierType, ['same_day', 'sameday']);
+            
+            if ($isSameDay) {
+                $now = now()->timezone('Asia/Jakarta');
+                $hour = (int)$now->format('H');
+                
+                // Grab Same Day: 09:00 - 14:00, Gojek Same Day: 09:00 - 15:00
+                $maxHour = ($courierCompany === 'grab') ? 14 : 15;
+                
+                if ($hour >= $maxHour || $hour < 9) {
+                    $deliveryType = 'scheduled';
+                    
+                    if ($hour >= $maxHour) {
+                        // Schedule for tomorrow at 09:00
+                        $scheduledDate = $now->copy()->addDay();
+                    } else {
+                        // Schedule for today at 09:00
+                        $scheduledDate = $now->copy();
+                    }
+                    
+                    $deliveryDate = $scheduledDate->format('Y-m-d');
+                    $deliveryTime = '09:00';
+                }
+            }
+
             $payload = [
                 'shipper_contact_name' => $shipper['name'],
                 'shipper_contact_phone' => $shipper['phone'],
@@ -241,12 +274,17 @@ class BiteshipService
                 'destination_coordinate' => $destination['coordinate'],
                 'destination_postal_code' => $destination['postal_code'],
                 'destination_note' => $destination['note'],
-                'courier_company' => strtolower($order->shipping_courier),
-                'courier_type' => strtolower($order->shipping_service),
-                'delivery_type' => 'now',
+                'courier_company' => $courierCompany,
+                'courier_type' => $courierType,
+                'delivery_type' => $deliveryType,
                 'order_note' => "Order #{$order->order_number}",
                 'items' => $items,
             ];
+
+            if ($deliveryType === 'scheduled') {
+                $payload['delivery_date'] = $deliveryDate;
+                $payload['delivery_time'] = $deliveryTime;
+            }
 
             Log::info('Biteship Create Order Payload: ' . json_encode($payload));
 
