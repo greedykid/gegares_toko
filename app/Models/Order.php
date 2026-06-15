@@ -31,6 +31,43 @@ class Order extends Model
         ];
     }
 
+    protected static function booted()
+    {
+        static::updated(function ($order) {
+            // Check if status transitioned to 'paid'
+            if ($order->wasChanged('status') && $order->status === 'paid') {
+                // Prevent real API calls during tests unless the service is explicitly mocked/bound in the container
+                if (app()->runningUnitTests() && !app()->bound(\App\Services\BiteshipService::class)) {
+                    return;
+                }
+
+                if (empty($order->biteship_order_id)) {
+                    try {
+                        $biteship = app(\App\Services\BiteshipService::class);
+                        $result = $biteship->createOrder($order);
+                        
+                        if ($result && isset($result['success']) && $result['success']) {
+                            static::withoutEvents(function () use ($order, $result) {
+                                $order->update([
+                                    'status' => 'processing',
+                                    'biteship_order_id' => $result['id'] ?? $order->biteship_order_id,
+                                    'courier_tracking_id' => $result['courier_tracking_id'] ?? $order->courier_tracking_id,
+                                    'tracking_number' => $result['courier']['waybill_id'] ?? $order->tracking_number,
+                                ]);
+                            });
+                            \Illuminate\Support\Facades\Log::info("Biteship Auto-Process: Order #{$order->order_number} successfully processed to Biteship.");
+                        } else {
+                            $err = $result['error'] ?? 'Unknown error';
+                            \Illuminate\Support\Facades\Log::warning("Biteship Auto-Process Failed for Order #{$order->order_number}: " . $err);
+                        }
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Biteship Auto-Process Error for Order #{$order->order_number}: " . $e->getMessage());
+                    }
+                }
+            }
+        });
+    }
+
     public function getTrackingUrlAttribute(): string
     {
         // Use Courier Tracking ID (ttce...) if available, otherwise fallback to Tracking Number (WYB...)

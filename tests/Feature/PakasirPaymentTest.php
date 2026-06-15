@@ -177,4 +177,59 @@ class PakasirPaymentTest extends TestCase
         // Initial stock was 50, purchased 2, should be 48
         $this->assertEquals(48, $product->stock);
     }
+
+    public function test_order_status_paid_triggers_biteship_creation(): void
+    {
+        // Mock the BiteshipService
+        $mockBiteship = $this->createMock(\App\Services\BiteshipService::class);
+        $mockBiteship->expects($this->once())
+            ->method('createOrder')
+            ->willReturn([
+                'success' => true,
+                'id' => 'biteship-order-123',
+                'courier_tracking_id' => 'ttce-track-123',
+                'courier' => [
+                    'waybill_id' => 'WYB-track-123'
+                ]
+            ]);
+
+        $this->app->instance(\App\Services\BiteshipService::class, $mockBiteship);
+
+        $user = User::factory()->create();
+        $address = Address::create([
+            'user_id' => $user->id,
+            'label' => 'Rumah',
+            'recipient_name' => 'Test User',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Tebet Raya No. 1',
+            'city' => 'Jakarta Selatan',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '12810',
+            'is_primary' => true,
+        ]);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => 'GGR-TEST-0002',
+            'address_id' => $address->id,
+            'subtotal' => 20000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 29000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => 'jne',
+            'shipping_service' => 'reg',
+        ]);
+
+        // Manually update status to 'paid' to trigger event
+        $order->update(['status' => 'paid']);
+
+        // Check if order is updated to 'processing' and has biteship data
+        $order->refresh();
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('biteship-order-123', $order->biteship_order_id);
+        $this->assertEquals('ttce-track-123', $order->courier_tracking_id);
+        $this->assertEquals('WYB-track-123', $order->tracking_number);
+    }
 }
