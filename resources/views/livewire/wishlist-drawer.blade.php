@@ -1,7 +1,8 @@
 <div x-data="{ isOpen: false }"
-     @toggle-wishlist.window="isOpen = !isOpen"
-     x-cloak
-     class="relative z-50">
+    @toggle-wishlist.window="isOpen = !isOpen"
+    x-effect="document.querySelector('main') && (isOpen ? document.querySelector('main').classList.add('cart-open-blur') : document.querySelector('main').classList.remove('cart-open-blur'))"
+    x-cloak
+    class="relative z-50">
     
     {{-- Overlay --}}
     <div x-show="isOpen" 

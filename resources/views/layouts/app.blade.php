@@ -10,6 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        [x-cloak]{display:none !important;}
+        .cart-open-blur {
+            filter: blur(6px) saturate(0.95);
+            transition: filter 200ms ease-in-out;
+        }
+    </style>
     <script>
         const theme = localStorage.getItem('theme') || 'system';
         if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

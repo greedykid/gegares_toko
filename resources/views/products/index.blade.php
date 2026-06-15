@@ -11,7 +11,7 @@
     <div class="flex flex-col lg:flex-row gap-8">
         {{-- Sidebar Filter --}}
         <!-- Backdrop Overlay for Mobile -->
-        <div x-show="filterOpen" 
+        <div x-show="filterOpen" x-cloak
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -22,7 +22,7 @@
              class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden"
              style="display: none;"></div>
 
-        <aside :class="filterOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'" 
+        <aside x-cloak :class="filterOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'" 
                class="fixed inset-y-0 right-0 z-50 w-80 max-w-full bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto transition-transform duration-300 lg:static lg:w-64 lg:h-auto lg:shadow-none lg:p-0 lg:bg-transparent lg:dark:bg-transparent lg:border-none lg:overflow-visible lg:transition-none">
             <form id="filter-form" method="GET" action="{{ route('products.index') }}" 
                   class="space-y-6 lg:bg-white lg:dark:bg-slate-900 lg:border lg:border-slate-100 lg:dark:border-slate-800 lg:shadow-sm lg:rounded-2xl lg:p-6 transition-colors duration-300 lg:sticky lg:top-24">
@@ -220,28 +220,28 @@
                                 <span>Urutkan:</span>
                             </div>
                         <div x-data="{ 
-                                open: false, 
-                                selectedValue: '{{ request('sort', 'latest') }}', 
-                                selectedLabel: '{{ request('sort') == 'price_low' ? 'Harga Terendah' : (request('sort') == 'price_high' ? 'Harga Tertinggi' : (request('sort') == 'popular' ? 'Terpopuler' : (request('sort') == 'rating' ? 'Rating Tertinggi' : 'Terbaru'))) }}'
+                            open: false, 
+                            selectedValue: '{{ request('sort', 'latest') }}', 
+                            selectedLabel: '{{ request('sort') == 'price_low' ? 'Harga Terendah' : (request('sort') == 'price_high' ? 'Harga Tertinggi' : (request('sort') == 'popular' ? 'Terpopuler' : (request('sort') == 'rating' ? 'Rating Tertinggi' : 'Terbaru'))) }}'
                              }" 
-                             class="relative inline-block min-w-[160px] text-left">
+                             class="relative inline-block w-full sm:w-auto min-w-0 sm:min-w-[160px] text-left">
                             <button @click="open = !open" type="button" 
-                                    class="w-full flex items-center justify-between px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer font-medium">
+                                class="w-full sm:w-auto flex items-center justify-between px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer font-medium">
                                 <span x-text="selectedLabel"></span>
                                 <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                                 </svg>
                             </button>
-                            <div x-show="open" 
-                                 @click.outside="open = false" 
-                                 x-transition:enter="transition ease-out duration-100"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 class="absolute right-0 z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                                 style="display: none;">
+                               <div x-show="open" 
+                                   @click.outside="open = false" 
+                                   x-transition:enter="transition ease-out duration-100"
+                                   x-transition:enter-start="opacity-0 scale-95"
+                                   x-transition:enter-end="opacity-100 scale-100"
+                                   x-transition:leave="transition ease-in duration-75"
+                                   x-transition:leave-start="opacity-100 scale-100"
+                                   x-transition:leave-end="opacity-0 scale-95"
+                                   class="absolute right-0 z-50 sm:w-auto w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                                   style="display: none;">
                                 <button type="button" @click="selectedValue = 'latest'; selectedLabel = 'Terbaru'; open = false; document.getElementById('filter-sort-input').value = 'latest'; document.getElementById('filter-form').submit();"
                                         class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                                         :class="selectedValue === 'latest' ? 'bg-slate-50 dark:bg-slate-800/50 font-bold text-primary-600 dark:text-primary-400' : ''">Terbaru</button>
