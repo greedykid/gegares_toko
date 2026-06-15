@@ -15,8 +15,7 @@
 
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Kode Promo & Kupon</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola diskon untuk meningkatkan penjualan.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Kelola diskon untuk meningkatkan penjualan.</p>
     </div>
     <button x-data="" x-on:click="$dispatch('open-modal', 'create-coupon')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-primary-600/20">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>

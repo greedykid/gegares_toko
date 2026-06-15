@@ -14,14 +14,8 @@
 @endphp
 
 <div x-data="{ showModal: false, editMode: false, form: { id:null, name:'', email:'', role:'user', password:'' } }">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 transition-colors duration-300">Pengguna</h2>
-        <button @click="showModal=true; editMode=false; form={id:null,name:'',email:'',role:'user',password:''}"
-                class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all duration-200">+ Tambah Pengguna</button>
-    </div>
-
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-4 hover:shadow-md transition-all duration-300">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 transition-colors">
@@ -66,6 +60,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="flex justify-end mb-6">
+        <button @click="showModal=true; editMode=false; form={id:null,name:'',email:'',role:'user',password:''}"
+                class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all duration-200">+ Tambah Pengguna</button>
     </div>
 
     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">

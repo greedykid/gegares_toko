@@ -74,14 +74,8 @@
         }
     }
 }">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 transition-colors duration-300">Manajemen Produk</h2>
-        <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',is_featured:false,image:''};"
-                class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">+ Tambah Produk</button>
-    </div>
-
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 hover:shadow-md transition-all duration-300">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
@@ -126,6 +120,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="flex justify-end mb-6">
+        <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',is_featured:false,image:''};"
+                class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">+ Tambah Produk</button>
     </div>
 
     {{-- Filters --}}

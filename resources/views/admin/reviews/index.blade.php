@@ -13,9 +13,6 @@
     }
 @endphp
 <div x-data="{ reviewImage: null }">
-<div class="flex items-center justify-between mb-6">
-    <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 transition-colors duration-300">Kelola Ulasan</h2>
-</div>
 
 {{-- Stats Cards --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

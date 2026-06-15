@@ -48,9 +48,7 @@
         }
     }
 }" x-init="$watch('showDetail', value => { if (value) fetchTracking(); })">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 transition-colors duration-300">Manajemen Pesanan</h2>
-        
+    <div class="flex justify-end mb-6">
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.orders.report', request()->all()) }}" 
                target="_blank"
