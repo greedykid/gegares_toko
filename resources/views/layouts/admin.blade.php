@@ -290,6 +290,24 @@
     </div>
     @livewireScripts
 
+    {{-- Session Toasts Data --}}
+    @if(session('success')) <div id="toast-success" data-message="{{ session('success') }}" class="hidden"></div> @endif
+    @if(session('error')) <div id="toast-error" data-message="{{ session('error') }}" class="hidden"></div> @endif
+    @if(session('warning')) <div id="toast-warning" data-message="{{ session('warning') }}" class="hidden"></div> @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            ['success', 'error', 'warning'].forEach(type => {
+                const el = document.getElementById(`toast-${type}`);
+                if (el) {
+                    window.dispatchEvent(new CustomEvent('toast', { 
+                        detail: { type: type === 'warning' ? 'info' : (type === 'error' ? 'error' : 'success'), message: el.dataset.message }
+                    }));
+                }
+            });
+        });
+    </script>
+
     {{-- Toast Manager --}}
     <div x-data="toastManager()" @toast.window="addToast($event.detail)"
         class="fixed top-20 right-4 z-50 flex flex-col gap-3 w-80">

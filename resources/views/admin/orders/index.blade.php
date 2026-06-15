@@ -20,6 +20,11 @@
     formatCurrency(val) {
         return 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
     },
+    submitProcessShipping(orderId) {
+        const form = document.getElementById('process-shipping-form');
+        form.action = `/admin/orders/${orderId}/process-shipping`;
+        form.submit();
+    },
     async fetchTracking() {
         if (!this.selectedOrder || !['processing', 'shipped', 'completed'].includes(this.selectedOrder.status)) {
             this.trackingData = null;
@@ -365,8 +370,12 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $order->payment_status === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }}">
-                                {{ ucfirst($order->payment_status) }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $order->payment_status === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }}">
+                                @if($order->payment_status === 'paid')
+                                    {{ $order->payment_method ? strtoupper($order->payment_method) : 'PAID' }}
+                                @else
+                                    {{ $order->payment_status === 'unpaid' ? 'BELUM BAYAR' : strtoupper($order->payment_status) }}
+                                @endif
                             </span>
                         </div>
                     </td>
@@ -656,26 +665,22 @@
 
                 <div class="flex items-center gap-3">
                     <template x-if="selectedOrder?.status === 'paid'">
-                        <form :action="`/admin/orders/${selectedOrder.id}/process-shipping`" method="POST">
-                            @csrf
-                            <button type="submit" 
-                                    class="px-3 py-1.5 sm:px-5 sm:py-2 bg-indigo-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 flex items-center gap-1.5 sm:gap-2">
-                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0 1 21.485 12 59.77 59.77 0 0 1 3.27 20.876L5.999 12zm0 0h7.5" /></svg>
-                                Proses ke Biteship
-                            </button>
-                        </form>
+                        <button type="button" 
+                                @click="submitProcessShipping(selectedOrder.id)"
+                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-indigo-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 flex items-center gap-1.5 sm:gap-2">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0 1 21.485 12 59.77 59.77 0 0 1 3.27 20.876L5.999 12zm0 0h7.5" /></svg>
+                            Proses ke Biteship
+                        </button>
                     </template>
 
                     {{-- NEW: Retry Search Button if Courier Not Found --}}
                     <template x-if="selectedOrder?.status === 'processing' && trackingData?.status === 'courier_not_found'">
-                        <form :action="`/admin/orders/${selectedOrder.id}/process-shipping`" method="POST">
-                            @csrf
-                            <button type="submit" 
-                                    class="px-3 py-1.5 sm:px-5 sm:py-2 bg-emerald-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 flex items-center gap-1.5 sm:gap-2">
-                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                                Cari Ulang Kurir
-                            </button>
-                        </form>
+                        <button type="button" 
+                                @click="submitProcessShipping(selectedOrder.id)"
+                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-emerald-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 flex items-center gap-1.5 sm:gap-2">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                            Cari Ulang Kurir
+                        </button>
                     </template>
                     <button @click="showDetail = false" 
                             class="px-3 py-1.5 sm:px-5 sm:py-2 bg-slate-900 dark:bg-slate-800 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200">Tutup</button>
@@ -683,5 +688,10 @@
             </div>
         </div>
     </div>
+
+    {{-- Hidden form for Biteship shipping process --}}
+    <form id="process-shipping-form" method="POST" style="display: none;">
+        @csrf
+    </form>
 </div>
 @endsection
