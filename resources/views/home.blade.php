@@ -115,16 +115,16 @@
         <p class="text-sm font-semibold text-primary-600 dark:text-primary-400 tracking-wide uppercase">Kategori</p>
         <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100 transition-colors">Pilih Jajanan Favorit</h2>
     </div>
-    <div class="grid grid-cols-6 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
+    <div class="flex overflow-x-auto overflow-y-hidden scrollbar-none pt-2 pb-4 gap-4 px-4 -mx-4 md:overflow-visible md:grid md:grid-cols-6 md:gap-4 lg:gap-8 md:px-0 md:mx-0">
         @foreach($categories as $index => $category)
             <a href="{{ route('products.index', ['category' => $category->slug]) }}"
-               class="group relative flex flex-col items-center p-1 sm:p-2 md:p-4 hover:-translate-y-1 transition-all duration-300 reveal reveal-up delay-{{ ($index % 6 + 1) * 100 }}">
-                <div class="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-2 sm:mb-4 shadow-sm group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 shrink-0 border border-slate-100 dark:border-slate-800">
+               class="group relative flex flex-col items-center p-1 sm:p-2 md:p-4 hover:-translate-y-1 transition-all duration-300 reveal reveal-up delay-{{ ($index % 6 + 1) * 100 }} w-28 sm:w-32 md:w-auto shrink-0">
+                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-2 sm:mb-4 shadow-sm group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 shrink-0 border border-slate-100 dark:border-slate-800">
                     @if($category->image)
                         <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" width="80" height="80" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                            <svg class="w-7 h-7 sm:w-10 sm:h-10 md:w-12 md:h-12 text-slate-400 dark:text-slate-550" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <svg class="w-10 h-10 md:w-12 md:h-12 text-slate-400 dark:text-slate-550" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 18.75V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75Z" />
                             </svg>
                         </div>

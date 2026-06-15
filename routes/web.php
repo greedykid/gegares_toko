@@ -90,8 +90,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
     Route::resource('/users', AdminUserController::class)->except(['create', 'edit']);
 
 
-    // ─── Activity Logs & Promo ───
-    Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+    // ─── Promo ───
     Route::resource('/coupons', \App\Http\Controllers\Admin\CouponController::class)->except(['create', 'edit', 'show']);
 });
 
