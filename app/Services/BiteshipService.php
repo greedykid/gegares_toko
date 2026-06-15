@@ -167,19 +167,31 @@ class BiteshipService
     public function createOrder(Order $order): ?array
     {
         try {
+            if (empty($this->apiKey)) {
+                return ['error' => 'API Key Biteship belum dikonfigurasi di file .env (BITESHIP_API_KEY).'];
+            }
+
+            if (!$order->address) {
+                return ['error' => 'Alamat pengiriman tidak ditemukan untuk pesanan ini.'];
+            }
+
+            if (empty($order->address->latitude) || empty($order->address->longitude)) {
+                return ['error' => 'Koordinat alamat pengiriman (latitude/longitude) belum ditentukan. Silakan perbarui koordinat pada alamat pengiriman terlebih dahulu.'];
+            }
+
             // Fetch store profile for shipper data
             $setting = StoreSetting::first();
 
             $shipper = [
-                'name' => $setting ? $setting->store_name : 'Admin Gegares',
-                'phone' => $setting ? $setting->contact_phone : '08219293812',
-                'email' => $setting ? $setting->contact_email : 'admin@gegares.com',
+                'name' => ($setting && $setting->store_name) ? $setting->store_name : 'Admin Gegares',
+                'phone' => ($setting && $setting->contact_phone) ? $setting->contact_phone : '08219293812',
+                'email' => ($setting && $setting->contact_email) ? $setting->contact_email : 'admin@gegares.com',
                 'organization' => 'Gegares',
-                'address' => $setting ? $setting->address_line . ', ' . $setting->city . ', ' . $setting->province : 'Jl. Jembatan Besi II No. 1, Jakarta Barat',
-                'postal_code' => $setting ? (int) $setting->postal_code : 11320,
+                'address' => ($setting && $setting->address_line) ? $setting->address_line . ', ' . $setting->city . ', ' . $setting->province : 'Jl. Jembatan Besi II No. 1, Jakarta Barat',
+                'postal_code' => ($setting && $setting->postal_code) ? (int) $setting->postal_code : 11320,
                 'coordinate' => [
-                    'latitude' => $setting ? (float) $setting->latitude : -6.1558,
-                    'longitude' => $setting ? (float) $setting->longitude : 106.8048,
+                    'latitude' => ($setting && $setting->latitude) ? (float) $setting->latitude : -6.1558,
+                    'longitude' => ($setting && $setting->longitude) ? (float) $setting->longitude : 106.8048,
                 ],
             ];
 
@@ -253,11 +265,22 @@ class BiteshipService
                     ]);
                 }
                 
+                // Ensure success field is set
+                if (!isset($data['success'])) {
+                    $data['success'] = true;
+                }
+                
                 return $data;
             }
 
             Log::warning('Biteship createOrder failed: ' . $response->body());
-            return ['error' => $response->json('message', 'Unknown error from Biteship')];
+            
+            $errorMessage = $response->json('error') 
+                ?? $response->json('message') 
+                ?? ($response->json('errors') ? implode(', ', (array) $response->json('errors')) : null)
+                ?? 'Unknown error from Biteship (HTTP Status ' . $response->status() . ')';
+
+            return ['error' => $errorMessage];
         } catch (\Exception $e) {
             Log::error('Biteship createOrder error: ' . $e->getMessage());
             return ['error' => $e->getMessage()];
