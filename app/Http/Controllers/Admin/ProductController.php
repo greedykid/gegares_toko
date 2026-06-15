@@ -134,6 +134,7 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|max:2048',
+            'remove_image' => 'nullable|boolean',
             'gallery' => 'nullable|array',
             'gallery.*' => 'nullable|image|max:2048',
             'removed_gallery_ids' => 'nullable|array',
@@ -153,6 +154,8 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
+        } elseif ($request->boolean('remove_image')) {
+            $data['image'] = null;
         }
 
         $product->update($data);

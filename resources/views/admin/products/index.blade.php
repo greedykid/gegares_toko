@@ -18,6 +18,7 @@
     editMode: false, 
     form: { id:null, slug:'', name:'', category_id:'', description:'', price:'', stock:'', is_featured:false, image:'' },
     imagePreview: null,
+    removeImageField: false,
     
     {{-- Gallery State --}}
     existingGallery: [], 
@@ -42,6 +43,7 @@
         const file = event.target.files[0];
         if (file) {
             this.imagePreview = URL.createObjectURL(file);
+            this.removeImageField = false;
         }
     },
     
@@ -62,6 +64,7 @@
     {{-- Reset all states --}}
     resetGallery() {
         this.imagePreview = null;
+        this.removeImageField = false;
         this.existingGallery = [];
         this.removedGalleryIds = [];
         this.slotPreviews = {};
@@ -72,6 +75,8 @@
             const input = document.getElementById('galleryInput' + i);
             if (input) input.value = '';
         }
+        const mainInput = document.getElementById('mainImageInput');
+        if (mainInput) mainInput.value = '';
     }
 }">
     {{-- Stats Cards --}}
@@ -569,10 +574,12 @@
                                             <p class="text-xs text-slate-500 dark:text-slate-500 font-medium transition-colors">Upload Produk Utama</p>
                                         </div>
                                     </template>
-                                    <input type="file" name="image" class="hidden" accept="image/*" @change="previewImage">
+                                    <input type="file" name="image" id="mainImageInput" class="hidden" accept="image/*" @change="previewImage">
                                 </label>
-                            <button type="button" x-show="imagePreview" @click="imagePreview = null"
-                                        class="absolute top-2 right-2 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-lg text-red-500 shadow-sm hover:bg-white dark:hover:bg-slate-800 transition-all">
+                                <input type="hidden" name="remove_image" :value="removeImageField ? '1' : '0'">
+                                <button type="button" x-show="imagePreview || (editMode && form.image)" 
+                                        @click="imagePreview = null; form.image = ''; document.getElementById('mainImageInput').value = ''; removeImageField = true"
+                                        class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all z-10">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
@@ -595,7 +602,6 @@
                                                     class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
                                                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                             </button>
-                                            <input type="hidden" name="removed_gallery_ids[]" :value="img.id" x-show="removedGalleryIds.includes(img.id)">
                                         </div>
                                     </template>
                                 </template>
@@ -605,28 +611,102 @@
                                     <input type="hidden" name="removed_gallery_ids[]" :value="id">
                                 </template>
 
-                                {{-- New Upload Slots --}}
-                                <template x-for="i in [0,1,2,3,4,5]" :key="i">
-                                    <div x-show="i < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
-                                        {{-- The actual file input (ALWAY PERSISTENT in DOM) --}}
-                                        <input type="file" name="gallery[]" :id="'galleryInput' + i" class="hidden" accept="image/*" @change="previewSlot($event, i)">
-                                        
-                                        {{-- Case: Image selected (Visual only toggle) --}}
-                                        <div x-show="slotPreviews[i]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
-                                            <img :src="slotPreviews[i]" class="w-full h-full object-cover">
-                                            <button type="button" @click="delete slotPreviews[i]; document.getElementById('galleryInput' + i).value = ''"
-                                                    class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
-                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                                            </button>
-                                        </div>
-                                        
-                                        {{-- Case: Empty slot (Visual only toggle) --}}
-                                        <label x-show="!slotPreviews[i]" :for="'galleryInput' + i"
-                                            class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
-                                            <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                        </label>
+                                {{-- New Upload Slots (Static to prevent loss of state in Alpine) --}}
+                                <!-- Slot 0 -->
+                                <div x-show="0 < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
+                                    <input type="file" name="gallery[]" id="galleryInput0" class="hidden" accept="image/*" @change="previewSlot($event, 0)">
+                                    <div x-show="slotPreviews[0]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
+                                        <img :src="slotPreviews[0]" class="w-full h-full object-cover">
+                                        <button type="button" @click="delete slotPreviews[0]; document.getElementById('galleryInput0').value = ''"
+                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
                                     </div>
-                                </template>
+                                    <label x-show="!slotPreviews[0]" for="galleryInput0"
+                                        class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
+                                        <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                    </label>
+                                </div>
+
+                                <!-- Slot 1 -->
+                                <div x-show="1 < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
+                                    <input type="file" name="gallery[]" id="galleryInput1" class="hidden" accept="image/*" @change="previewSlot($event, 1)">
+                                    <div x-show="slotPreviews[1]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
+                                        <img :src="slotPreviews[1]" class="w-full h-full object-cover">
+                                        <button type="button" @click="delete slotPreviews[1]; document.getElementById('galleryInput1').value = ''"
+                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                    <label x-show="!slotPreviews[1]" for="galleryInput1"
+                                        class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
+                                        <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                    </label>
+                                </div>
+
+                                <!-- Slot 2 -->
+                                <div x-show="2 < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
+                                    <input type="file" name="gallery[]" id="galleryInput2" class="hidden" accept="image/*" @change="previewSlot($event, 2)">
+                                    <div x-show="slotPreviews[2]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
+                                        <img :src="slotPreviews[2]" class="w-full h-full object-cover">
+                                        <button type="button" @click="delete slotPreviews[2]; document.getElementById('galleryInput2').value = ''"
+                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                    <label x-show="!slotPreviews[2]" for="galleryInput2"
+                                        class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
+                                        <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                    </label>
+                                </div>
+
+                                <!-- Slot 3 -->
+                                <div x-show="3 < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
+                                    <input type="file" name="gallery[]" id="galleryInput3" class="hidden" accept="image/*" @change="previewSlot($event, 3)">
+                                    <div x-show="slotPreviews[3]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
+                                        <img :src="slotPreviews[3]" class="w-full h-full object-cover">
+                                        <button type="button" @click="delete slotPreviews[3]; document.getElementById('galleryInput3').value = ''"
+                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                    <label x-show="!slotPreviews[3]" for="galleryInput3"
+                                        class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
+                                        <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                    </label>
+                                </div>
+
+                                <!-- Slot 4 -->
+                                <div x-show="4 < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
+                                    <input type="file" name="gallery[]" id="galleryInput4" class="hidden" accept="image/*" @change="previewSlot($event, 4)">
+                                    <div x-show="slotPreviews[4]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
+                                        <img :src="slotPreviews[4]" class="w-full h-full object-cover">
+                                        <button type="button" @click="delete slotPreviews[4]; document.getElementById('galleryInput4').value = ''"
+                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                    <label x-show="!slotPreviews[4]" for="galleryInput4"
+                                        class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
+                                        <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                    </label>
+                                </div>
+
+                                <!-- Slot 5 -->
+                                <div x-show="5 < (6 - existingGallery.filter(img => !removedGalleryIds.includes(img.id)).length)" class="relative aspect-square">
+                                    <input type="file" name="gallery[]" id="galleryInput5" class="hidden" accept="image/*" @change="previewSlot($event, 5)">
+                                    <div x-show="slotPreviews[5]" class="relative w-full h-full rounded-xl overflow-hidden border border-primary-100 dark:border-primary-900 bg-slate-50 dark:bg-slate-950 group transition-all">
+                                        <img :src="slotPreviews[5]" class="w-full h-full object-cover">
+                                        <button type="button" @click="delete slotPreviews[5]; document.getElementById('galleryInput5').value = ''"
+                                                class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm hover:bg-red-600">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                    <label x-show="!slotPreviews[5]" for="galleryInput5"
+                                        class="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-primary-300 transition-colors duration-200">
+                                        <svg class="w-5 h-5 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
