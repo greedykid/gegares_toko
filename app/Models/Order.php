@@ -42,12 +42,21 @@ class Order extends Model
                 }
 
                 if (empty($order->biteship_order_id)) {
+                    // Check if reallocation retry count has exceeded
+                    // Check if reallocation retry count has exceeded
+                    $retryKey = 'biteship_reallocation_retries_' . $order->id;
+                    if (\Illuminate\Support\Facades\Cache::get($retryKey, 0) >= 2) {
+                        \Illuminate\Support\Facades\Log::warning("Biteship Auto-Process: Order #{$order->order_number} has exceeded re-allocation retry limit. Skipping auto-booking.");
+                        return;
+                    }
+
                     try {
                         $biteship = app(\App\Services\BiteshipService::class);
                         $result = $biteship->createOrder($order);
                         
                         if ($result && isset($result['success']) && $result['success']) {
                             static::withoutEvents(function () use ($order, $result) {
+                                $order->syncOriginal();
                                 $order->update([
                                     'status' => 'processing',
                                     'biteship_order_id' => $result['id'] ?? $order->biteship_order_id,

@@ -28,15 +28,21 @@ class WebhookController extends Controller
     {
         Log::info('Biteship webhook received:', $request->all());
 
-        // Biteship unique internal order ID is the most stable lookup key
-        $biteshipOrderId = $request->input('order_id');
+        // Biteship webhook payload could contain fields directly, or nested inside a 'data' block.
+        // Let's support both for maximum resilience.
+        $biteshipOrderId = $request->input('order_id') ?? $request->input('data.order_id');
+        $referenceId = $request->input('reference_id') ?? $request->input('data.reference_id');
         
-        // Secondary fallback: courier_waybill_id (AWB) or tracking_id
-        $rawTrackingId = $request->input('courier_waybill_id') ?? $request->input('courier_tracking_id');
-        $status = $request->input('status');
+        $rawTrackingId = $request->input('courier_waybill_id') 
+            ?? $request->input('courier_tracking_id')
+            ?? $request->input('data.courier.waybill_id')
+            ?? $request->input('data.courier_waybill_id')
+            ?? $request->input('data.courier_tracking_id');
+            
+        $status = $request->input('status') ?? $request->input('data.status');
 
         // Biteship verification or empty request
-        if (!$biteshipOrderId && !$rawTrackingId && !$status) {
+        if (!$biteshipOrderId && !$rawTrackingId && !$status && !$referenceId) {
             return response()->json([
                 'success' => true,
                 'message' => 'Biteship Webhook reached successfully'
@@ -52,7 +58,15 @@ class WebhookController extends Controller
             }
         }
 
-        // Secondary Lookup: By Tracking/Waybill Number
+        // Secondary Lookup: By Reference ID (our local order_number)
+        if (!$order && $referenceId) {
+            $order = Order::where('order_number', $referenceId)->first();
+            if ($order) {
+                Log::debug("Biteship Webhook Match: Found by Reference ID [{$referenceId}]");
+            }
+        }
+
+        // Tertiary Lookup: By Tracking/Waybill Number
         if (!$order && $rawTrackingId) {
             $trackingId = trim($rawTrackingId);
             $order = Order::where('tracking_number', $trackingId)->first();
@@ -67,13 +81,18 @@ class WebhookController extends Controller
             }
         }
 
+        if (!$order) {
+            Log::warning("Biteship Webhook: Order not found for order_id [{$biteshipOrderId}], reference_id [{$referenceId}], tracking_id [{$rawTrackingId}]");
+            return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+        }
+
         // Update tracking IDs if they arrived in the webhook and are different
         $idUpdates = [];
         if ($rawTrackingId && $order->tracking_number !== $rawTrackingId) {
             $idUpdates['tracking_number'] = $rawTrackingId;
         }
         
-        $payloadTrackingId = $request->input('courier_tracking_id');
+        $payloadTrackingId = $request->input('courier_tracking_id') ?? $request->input('data.courier_tracking_id');
         if ($payloadTrackingId && $order->courier_tracking_id !== $payloadTrackingId) {
             $idUpdates['courier_tracking_id'] = $payloadTrackingId;
         }
@@ -83,12 +102,41 @@ class WebhookController extends Controller
             Log::debug("Biteship Webhook: Updated tracking identifiers for Order #{$order->order_number}");
         }
 
+        // Handle Automated Courier Re-allocation
+        if ($status === 'rejected' || $status === 'courier_not_found') {
+            $retryKey = 'biteship_reallocation_retries_' . $order->id;
+            $retries = \Illuminate\Support\Facades\Cache::get($retryKey, 0);
+
+            if ($retries < 2) {
+                $newRetries = $retries + 1;
+                \Illuminate\Support\Facades\Cache::put($retryKey, $newRetries, now()->addDay());
+                Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Re-allocation attempt #{$newRetries} initiated.");
+
+                // Reset tracking details and set status back to paid (which triggers the booted Eloquent listener to request a new driver)
+                $order->update([
+                    'biteship_order_id' => null,
+                    'courier_tracking_id' => null,
+                    'tracking_number' => null,
+                    'status' => 'paid',
+                ]);
+            } else {
+                Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Exceeded max reallocation attempts (2). Leaving status as paid for manual administrator action.");
+                
+                // Set status to paid but do NOT clear biteship_order_id so it doesn't trigger re-allocation again
+                if ($order->status !== 'paid') {
+                    $order->update(['status' => 'paid']);
+                }
+            }
+
+            return response()->json(['success' => true]);
+        }
+
         // Map Biteship status to local Gegares status
         $newStatus = match($status) {
-            'picking_up', 'pickingUp' => 'processing',
+            'allocated', 'picking_up', 'pickingUp' => 'processing',
             'picked_up', 'picked', 'dropping_off', 'droppingOff', 'out_for_delivery', 'on_the_way', 'in_transit', 'dispatched', 'return_in_transit', 'returnInTransit' => 'shipped',
             'delivered' => 'completed',
-            'cancelled', 'canceled', 'rejected', 'returned' => 'cancelled',
+            'cancelled', 'canceled', 'returned' => 'cancelled',
             default => $order->status
         };
 

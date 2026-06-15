@@ -255,6 +255,7 @@ class BiteshipService
             }
 
             $payload = [
+                'reference_id' => $order->order_number,
                 'shipper_contact_name' => $shipper['name'],
                 'shipper_contact_phone' => $shipper['phone'],
                 'shipper_contact_email' => $shipper['email'],
