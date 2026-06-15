@@ -88,7 +88,7 @@
 
         {{-- Left Column: Logo & Store info (40% width on large screens) --}}
         <div
-            class="hidden lg:flex lg:col-span-5 bg-linear-to-br from-primary-600 via-primary-700 to-primary-850 p-12 flex-col justify-between relative overflow-hidden">
+            class="hidden lg:flex lg:col-span-5 bg-linear-to-br from-primary-600 via-primary-700 to-primary-800 p-12 flex-col justify-between relative overflow-hidden">
             {{-- Decorative Rings --}}
             <div class="absolute inset-0 pointer-events-none">
                 <div class="absolute -top-12 -left-12 w-64 h-64 border-4 border-white/10 rounded-full blur-xs"></div>

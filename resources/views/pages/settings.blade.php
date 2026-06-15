@@ -256,7 +256,7 @@
                         
                         <div class="space-y-6 max-w-lg">
                             @if($user->google_id)
-                                <div class="p-5 rounded-3xl border-2 border-slate-150 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between shadow-xs">
+                                <div class="p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 flex items-center justify-between shadow-xs">
                                     <div class="flex items-center gap-4">
                                         <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-xs">
                                             <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24">

@@ -10,7 +10,7 @@
         @if($errors->any())
             <div class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
                 @foreach($errors->all() as $error)
-                    <p class="text-sm font-semibold text-red-750 dark:text-red-400">{{ $error }}</p>
+                    <p class="text-sm font-semibold text-red-700 dark:text-red-400">{{ $error }}</p>
                 @endforeach
             </div>
         @endif

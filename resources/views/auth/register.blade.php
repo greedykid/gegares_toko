@@ -49,7 +49,7 @@
                     <div class="relative">
                         <input :type="show ? 'text' : 'password'" id="password" name="password" required
                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="Minimal 8 karakter">
-                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-655 dark:hover:text-slate-350 focus:outline-none p-1 transition-colors">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none p-1 transition-colors">
                             <template x-if="!show">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -70,7 +70,7 @@
                     <div class="relative">
                         <input :type="show ? 'text' : 'password'" id="password_confirmation" name="password_confirmation" required
                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="Ulangi password">
-                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-655 dark:hover:text-slate-350 focus:outline-none p-1 transition-colors">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none p-1 transition-colors">
                             <template x-if="!show">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -99,13 +99,13 @@
                     <div class="w-full border-t border-slate-100 dark:border-slate-900"></div>
                 </div>
                 <div class="relative flex justify-center text-xs uppercase">
-                    <span class="bg-slate-50 dark:bg-slate-950 px-3.5 text-slate-400 dark:text-slate-550 font-black tracking-widest transition-colors">Atau</span>
+                    <span class="bg-slate-50 dark:bg-slate-950 px-3.5 text-slate-400 dark:text-slate-500 font-black tracking-widest transition-colors">Atau</span>
                 </div>
             </div>
 
             {{-- Google Login Button --}}
             <a href="{{ route('auth.google') }}" 
-               class="flex items-center justify-center gap-3 w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-200 shadow-sm">
+               class="flex items-center justify-center gap-3 w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 shadow-sm">
                 <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                     <path fill="#ea4335" d="M5.2662 9.76451C6.1982 6.95542 8.8542 4.90909 12 4.90909C13.6909 4.90909 15.2182 5.50909 16.4182 6.49091L19.9091 3C17.7818 1.14545 15.0545 0 12 0C7.27273 0 3.19091 2.69091 1.24545 6.65455L5.2662 9.76451Z"/>
                     <path fill="#34a853" d="M16.0409 18.0136C14.8705 18.7159 13.4841 19.0909 12 19.0909C8.8542 19.0909 6.1982 17.0455 5.2662 14.2364L1.24545 17.3455C3.19091 21.3091 7.27273 24 12 24C15.0545 24 17.7818 23.0182 19.9318 21.3273L16.0409 18.0136Z"/>
@@ -117,7 +117,7 @@
         </div>
     </form>
     
-    <p class="mt-8 text-center text-sm text-slate-550 dark:text-slate-450 font-medium">Sudah punya akun? <a href="{{ route('login') }}" class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-750 underline">Masuk</a></p>
+    <p class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">Sudah punya akun? <a href="{{ route('login') }}" class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 underline">Masuk</a></p>
 </div>
 @endsection
 
