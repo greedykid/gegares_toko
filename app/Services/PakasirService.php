@@ -24,8 +24,8 @@ class PakasirService
             // Redirect user back to our payment page when done
             $redirectUrl = route('orders.payment', $order);
             
-            // Construct the Pakasir hosted payment URL
-            $paymentUrl = "https://app.pakasir.com/pay/{$slug}/{$amount}?order_id={$orderId}&redirect=" . urlencode($redirectUrl);
+            // Construct the Pakasir hosted payment URL (restricted to QRIS channel only)
+            $paymentUrl = "https://app.pakasir.com/pay/{$slug}/{$amount}?order_id={$orderId}&payment_channel=qris&redirect=" . urlencode($redirectUrl);
 
             $order->update([
                 'pakasir_link' => $paymentUrl,
@@ -154,23 +154,35 @@ class PakasirService
 
             $response = null;
             $transaction = null;
+            $maxAttempts = 2;
 
-            foreach ($projectSlugStrategies as $projectSlug) {
-                foreach ($casingStrategies as $orderIdToCheck) {
-                    $response = Http::get('https://app.pakasir.com/api/transactiondetail', [
-                        'project' => $projectSlug,
-                        'amount' => 0, // Pass 0 to bypass Pakasir's buggy amount validation logic
-                        'order_id' => $orderIdToCheck,
-                        'api_key' => $apiKey,
-                    ]);
+            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+                foreach ($projectSlugStrategies as $projectSlug) {
+                    foreach ($casingStrategies as $orderIdToCheck) {
+                        $response = Http::get('https://app.pakasir.com/api/transactiondetail', [
+                            'project' => $projectSlug,
+                            'amount' => 0, // Pass 0 to bypass Pakasir's buggy amount validation logic
+                            'order_id' => $orderIdToCheck,
+                            'api_key' => $apiKey,
+                        ]);
 
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        $transaction = $data['transaction'] ?? null;
-                        if ($transaction) {
-                            break 2; // Found transaction!
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            $transaction = $data['transaction'] ?? null;
+                            if ($transaction && ($transaction['status'] ?? null) === 'completed') {
+                                break 2; // Found completed transaction!
+                            }
                         }
                     }
+                }
+
+                if ($transaction && ($transaction['status'] ?? null) === 'completed') {
+                    break;
+                }
+
+                // Wait 2 seconds before retrying if payment gateway propagation is lagging (common in QRIS)
+                if ($attempt < $maxAttempts) {
+                    sleep(2);
                 }
             }
 
