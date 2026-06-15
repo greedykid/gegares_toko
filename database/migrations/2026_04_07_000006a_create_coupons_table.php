@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->enum('type', ['fixed', 'percent']);
             $table->decimal('value', 12, 2);
-            $table->decimal('min_purchase', 12, 2)->default(0);
+            $table->decimal('min_purchase', 12, 2)->nullable()->default(0);
             $table->dateTime('start_date')->nullable();
             $table->dateTime('end_date')->nullable();
             $table->integer('usage_limit')->nullable();

@@ -101,7 +101,9 @@
                             </div>
                             <div class="md:col-span-2 lg:col-span-1">
                                 <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Nomor WhatsApp</label>
-                                <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="Contoh: 628123456789" class="w-full px-5 py-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:ring-0 focus:border-primary-500 text-sm font-bold transition-all shadow-inner shadow-slate-100/50 dark:shadow-none">
+                                <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="Contoh: 628123456789"
+                                       inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                       class="w-full px-5 py-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:ring-0 focus:border-primary-500 text-sm font-bold transition-all shadow-inner shadow-slate-100/50 dark:shadow-none">
                                 @error('phone') <p class="mt-2 text-xs font-bold text-red-500">{{ $message }}</p> @enderror
                             </div>
                         </div>

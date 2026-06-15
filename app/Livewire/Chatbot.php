@@ -105,56 +105,29 @@ class Chatbot extends Component
 
     protected function checkBanStatus(): bool
     {
-        return \App\Models\BannedIp::where('ip_address', request()->ip())
-            ->where(function($q) {
-                $q->whereNull('banned_until')
-                  ->orWhere('banned_until', '>', now());
-            })->exists();
+        return \Illuminate\Support\Facades\Cache::has('banned_ip:' . request()->ip());
     }
 
     protected function logSecurityEvent(string $type, string $severity, ?string $payload = null, array $metadata = [])
     {
         try {
-            $event = \App\Models\SecurityEvent::create([
-                'user_id' => Auth::id(),
-                'session_id' => session()->getId(),
-                'ip_address' => request()->ip(),
-                'event_type' => $type,
-                'severity' => $severity,
-                'payload' => $payload,
-                'metadata' => $metadata,
-            ]);
+            Log::warning("Chatbot Security Event: type={$type}, severity={$severity}, ip=" . request()->ip() . ", payload={$payload}");
 
-            // 1. Auto-Ban Logic
+            // Auto-Ban Logic using Cache
             if (in_array($severity, ['high', 'critical'])) {
-                $violations = \App\Models\SecurityEvent::where('ip_address', request()->ip())
-                    ->whereIn('severity', ['high', 'critical'])
-                    ->where('created_at', '>', now()->subHour())
-                    ->count();
+                $ip = request()->ip();
+                $violationKey = 'security_violations:' . $ip;
+                
+                $violations = \Illuminate\Support\Facades\Cache::get($violationKey, 0) + 1;
+                \Illuminate\Support\Facades\Cache::put($violationKey, $violations, now()->addHour());
 
                 if ($violations >= 5) {
-                    \App\Models\BannedIp::firstOrCreate(
-                        ['ip_address' => request()->ip()],
-                        [
-                            'reason' => "Otomatis: Terlalu banyak pelanggaran keamanan ({$type})",
-                            'banned_until' => now()->addDay()
-                        ]
-                    );
+                    \Illuminate\Support\Facades\Cache::put('banned_ip:' . $ip, true, now()->addDay());
+                    Log::warning("IP {$ip} has been automatically banned for 24 hours in cache due to 5+ high/critical security violations.");
                 }
             }
-
-            // 2. Email Notification for critical events
-            if (in_array($severity, ['critical']) || ($severity === 'high' && str_contains($type, 'jailbreak'))) {
-                try {
-                    \Illuminate\Support\Facades\Mail::to(config('mail.from.address'))
-                        ->send(new \App\Mail\SecurityAlert($event));
-                } catch (\Exception $e) {
-                    Log::error("Failed to send security alert email: " . $e->getMessage());
-                }
-            }
-
         } catch (\Exception $e) {
-            Log::error("Failed to log security event: " . $e->getMessage());
+            Log::error("Failed to log security event in cache: " . $e->getMessage());
         }
     }
 

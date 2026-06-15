@@ -9,7 +9,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $categories = Category::active()->withCount('products')->take(4)->get();
+        $categories = Category::active()->withCount('products')->take(6)->get();
         $featuredProducts = Product::with('category')
             ->inCategoryActive()
             ->featured()

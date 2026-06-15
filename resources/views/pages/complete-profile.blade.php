@@ -32,7 +32,8 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <span class="text-sm font-bold text-slate-400 dark:text-slate-500 group-focus-within:text-primary-500 transition-colors">+62</span>
                         </div>
-                        <input type="text" id="phone" name="phone" value="{{ old('phone') }}" required autofocus
+                        <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" required autofocus
+                               inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                class="w-full pl-14 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-lg" 
                                placeholder="81234567890">
                     </div>

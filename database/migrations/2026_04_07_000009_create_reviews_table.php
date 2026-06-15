@@ -15,8 +15,10 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('rating');
             $table->text('comment')->nullable();
+            $table->string('image')->nullable();
             $table->boolean('is_approved')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

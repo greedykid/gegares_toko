@@ -115,23 +115,23 @@
         <p class="text-sm font-semibold text-primary-600 dark:text-primary-400 tracking-wide uppercase">Kategori</p>
         <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100 transition-colors">Pilih Jajanan Favorit</h2>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+    <div class="grid grid-cols-6 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
         @foreach($categories as $index => $category)
             <a href="{{ route('products.index', ['category' => $category->slug]) }}"
-               class="group relative flex flex-col items-center p-6 lg:p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-primary-200 dark:hover:border-primary-800 hover:-translate-y-1 transition-all duration-300 reveal reveal-up delay-{{ ($index % 4 + 1) * 100 }}">
-                <div class="w-16 h-16 rounded-2xl overflow-hidden mb-4 group-hover:scale-110 transition-transform duration-300 shrink-0">
+               class="group relative flex flex-col items-center p-1 sm:p-2 md:p-4 hover:-translate-y-1 transition-all duration-300 reveal reveal-up delay-{{ ($index % 6 + 1) * 100 }}">
+                <div class="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-2 sm:mb-4 shadow-sm group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 shrink-0 border border-slate-100 dark:border-slate-800">
                     @if($category->image)
-                        <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" width="64" height="64" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" width="80" height="80" class="w-full h-full object-cover">
                     @else
-                        <div class="w-full h-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
-                            <svg class="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <div class="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <svg class="w-7 h-7 sm:w-10 sm:h-10 md:w-12 md:h-12 text-slate-400 dark:text-slate-550" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 18.75V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75Z" />
                             </svg>
                         </div>
                     @endif
                 </div>
-                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 text-center line-clamp-1 transition-colors">{{ $category->name }}</h3>
-                <span class="mt-1 text-xs text-slate-400 dark:text-slate-500">{{ $category->products_count }} produk</span>
+                <h3 class="text-[10px] sm:text-xs md:text-sm font-bold text-slate-800 dark:text-slate-200 text-center transition-colors group-hover:text-primary-600 dark:group-hover:text-primary-400 leading-tight">{{ $category->name }}</h3>
+                <span class="mt-0.5 text-[8px] sm:text-[10px] md:text-xs text-slate-400 dark:text-slate-500 font-medium">{{ $category->products_count }} produk</span>
             </a>
         @endforeach
     </div>

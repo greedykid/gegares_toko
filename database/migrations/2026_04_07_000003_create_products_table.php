@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('rating_avg', 3, 2)->default(0);
             $table->integer('rating_count')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

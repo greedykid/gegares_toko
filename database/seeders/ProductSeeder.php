@@ -16,6 +16,8 @@ class ProductSeeder extends Seeder
             ['name' => 'Kue Kering', 'slug' => 'kue-kering', 'description' => 'Kue renyah dan tahan lama'],
             ['name' => 'Gorengan', 'slug' => 'gorengan', 'description' => 'Jajanan goreng yang renyah dan gurih'],
             ['name' => 'Jajanan Kukus', 'slug' => 'jajanan-kukus', 'description' => 'Jajanan sehat yang dikukus sempurna'],
+            ['name' => 'Minuman Tradisional', 'slug' => 'minuman-tradisional', 'description' => 'Minuman hangat dan menyegarkan khas nusantara'],
+            ['name' => 'Bubur Tradisional', 'slug' => 'bubur-tradisional', 'description' => 'Bubur manis lembut dengan kuah santan dan gula merah'],
         ];
 
         foreach ($categories as $cat) {
@@ -56,6 +58,22 @@ class ProductSeeder extends Seeder
                 'stock' => 35,
                 'is_featured' => false,
             ],
+            [
+                'category' => 'kue-basah',
+                'name' => 'Kue Lumpur',
+                'description' => 'Kue lumpur kentang yang lembut, gurih santan dengan topping kismis manis di atasnya.',
+                'price' => 14000,
+                'stock' => 30,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'kue-basah',
+                'name' => 'Bika Ambon',
+                'description' => 'Kue tradisional berongga khas Medan dengan aroma pandan dan daun jeruk yang kuat serta manis legit.',
+                'price' => 30000,
+                'stock' => 15,
+                'is_featured' => false,
+            ],
             // Kue Kering
             [
                 'category' => 'kue-kering',
@@ -72,6 +90,22 @@ class ProductSeeder extends Seeder
                 'price' => 45000,
                 'stock' => 20,
                 'is_featured' => true,
+            ],
+            [
+                'category' => 'kue-kering',
+                'name' => 'Nastar Premium',
+                'description' => 'Kue kering isi selai nanas madu buatan sendiri dengan mentega Wijsman yang wangi dan lumer di lidah.',
+                'price' => 55000,
+                'stock' => 20,
+                'is_featured' => true,
+            ],
+            [
+                'category' => 'kue-kering',
+                'name' => 'Putri Salju',
+                'description' => 'Kue kering berbentuk bulan sabit dibalur gula halus dingin yang manis lembut dan gurih kacang.',
+                'price' => 40000,
+                'stock' => 25,
+                'is_featured' => false,
             ],
             // Gorengan
             [
@@ -104,6 +138,22 @@ class ProductSeeder extends Seeder
                 'description' => 'Jajanan Sunda dari singkong parut berisi oncom pedas. Digoreng hingga kecokelatan dan renyah.',
                 'price' => 10000,
                 'stock' => 0,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'gorengan',
+                'name' => 'Tahu Isi Sayur',
+                'description' => 'Tahu goreng renyah dengan isian sayur kol, wortel, dan tauge yang gurih pedas.',
+                'price' => 10000,
+                'stock' => 50,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'gorengan',
+                'name' => 'Bakwan Jagung',
+                'description' => 'Bakwan renyah dengan jagung manis pipil segar dan bumbu ketumbar daun bawang.',
+                'price' => 12000,
+                'stock' => 45,
                 'is_featured' => false,
             ],
             // Jajanan Kukus
@@ -145,6 +195,48 @@ class ProductSeeder extends Seeder
                 'description' => 'Ketan pulen berisi ayam suwir berbumbu, dibungkus daun pisang dan dikukus hingga harum.',
                 'price' => 20000,
                 'stock' => 35,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'jajanan-kukus',
+                'name' => 'Apem Kukus',
+                'description' => 'Kue mangkok apem mekar lembut beraroma tapai singkong dengan taburan kelapa parut gurih.',
+                'price' => 13000,
+                'stock' => 30,
+                'is_featured' => false,
+            ],
+            // Minuman Tradisional
+            [
+                'category' => 'minuman-tradisional',
+                'name' => 'Wedang Ronde',
+                'description' => 'Bola ketan berisi kacang tanah disajikan dalam kuah jahe hangat yang manis dan pedas wangi.',
+                'price' => 15000,
+                'stock' => 30,
+                'is_featured' => true,
+            ],
+            [
+                'category' => 'minuman-tradisional',
+                'name' => 'Es Dawet Ayu',
+                'description' => 'Dawet kenyal beraroma pandan dengan santan gurih, gula kelapa kental, dan es batu segar.',
+                'price' => 12000,
+                'stock' => 40,
+                'is_featured' => false,
+            ],
+            // Bubur Tradisional
+            [
+                'category' => 'bubur-tradisional',
+                'name' => 'Bubur Sumsum',
+                'description' => 'Bubur lembut dari tepung beras dan santan encer disiram kinca gula merah kental yang manis legit.',
+                'price' => 15000,
+                'stock' => 25,
+                'is_featured' => true,
+            ],
+            [
+                'category' => 'bubur-tradisional',
+                'name' => 'Bubur Candil',
+                'description' => 'Bola-bola ketan kenyal (intil) dengan kuah gula merah manis legit disiram santan kental yang gurih.',
+                'price' => 16000,
+                'stock' => 20,
                 'is_featured' => false,
             ],
         ];

@@ -89,8 +89,6 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
     Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::resource('/users', AdminUserController::class)->except(['create', 'edit']);
 
-    // ─── AI Security ───
-    Route::get('/security', \App\Livewire\Admin\SecurityDashboard::class)->name('security.index');
 
     // ─── Activity Logs & Promo ───
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
