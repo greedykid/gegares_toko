@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhook/midtrans',
             'webhook/biteship',
+            'webhook/pakasir',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

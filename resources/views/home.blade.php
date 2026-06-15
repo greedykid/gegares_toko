@@ -194,7 +194,7 @@
                     ],
                     [
                         'q' => 'Metode pembayaran apa saja yang tersedia?',
-                        'a' => 'Kami mendukung berbagai metode pembayaran instan melalui Midtrans, termasuk GoPay, QRIS, Transfer Bank (Virtual Account), dan Kartu Kredit.'
+                        'a' => 'Kami mendukung berbagai metode pembayaran instan melalui Pakasir, termasuk QRIS, E-Wallet (GoPay, OVO, dll), dan Transfer Bank (Virtual Account).'
                     ]
                 ];
             @endphp

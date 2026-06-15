@@ -83,8 +83,8 @@
                         {{ $order->formatted_total }}</p>
                 </div>
 
-                @if($order->snap_token)
-                    <button id="payButton"
+                @if($order->pakasir_link)
+                    <a href="{{ $order->pakasir_link }}"
                         class="group relative w-full mt-8 flex items-center justify-center gap-2 py-4 bg-primary-600 text-white font-bold rounded-2xl shadow-xl shadow-primary-500/30 dark:shadow-none hover:bg-primary-700 transition-all transform hover:-translate-y-0.5 active:scale-95 overflow-hidden">
                         <span class="relative z-10">Lanjutkan Pembayaran Sekarang</span>
                         <svg class="relative z-10 w-5 h-5 transition-transform group-hover:translate-x-1" fill="none"
@@ -94,6 +94,14 @@
                         <div
                             class="absolute inset-0 h-full w-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]">
                         </div>
+                    </a>
+
+                    <button onclick="window.location.href = '{{ route('orders.payment', $order) }}?t=' + Date.now();"
+                        class="w-full mt-3 flex items-center justify-center gap-2 py-3.5 bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold rounded-2xl border border-slate-200/60 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95">
+                        <svg class="w-4.5 h-4.5 text-slate-500 animate-spin-hover" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        Saya Sudah Bayar (Cek Status)
                     </button>
                 @endif
 
@@ -108,29 +116,16 @@
         @endif
     </div>
 
-    @if($order->payment_status !== 'paid' && $order->snap_token)
-        @push('scripts')
-            <script src="{{ config('midtrans.snap_url') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
-            <script>
-                document.getElementById('payButton').addEventListener('click', function () {
-                    snap.pay('{{ $order->snap_token }}', {
-                        onSuccess: function (result) {
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Pembayaran berhasil dikonfirmasi!' } }));
-                            setTimeout(() => window.location.reload(), 1000);
-                        },
-                        onPending: function (result) {
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: 'Menunggu konfirmasi otomatis...' } }));
-                            setTimeout(() => window.location.reload(), 1500);
-                        },
-                        onError: function (result) {
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Pembayaran gagal/ditolak. Silakan coba metode lain.' } }));
-                        },
-                        onClose: function () {
-                            // optional toast if they just close the popup
-                        }
-                    });
+    @if($order->payment_status !== 'paid')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Reload the page if loaded via back-forward cache (bfcache)
+                window.addEventListener('pageshow', function(event) {
+                    if (event.persisted) {
+                        window.location.reload();
+                    }
                 });
-            </script>
-        @endpush
+            });
+        </script>
     @endif
 @endsection

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Services\CartService;
-use App\Services\MidtransService;
+use App\Services\PakasirService;
 use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
@@ -32,14 +32,14 @@ class CheckoutController extends Controller
         return view('checkout.index', compact('cartItems', 'subtotal', 'discountAmount', 'coupon', 'addresses'));
     }
 
-    public function store(Request $request, CartService $cartService, MidtransService $midtransService)
+    public function store(Request $request, CartService $cartService, PakasirService $pakasirService)
     {
         $request->validate([
             'address_id' => 'required|exists:addresses,id',
             'shipping_courier' => 'required|string',
             'shipping_service' => 'required|string',
             'shipping_cost' => 'required|numeric|min:0',
-            'payment_method' => 'required|string|in:midtrans',
+            'payment_method' => 'required|string|in:midtrans,pakasir',
             'notes' => 'nullable|string',
         ]);
         
@@ -95,11 +95,11 @@ class CheckoutController extends Controller
             ]);
         }
 
-        $snapToken = $midtransService->createSnapToken($order);
+        $paymentUrl = $pakasirService->createPaymentUrl($order);
 
-        if (!$snapToken) {
+        if (!$paymentUrl) {
             $order->delete();
-            return back()->with('error', 'Gagal membuat transaksi pembayaran. Silakan coba lagi.');
+            return back()->with('error', 'Gagal membuat transaksi pembayaran Pakasir. Silakan coba lagi.');
         }
 
         $cartService->clear();

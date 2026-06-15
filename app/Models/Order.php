@@ -23,8 +23,8 @@ class Order extends Model
 
     protected $fillable = [
         'user_id', 'order_number', 'biteship_order_id', 'courier_tracking_id', 'address_id', 'coupon_id', 'discount_amount',
-        'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'snap_token',
-        'midtrans_order_id', 'shipping_courier', 'shipping_service',
+        'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',
+        'pakasir_order_id', 'shipping_courier', 'shipping_service',
         'tracking_number', 'notes', 'paid_at',
     ];
 

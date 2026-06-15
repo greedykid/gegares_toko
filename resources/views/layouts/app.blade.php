@@ -8,7 +8,7 @@
     <title>@yield('title', 'Gegares') — Jajanan Pasar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
         const theme = localStorage.getItem('theme') || 'system';
@@ -526,7 +526,6 @@
                     <img src="{{ asset('images/bca.png') }}" alt="BCA" width="401" height="126" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:brightness-200 dark:contrast-150">
                     <img src="{{ asset('images/gopay.png') }}" alt="Gopay" width="1280" height="326" class="h-3 w-auto hover:scale-110 transition-all duration-300 dark:invert">
                     <img src="{{ asset('images/qris.png') }}" alt="QRIS" width="1280" height="486" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:invert">
-                    <img src="{{ asset('images/midtrans.png') }}" alt="Midtrans" width="556" height="91" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:brightness-200">
                 </div>
             </div>
         </div>
@@ -559,7 +558,7 @@
                             <li><strong>Data Profil:</strong> Nama, alamat email, nomor telepon, dan alamat pengiriman Anda untuk kelancaran pengiriman pesanan.</li>
                             <li><strong>Keamanan Data:</strong> Kami mengamankan data sandi Anda menggunakan enkripsi hashing SHA-256 dan melakukan masking otomatis untuk mencegah kebocoran data.</li>
                         </ul>
-                        <p>Kami menjamin bahwa data pribadi Anda tidak akan pernah dijual atau dibagikan kepada pihak ketiga di luar keperluan pengiriman logistik (Biteship) dan sistem pembayaran aman (Midtrans).</p>
+                        <p>Kami menjamin bahwa data pribadi Anda tidak akan pernah dijual atau dibagikan kepada pihak ketiga di luar keperluan pengiriman logistik (Biteship) dan sistem pembayaran aman (Pakasir).</p>
                     </div>`;
                 } else if (type === 'terms') {
                     this.title = 'Syarat & Ketentuan';
@@ -569,7 +568,7 @@
                         <ul class=\'list-disc list-inside space-y-2 pl-2\'>
                             <li><strong>Kesegaran Jajanan:</strong> Karena produk kami bebas pengawet, kami menyarankan konsumsi di hari yang sama atau mengikuti tips penyimpanan yang tertera di chatbot kami.</li>
                             <li><strong>Pembatalan Pesanan:</strong> Pesanan yang sudah diproses oleh admin dapur tidak dapat dibatalkan atau diubah karena jajanan dibuat fresh secara terjadwal.</li>
-                            <li><strong>Pembayaran:</strong> Semua transaksi dilakukan secara instan dan aman menggunakan payment gateway resmi Midtrans.</li>
+                            <li><strong>Pembayaran:</strong> Semua transaksi dilakukan secara instan dan aman menggunakan payment gateway resmi Pakasir.</li>
                         </ul>
                     </div>`;
                 }

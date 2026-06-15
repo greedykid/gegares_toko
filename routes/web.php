@@ -53,6 +53,7 @@ Route::middleware(['auth', 'check_phone'])->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/tracking', [OrderController::class, 'getTracking'])->name('orders.tracking');
     Route::get('/orders/{order}/payment', [OrderController::class, 'payment'])->name('orders.payment');
+    Route::get('/orders/{order}/status', [OrderController::class, 'checkStatus'])->name('orders.status');
     Route::post('/orders/{order}/complete', [OrderController::class, 'complete'])->name('orders.complete');
 
     Route::get('/wishlist', fn() => redirect('/#wishlist'))->name('wishlist');
@@ -98,5 +99,6 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
 
 // ─── Webhook ───
 Route::post('/webhook/midtrans', [WebhookController::class, 'midtrans'])->name('webhook.midtrans');
+Route::post('/webhook/pakasir', [WebhookController::class, 'pakasir'])->name('webhook.pakasir');
 Route::post('/webhook/biteship', [WebhookController::class, 'biteship'])->name('webhook.biteship');
 Route::get('/webhook/biteship', fn() => 'Biteship Webhook is active. Waiting for POST data from Biteship.');

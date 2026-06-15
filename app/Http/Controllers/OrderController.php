@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
-use App\Services\MidtransService;
+use App\Services\PakasirService;
 
 class OrderController extends Controller
 {
@@ -55,7 +55,7 @@ class OrderController extends Controller
         return view('orders.show', compact('order'));
     }
 
-    public function payment(Order $order, MidtransService $midtransService)
+    public function payment(Order $order, PakasirService $pakasirService)
     {
         abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
 
@@ -64,12 +64,42 @@ class OrderController extends Controller
                 ->with('error', 'Pesanan ini sudah tidak bisa dibayar.');
         }
 
-        // Sync status with Midtrans if not already paid
+        // Sync status with Pakasir if not already paid
         if ($order->payment_status !== 'paid') {
-            $order = $midtransService->syncOrderWithMidtrans($order);
+            // Force a fresh check by clearing any existing throttle cache
+            \Illuminate\Support\Facades\Cache::forget('pakasir_sync_limit_' . $order->id);
+
+            $order = $pakasirService->syncOrderWithPakasir($order);
+
+            // Set the cache throttle so polling doesn't immediately check again
+            \Illuminate\Support\Facades\Cache::put('pakasir_sync_limit_' . $order->id, true, 15);
         }
 
-        return view('orders.payment', compact('order'));
+        return response()
+            ->view('orders.payment', compact('order'))
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    public function checkStatus(Order $order, PakasirService $pakasirService)
+    {
+        abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
+
+        if ($order->payment_status !== 'paid') {
+            $cacheKey = 'pakasir_sync_limit_' . $order->id;
+            
+            // Only query Pakasir if the cache lock has expired (at most once per 15s)
+            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                $order = $pakasirService->syncOrderWithPakasir($order);
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, 15);
+            }
+        }
+
+        return response()->json([
+            'payment_status' => $order->payment_status,
+            'status' => $order->status,
+        ]);
     }
 
     public function getTracking(Order $order, \App\Services\BiteshipService $biteshipService)

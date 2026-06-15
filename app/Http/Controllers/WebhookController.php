@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\MidtransService;
+use App\Services\PakasirService;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,19 @@ class WebhookController extends Controller
         Log::info('Midtrans webhook received', $request->all());
 
         $order = $midtransService->handleNotification($request->all());
+
+        if ($order) {
+            return response()->json(['status' => 'ok']);
+        }
+
+        return response()->json(['status' => 'error'], 404);
+    }
+
+    public function pakasir(Request $request, PakasirService $pakasirService)
+    {
+        Log::info('Pakasir webhook received', $request->all());
+
+        $order = $pakasirService->handleNotification($request->all());
 
         if ($order) {
             return response()->json(['status' => 'ok']);

@@ -75,24 +75,25 @@
                         
                         <div class="grid grid-cols-1 gap-4">
                             <label class="relative flex items-center p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group hover:shadow-md"
-                                   :class="paymentMethod === 'midtrans' ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950/50'">
-                                <input type="radio" name="payment_method_select" value="midtrans" class="hidden" @change="paymentMethod = 'midtrans'" :checked="paymentMethod === 'midtrans'">
+                                   :class="paymentMethod === 'pakasir' ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950/50'">
+                                <input type="radio" name="payment_method_select" value="pakasir" class="hidden" @change="paymentMethod = 'pakasir'" :checked="paymentMethod === 'pakasir'">
                                 
                                 <div class="flex items-center gap-5 w-full">
-                                    <div class="w-16 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden p-2 shadow-sm shrink-0">
-                                        <img src="https://midtrans.com/assets/img/midtrans-logoo.jpg?v=1742958370" alt="Midtrans" class="w-full h-full object-contain">
+                                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 6.375v-1.5zM3.75 9.75c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-1.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-1.5zM11.25 5.625a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75zM12 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75zM12 15.375a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75z" />
+                                        </svg>
                                     </div>
                                     <div class="flex-1">
-                                        <p class="text-base font-bold text-slate-900 dark:text-white">Midtrans (Otomatis)</p>
+                                        <p class="text-base font-bold text-slate-900 dark:text-white">Pakasir (Otomatis)</p>
                                         <div class="flex flex-wrap gap-2 mt-2">
+                                            <span class="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md">QRIS / E-Wallet</span>
                                             <span class="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md">Virtual Account</span>
-                                            <span class="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md">GOPAY / QRIS</span>
-                                            <span class="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md">Kartu Kredit</span>
                                         </div>
                                     </div>
                                     <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0"
-                                         :class="paymentMethod === 'midtrans' ? 'border-primary-500 bg-primary-500' : 'border-slate-300 dark:border-slate-600'">
-                                        <svg x-show="paymentMethod === 'midtrans'" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                         :class="paymentMethod === 'pakasir' ? 'border-primary-500 bg-primary-500' : 'border-slate-300 dark:border-slate-600'">
+                                        <svg x-show="paymentMethod === 'pakasir'" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                                     </div>
                                 </div>
                             </label>
@@ -220,7 +221,7 @@ function registerCheckoutFlow() {
             shippingCourier: '',
             shippingService: '',
             shippingInfo: '',
-            paymentMethod: 'midtrans',
+            paymentMethod: 'pakasir',
 
             init() {
                 this.addressId = this.$el.dataset.addressId;
