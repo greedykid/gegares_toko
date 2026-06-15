@@ -143,32 +143,137 @@
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Kategori</label>
-                <select name="category" onchange="this.form.submit()"
-                        class="w-full px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all appearance-none cursor-pointer">
-                    <option value="">Semua Kategori</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-                    @endforeach
-                </select>
+                <div x-data="{ 
+                        open: false, 
+                        selectedValue: '{{ request('category') }}', 
+                        selectedLabel: '{{ request('category') ? $categories->firstWhere('id', request('category'))->name ?? 'Semua Kategori' : 'Semua Kategori' }}'
+                     }" 
+                     class="relative w-full">
+                    <input type="hidden" name="category" :value="selectedValue">
+                    <button @click="open = !open" type="button" 
+                            class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                        <span x-text="selectedLabel"></span>
+                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         @click.outside="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-60 overflow-y-auto"
+                         style="display: none;">
+                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Kategori'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Semua Kategori
+                        </button>
+                        @foreach($categories as $cat)
+                            <button type="button" @click="selectedValue = '{{ $cat->id }}'; selectedLabel = '{{ $cat->name }}'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === '{{ $cat->id }}' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                                {{ $cat->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Stok</label>
-                <select name="stock_status" onchange="this.form.submit()"
-                        class="w-full px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all appearance-none cursor-pointer">
-                    <option value="">Semua Stok</option>
-                    <option value="out_of_stock" {{ request('stock_status') == 'out_of_stock' ? 'selected' : '' }}>Stok Habis (0)</option>
-                    <option value="low_stock" {{ request('stock_status') == 'low_stock' ? 'selected' : '' }}>Stok Menipis (1-4)</option>
-                    <option value="in_stock" {{ request('stock_status') == 'in_stock' ? 'selected' : '' }}>Tersedia (5+)</option>
-                </select>
+                <div x-data="{ 
+                        open: false, 
+                        selectedValue: '{{ request('stock_status') }}', 
+                        selectedLabel: '{{ request('stock_status') == 'out_of_stock' ? 'Stok Habis (0)' : (request('stock_status') == 'low_stock' ? 'Stok Menipis (1-4)' : (request('stock_status') == 'in_stock' ? 'Tersedia (5+)' : 'Semua Stok')) }}'
+                     }" 
+                     class="relative w-full">
+                    <input type="hidden" name="stock_status" :value="selectedValue">
+                    <button @click="open = !open" type="button" 
+                            class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                        <span x-text="selectedLabel"></span>
+                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         @click.outside="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                         style="display: none;">
+                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Stok'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Semua Stok
+                        </button>
+                        <button type="button" @click="selectedValue = 'out_of_stock'; selectedLabel = 'Stok Habis (0)'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'out_of_stock' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Stok Habis (0)
+                        </button>
+                        <button type="button" @click="selectedValue = 'low_stock'; selectedLabel = 'Stok Menipis (1-4)'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'low_stock' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Stok Menipis (1-4)
+                        </button>
+                        <button type="button" @click="selectedValue = 'in_stock'; selectedLabel = 'Tersedia (5+)'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'in_stock' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Tersedia (5+)
+                        </button>
+                    </div>
+                </div>
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Status</label>
-                <select name="is_featured" onchange="this.form.submit()"
-                        class="w-full px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all appearance-none cursor-pointer">
-                    <option value="">Semua Status</option>
-                    <option value="1" {{ request('is_featured') === '1' ? 'selected' : '' }}>Hanya Unggulan</option>
-                    <option value="0" {{ request('is_featured') === '0' ? 'selected' : '' }}>Reguler Saja</option>
-                </select>
+                <div x-data="{ 
+                        open: false, 
+                        selectedValue: '{{ request('is_featured') }}', 
+                        selectedLabel: '{{ request('is_featured') === '1' ? 'Hanya Unggulan' : (request('is_featured') === '0' ? 'Reguler Saja' : 'Semua Status') }}'
+                     }" 
+                     class="relative w-full">
+                    <input type="hidden" name="is_featured" :value="selectedValue">
+                    <button @click="open = !open" type="button" 
+                            class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                        <span x-text="selectedLabel"></span>
+                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         @click.outside="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                         style="display: none;">
+                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Status'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Semua Status
+                        </button>
+                        <button type="button" @click="selectedValue = '1'; selectedLabel = 'Hanya Unggulan'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '1' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Hanya Unggulan
+                        </button>
+                        <button type="button" @click="selectedValue = '0'; selectedLabel = 'Reguler Saja'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '0' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            Reguler Saja
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold rounded-xl hover:bg-slate-900 dark:hover:bg-slate-600 shadow-sm transition-colors duration-200">Filter</button>
@@ -390,12 +495,51 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kategori</label>
-                        <select name="category_id" x-model="form.category_id" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                            <option value="">Pilih Kategori</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                            @endforeach
-                        </select>
+                        <div x-data="{ 
+                                open: false,
+                                categories: [
+                                    @foreach($categories as $cat)
+                                        { id: '{{ $cat->id }}', name: '{{ addslashes($cat->name) }}' },
+                                    @endforeach
+                                ],
+                                get selectedLabel() {
+                                    let match = this.categories.find(c => String(c.id) === String(form.category_id));
+                                    return match ? match.name : 'Pilih Kategori';
+                                }
+                             }" 
+                             class="relative">
+                            <input type="hidden" name="category_id" x-model="form.category_id" required>
+                            <button @click="open = !open" type="button" 
+                                    class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                                <span x-text="selectedLabel"></span>
+                                <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </button>
+                            <div x-show="open" 
+                                 @click.outside="open = false" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-60 overflow-y-auto"
+                                 style="display: none;">
+                                <button type="button" @click="form.category_id = ''; open = false"
+                                        class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="String(form.category_id) === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                                    Pilih Kategori
+                                </button>
+                                <template x-for="cat in categories" :key="cat.id">
+                                    <button type="button" @click="form.category_id = cat.id; open = false"
+                                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                            :class="String(form.category_id) === String(cat.id) ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''"
+                                            x-text="cat.name">
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deskripsi</label>

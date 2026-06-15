@@ -39,12 +39,44 @@
                 {{-- Category --}}
                 <div>
                     <label class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Kategori</label>
-                    <select name="category" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
-                        <option value="">Semua Kategori</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->slug }}" {{ request('category') == $cat->slug ? 'selected' : '' }}>{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
+                    <div x-data="{ 
+                            open: false, 
+                            selectedValue: '{{ request('category') }}', 
+                            selectedLabel: '{{ request('category') ? $categories->firstWhere('slug', request('category'))->name ?? 'Semua Kategori' : 'Semua Kategori' }}'
+                         }" 
+                         class="relative w-full">
+                        <input type="hidden" name="category" :value="selectedValue">
+                        <button @click="open = !open" type="button" 
+                                class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
+                            <span x-text="selectedLabel"></span>
+                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+                        <div x-show="open" 
+                             @click.outside="open = false" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-60 overflow-y-auto"
+                             style="display: none;">
+                            <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Kategori'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                                Semua Kategori
+                            </button>
+                            @foreach($categories as $cat)
+                                <button type="button" @click="selectedValue = '{{ $cat->slug }}'; selectedLabel = '{{ $cat->name }}'; open = false"
+                                        class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="selectedValue === '{{ $cat->slug }}' ? 'bg-slate-50 dark:bg-slate-850/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                                    {{ $cat->name }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Price Range --}}
@@ -59,24 +91,90 @@
                 {{-- Rating --}}
                 <div>
                     <label class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Rating Minimum</label>
-                    <select name="rating" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
-                        <option value="">Semua Rating</option>
-                        @for($i = 4; $i >= 1; $i--)
-                            <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }}+ Bintang</option>
-                        @endfor
-                    </select>
+                    <div x-data="{ 
+                            open: false, 
+                            selectedValue: '{{ request('rating') }}', 
+                            selectedLabel: '{{ request('rating') ? request('rating') . '+ Bintang' : 'Semua Rating' }}'
+                         }" 
+                         class="relative w-full">
+                        <input type="hidden" name="rating" :value="selectedValue">
+                        <button @click="open = !open" type="button" 
+                                class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
+                            <span x-text="selectedLabel"></span>
+                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+                        <div x-show="open" 
+                             @click.outside="open = false" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                             style="display: none;">
+                            <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Rating'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                                Semua Rating
+                            </button>
+                            @for($i = 4; $i >= 1; $i--)
+                                <button type="button" @click="selectedValue = '{{ $i }}'; selectedLabel = '{{ $i }}+ Bintang'; open = false"
+                                        class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="selectedValue === '{{ $i }}' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                                    {{ $i }}+ Bintang
+                                </button>
+                            @endfor
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Sort --}}
                 <div>
                     <label class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Urutkan</label>
-                    <select name="sort" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
-                        <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
-                        <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Harga Terendah</option>
-                        <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Harga Tertinggi</option>
-                        <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Terpopuler</option>
-                        <option value="rating" {{ request('sort') == 'rating' ? 'selected' : '' }}>Rating Tertinggi</option>
-                    </select>
+                    <div x-data="{ 
+                            open: false, 
+                            selectedValue: '{{ request('sort', 'latest') }}', 
+                            selectedLabel: '{{ request('sort') == 'price_low' ? 'Harga Terendah' : (request('sort') == 'price_high' ? 'Harga Tertinggi' : (request('sort') == 'popular' ? 'Terpopuler' : (request('sort') == 'rating' ? 'Rating Tertinggi' : 'Terbaru'))) }}'
+                         }" 
+                         class="relative w-full">
+                        <input type="hidden" name="sort" :value="selectedValue">
+                        <button @click="open = !open" type="button" 
+                                class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
+                            <span x-text="selectedLabel"></span>
+                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+                        <div x-show="open" 
+                             @click.outside="open = false" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                             style="display: none;">
+                            <button type="button" @click="selectedValue = 'latest'; selectedLabel = 'Terbaru'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === 'latest' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Terbaru</button>
+                            <button type="button" @click="selectedValue = 'price_low'; selectedLabel = 'Harga Terendah'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === 'price_low' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Harga Terendah</button>
+                            <button type="button" @click="selectedValue = 'price_high'; selectedLabel = 'Harga Tertinggi'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === 'price_high' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Harga Tertinggi</button>
+                            <button type="button" @click="selectedValue = 'popular'; selectedLabel = 'Terpopuler'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === 'popular' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Terpopuler</button>
+                            <button type="button" @click="selectedValue = 'rating'; selectedLabel = 'Rating Tertinggi'; open = false"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                    :class="selectedValue === 'rating' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Rating Tertinggi</button>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-primary-600 dark:bg-primary-500 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 dark:hover:bg-primary-600 transition-all">Terapkan Filter</button>

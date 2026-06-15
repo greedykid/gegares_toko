@@ -89,22 +89,88 @@
         </div>
         <div>
             <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Rating</label>
-            <select name="rating" onchange="this.form.submit()"
-                    class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
-                <option value="">Semua</option>
-                @for($i=5; $i>=1; $i--)
-                    <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} Bintang</option>
-                @endfor
-            </select>
+            <div x-data="{ 
+                    open: false, 
+                    selectedValue: '{{ request('rating') }}', 
+                    selectedLabel: '{{ request('rating') ? request('rating') . ' Bintang' : 'Semua' }}'
+                 }" 
+                 class="relative w-full">
+                <input type="hidden" name="rating" :value="selectedValue">
+                <button @click="open = !open" type="button" 
+                        class="w-full flex items-center justify-between pl-3 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                    <span x-text="selectedLabel"></span>
+                    <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="open" 
+                     @click.outside="open = false" 
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                     style="display: none;">
+                    <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                        Semua
+                    </button>
+                    @for($i=5; $i>=1; $i--)
+                        <button type="button" @click="selectedValue = '{{ $i }}'; selectedLabel = '{{ $i }} Bintang'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '{{ $i }}' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                            {{ $i }} Bintang
+                        </button>
+                    @endfor
+                </div>
+            </div>
         </div>
         <div>
             <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Status</label>
-            <select name="is_approved" onchange="this.form.submit()"
-                    class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
-                <option value="">Semua</option>
-                <option value="1" {{ request('is_approved') === '1' ? 'selected' : '' }}>Disetujui</option>
-                <option value="0" {{ request('is_approved') === '0' ? 'selected' : '' }}>Pending</option>
-            </select>
+            <div x-data="{ 
+                    open: false, 
+                    selectedValue: '{{ request('is_approved') }}', 
+                    selectedLabel: '{{ request('is_approved') === '1' ? 'Disetujui' : (request('is_approved') === '0' ? 'Pending' : 'Semua') }}'
+                 }" 
+                 class="relative w-full">
+                <input type="hidden" name="is_approved" :value="selectedValue">
+                <button @click="open = !open" type="button" 
+                        class="w-full flex items-center justify-between pl-3 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                    <span x-text="selectedLabel"></span>
+                    <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="open" 
+                     @click.outside="open = false" 
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                     style="display: none;">
+                    <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                        Semua
+                    </button>
+                    <button type="button" @click="selectedValue = '1'; selectedLabel = 'Disetujui'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            :class="selectedValue === '1' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                        Disetujui
+                    </button>
+                    <button type="button" @click="selectedValue = '0'; selectedLabel = 'Pending'; open = false; $nextTick(() => { $el.closest('form').submit() })"
+                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            :class="selectedValue === '0' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
+                        Pending
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="flex gap-2">
             <button type="submit" class="flex-1 px-4 py-2 bg-slate-800 dark:bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-slate-900 dark:hover:bg-primary-700 shadow-sm transition-all">Filter</button>

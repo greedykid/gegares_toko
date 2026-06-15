@@ -66,17 +66,51 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Subjek Pembicaraan</label>
-                        <div class="relative group">
-                            <select x-model="subject" required
-                                    class="w-full px-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-sm appearance-none">
-                                <option value="Tanya Produk">Pertanyaan Produk</option>
-                                <option value="Pesanan Event">Pesan untuk Acara / Katering</option>
-                                <option value="Kendala Pesanan">Kendala Pesanan</option>
-                                <option value="Kerjasama Bisnis">Kerjasama Bisnis</option>
-                                <option value="Lainnya">Lainnya...</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-400">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        <div x-data="{ 
+                                open: false,
+                                get selectedLabel() {
+                                    if (subject === 'Tanya Produk') return 'Pertanyaan Produk';
+                                    if (subject === 'Pesanan Event') return 'Pesan untuk Acara / Katering';
+                                    if (subject === 'Kendala Pesanan') return 'Kendala Pesanan';
+                                    if (subject === 'Kerjasama Bisnis') return 'Kerjasama Bisnis';
+                                    if (subject === 'Lainnya') return 'Lainnya...';
+                                    return 'Pilih Subjek';
+                                }
+                             }" 
+                             class="relative group">
+                            <input type="hidden" x-model="subject" name="subject" required>
+                            <button @click="open = !open" type="button" 
+                                    class="w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-bold text-sm cursor-pointer">
+                                <span x-text="selectedLabel"></span>
+                                <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </button>
+                            <div x-show="open" 
+                                 @click.outside="open = false" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute z-55 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-1 overflow-hidden"
+                                 style="display: none;">
+                                <button type="button" @click="subject = 'Tanya Produk'; open = false"
+                                        class="w-full text-left px-5 py-3 text-sm text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="subject === 'Tanya Produk' ? 'bg-slate-50 dark:bg-slate-800/50 font-bold text-primary-600 dark:text-primary-400' : ''">Pertanyaan Produk</button>
+                                <button type="button" @click="subject = 'Pesanan Event'; open = false"
+                                        class="w-full text-left px-5 py-3 text-sm text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="subject === 'Pesanan Event' ? 'bg-slate-50 dark:bg-slate-800/50 font-bold text-primary-600 dark:text-primary-400' : ''">Pesan untuk Acara / Katering</button>
+                                <button type="button" @click="subject = 'Kendala Pesanan'; open = false"
+                                        class="w-full text-left px-5 py-3 text-sm text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="subject === 'Kendala Pesanan' ? 'bg-slate-50 dark:bg-slate-800/50 font-bold text-primary-600 dark:text-primary-400' : ''">Kendala Pesanan</button>
+                                <button type="button" @click="subject = 'Kerjasama Bisnis'; open = false"
+                                        class="w-full text-left px-5 py-3 text-sm text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="subject === 'Kerjasama Bisnis' ? 'bg-slate-50 dark:bg-slate-800/50 font-bold text-primary-600 dark:text-primary-400' : ''">Kerjasama Bisnis</button>
+                                <button type="button" @click="subject = 'Lainnya'; open = false"
+                                        class="w-full text-left px-5 py-3 text-sm text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        :class="subject === 'Lainnya' ? 'bg-slate-50 dark:bg-slate-800/50 font-bold text-primary-600 dark:text-primary-400' : ''">Lainnya...</button>
                             </div>
                         </div>
                     </div>

@@ -134,26 +134,98 @@
 
             <div class="lg:col-span-1">
                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Status</label>
-                <select name="status" class="w-full pl-3 pr-8 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none appearance-none bg-no-repeat bg-position-[right_0.5rem_center] bg-size-[1rem] bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%2364748b%22 stroke-width=%222%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22m19.5 8.25-7.5 7.5-7.5-7.5%22 /%3E%3C/svg%3E')">
-                    <option value="">Semua</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
-                    <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Dibayar</option>
-                    <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Diproses</option>
-                    <option value="shipped" {{ request('status') == 'shipped' ? 'selected' : '' }}>Dikirim</option>
-                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
-                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Batal</option>
-                </select>
+                <div x-data="{ 
+                        open: false, 
+                        selectedValue: '{{ request('status') }}', 
+                        selectedLabel: '{{ request('status') == 'pending' ? 'Menunggu' : (request('status') == 'paid' ? 'Dibayar' : (request('status') == 'processing' ? 'Diproses' : (request('status') == 'shipped' ? 'Dikirim' : (request('status') == 'completed' ? 'Selesai' : (request('status') == 'cancelled' ? 'Batal' : 'Semua'))))) }}'
+                     }" 
+                     class="relative w-full">
+                    <input type="hidden" name="status" :value="selectedValue">
+                    <button @click="open = !open" type="button" 
+                            class="w-full flex items-center justify-between pl-3 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer">
+                        <span x-text="selectedLabel"></span>
+                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         @click.outside="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                         style="display: none;">
+                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Semua</button>
+                        <button type="button" @click="selectedValue = 'pending'; selectedLabel = 'Menunggu'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'pending' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Menunggu</button>
+                        <button type="button" @click="selectedValue = 'paid'; selectedLabel = 'Dibayar'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'paid' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Dibayar</button>
+                        <button type="button" @click="selectedValue = 'processing'; selectedLabel = 'Diproses'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'processing' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Diproses</button>
+                        <button type="button" @click="selectedValue = 'shipped'; selectedLabel = 'Dikirim'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'shipped' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Dikirim</button>
+                        <button type="button" @click="selectedValue = 'completed'; selectedLabel = 'Selesai'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'completed' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Selesai</button>
+                        <button type="button" @click="selectedValue = 'cancelled'; selectedLabel = 'Batal'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'cancelled' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Batal</button>
+                    </div>
+                </div>
             </div>
 
             <div class="lg:col-span-1">
                 <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Bayar</label>
-                <select name="payment_status" class="w-full pl-3 pr-8 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none appearance-none bg-no-repeat bg-position-[right_0.75rem_center] bg-size-[1rem] bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%2364748b%22 stroke-width=%222%22%3E%3Cpath stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22m19.5 8.25-7.5 7.5-7.5-7.5%22 /%3E%3C/svg%3E')">
-                    <option value="">Semua</option>
-                    <option value="pending" {{ request('payment_status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>Dibayar</option>
-                    <option value="failed" {{ request('payment_status') == 'failed' ? 'selected' : '' }}>Gagal</option>
-                    <option value="expired" {{ request('payment_status') == 'expired' ? 'selected' : '' }}>Expired</option>
-                </select>
+                <div x-data="{ 
+                        open: false, 
+                        selectedValue: '{{ request('payment_status') }}', 
+                        selectedLabel: '{{ request('payment_status') == 'pending' ? 'Pending' : (request('payment_status') == 'paid' ? 'Dibayar' : (request('payment_status') == 'failed' ? 'Gagal' : (request('payment_status') == 'expired' ? 'Expired' : 'Semua'))) }}'
+                     }" 
+                     class="relative w-full">
+                    <input type="hidden" name="payment_status" :value="selectedValue">
+                    <button @click="open = !open" type="button" 
+                            class="w-full flex items-center justify-between pl-3 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer">
+                        <span x-text="selectedLabel"></span>
+                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         @click.outside="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                         style="display: none;">
+                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Semua</button>
+                        <button type="button" @click="selectedValue = 'pending'; selectedLabel = 'Pending'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'pending' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Pending</button>
+                        <button type="button" @click="selectedValue = 'paid'; selectedLabel = 'Dibayar'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'paid' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Dibayar</button>
+                        <button type="button" @click="selectedValue = 'failed'; selectedLabel = 'Gagal'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'failed' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Gagal</button>
+                        <button type="button" @click="selectedValue = 'expired'; selectedLabel = 'Expired'; open = false"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                :class="selectedValue === 'expired' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Expired</button>
+                    </div>
+                </div>
             </div>
 
             <div class="lg:col-span-1 flex items-center gap-2">

@@ -185,10 +185,38 @@
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tipe Diskon</label>
-                                                    <select name="type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                                                        <option value="fixed" {{ $coupon->type == 'fixed' ? 'selected' : '' }}>Nominal (Rp)</option>
-                                                        <option value="percent" {{ $coupon->type == 'percent' ? 'selected' : '' }}>Persentase (%)</option>
-                                                    </select>
+                                                    <div x-data="{ 
+                                                            open: false, 
+                                                            selectedValue: '{{ $coupon->type }}',
+                                                            selectedLabel: '{{ $coupon->type == 'percent' ? 'Persentase (%)' : 'Nominal (Rp)' }}'
+                                                         }" 
+                                                         class="relative">
+                                                        <input type="hidden" name="type" :value="selectedValue">
+                                                        <button @click="open = !open" type="button" 
+                                                                class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                                                            <span x-text="selectedLabel"></span>
+                                                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                            </svg>
+                                                        </button>
+                                                        <div x-show="open" 
+                                                             @click.outside="open = false" 
+                                                             x-transition:enter="transition ease-out duration-100"
+                                                             x-transition:enter-start="opacity-0 scale-95"
+                                                             x-transition:enter-end="opacity-100 scale-100"
+                                                             x-transition:leave="transition ease-in duration-75"
+                                                             x-transition:leave-start="opacity-100 scale-100"
+                                                             x-transition:leave-end="opacity-0 scale-95"
+                                                             class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                                                             style="display: none;">
+                                                            <button type="button" @click="selectedValue = 'fixed'; selectedLabel = 'Nominal (Rp)'; open = false"
+                                                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                                                    :class="selectedValue === 'fixed' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Nominal (Rp)</button>
+                                                            <button type="button" @click="selectedValue = 'percent'; selectedLabel = 'Persentase (%)'; open = false"
+                                                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                                                    :class="selectedValue === 'percent' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Persentase (%)</button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nilai Diskon</label>
@@ -310,10 +338,38 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tipe Diskon</label>
-                            <select name="type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                                <option value="fixed">Nominal (Rp)</option>
-                                <option value="percent">Persentase (%)</option>
-                            </select>
+                            <div x-data="{ 
+                                    open: false, 
+                                    selectedValue: 'fixed',
+                                    selectedLabel: 'Nominal (Rp)'
+                                 }" 
+                                 class="relative">
+                                <input type="hidden" name="type" :value="selectedValue">
+                                <button @click="open = !open" type="button" 
+                                        class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
+                                    <span x-text="selectedLabel"></span>
+                                    <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" 
+                                     @click.outside="open = false" 
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
+                                     style="display: none;">
+                                    <button type="button" @click="selectedValue = 'fixed'; selectedLabel = 'Nominal (Rp)'; open = false"
+                                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                            :class="selectedValue === 'fixed' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Nominal (Rp)</button>
+                                    <button type="button" @click="selectedValue = 'percent'; selectedLabel = 'Persentase (%)'; open = false"
+                                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                            :class="selectedValue === 'percent' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Persentase (%)</button>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nilai Diskon</label>
