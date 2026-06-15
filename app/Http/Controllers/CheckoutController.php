@@ -39,7 +39,7 @@ class CheckoutController extends Controller
             'shipping_courier' => 'required|string',
             'shipping_service' => 'required|string',
             'shipping_cost' => 'required|numeric|min:0',
-            'payment_method' => 'required|string|in:midtrans,pakasir',
+            'payment_method' => 'required|string|in:pakasir',
             'notes' => 'nullable|string',
         ]);
         

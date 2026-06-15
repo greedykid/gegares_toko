@@ -193,7 +193,7 @@ Walaupun banyak kesulitan yang penulis harus hadapi ketika menyusun tugas akhir 
 
 [2.13 Javascript 28](#_Toc230995838)
 
-[2.14 Midtrans 28](#_Toc230995839)
+[2.14 Pakasir 28](#_Toc230995839)
 
 [2.15 Fonnte 28](#_Toc230995840)
 
@@ -444,9 +444,9 @@ CSS, atau _Cascading Style Sheets_, adalah bahasa stylesheet yang digunakan untu
 
 JavaScript adalah bahasa pemrograman scripting lintas platform yang sering digunakan dalam pengembangan web untuk meningkatkan fungsionalitas dinamis pada halaman web. Pertama kali dikembangkan untuk menjalankan program di sisi klien dalam browser, JavaScript kini telah meluas penggunaannya ke berbagai bidang, termasuk pemrograman sisi server, basis data, dan Internet of Things (IoT) Shukla (2023). Bahasa ini memungkinkan pengembang untuk menyisipkan logika kompleks, berinteraksi dengan elemen HTML, dan mengubah konten halaman secara dinamis berdasarkan aksi pengguna, seperti klik atau pengisian formulir (Shoikhedbrod, 2023).
 
-## <a id="_Toc204906142"></a><a id="_Toc230995839"></a>Midtrans
+## <a id="_Toc204906142"></a><a id="_Toc230995839"></a>Pakasir
 
-Midtrans adalah platform payment gateway yang dirancang untuk memfasilitasi transaksi elektronik antara penjual dan pembeli di Indonesia. Dengan menggunakan API Midtrans, pemilik bisnis dapat menyediakan berbagai pilihan metode pembayaran di situs web mereka, termasuk kartu kredit, debit, transfer bank, dan dompet digital (Nariswari et al., 2023). Fungsi utama dari Midtrans adalah untuk menjembatani antara pelanggan yang melakukan pembelian dan institusi keuangan, sehingga memudahkan proses konversi dan verifikasi pembayaran secara real-time (Setiawan et al., 2023).
+Pakasir adalah platform pembayaran dan point-of-sale berbasis Indonesia yang menyediakan layanan pembuatan tautan pembayaran terhost (hosted payment) dan dukungan QRIS untuk memproses pembayaran elektronik. Dengan API Pakasir, pemilik usaha dapat menghasilkan tautan pembayaran yang mengarahkan pelanggan ke halaman pembayaran ter-host, serta memverifikasi status transaksi melalui endpoint API untuk memastikan konfirmasi pembayaran secara andal. Fungsi utama Pakasir dalam konteks e-commerce ini adalah memfasilitasi penerimaan pembayaran (terutama QRIS) dan menyediakan mekanisme verifikasi transaksi yang sesuai untuk integrasi dengan sistem penjualan online.
 
 ## <a id="_Toc204906143"></a><a id="_Toc230995840"></a>Fonnte
 
@@ -496,7 +496,7 @@ Metode penelitian yang digunakan dalam pengembangan sistem ini adalah metode pen
 
 Website yang dikembangkan merupakan sistem e-commerce pemesanan jajanan pasar tradisional bernama Gegares yang dilengkapi dengan fitur AI Chatbot untuk membantu pelayanan pelanggan secara otomatis. Sistem ini dirancang untuk memudahkan proses pemesanan produk, pengelolaan data pelanggan, manajemen produk, transaksi pembayaran, serta pelayanan informasi secara digital baik bagi pelanggan maupun admin toko.
 
-Website dibangun menggunakan framework Laravel 13 sebagai backend dan Livewire untuk mendukung komponen interaktif pada frontend. Data sistem disimpan menggunakan basis data MySQL sebagai media penyimpanan utama. Selain itu, website juga terintegrasi dengan Midtrans sebagai payment gateway untuk mendukung proses pembayaran online dan Fonnte API untuk mendukung pengiriman notifikasi WhatsApp kepada pelanggan.
+Website dibangun menggunakan framework Laravel 13 sebagai backend dan Livewire untuk mendukung komponen interaktif pada frontend. Data sistem disimpan menggunakan basis data MySQL sebagai media penyimpanan utama. Selain itu, website juga terintegrasi dengan Pakasir sebagai layanan pembayaran (hosted QRIS) untuk mendukung proses pembayaran online dan Fonnte API untuk mendukung pengiriman notifikasi WhatsApp kepada pelanggan.
 
 Sistem ini juga dilengkapi dengan fitur AI Chatbot yang berfungsi sebagai asisten virtual untuk membantu pelanggan mendapatkan informasi secara otomatis terkait produk, harga, stok, metode pembayaran, dan status pesanan. Chatbot dirancang untuk memberikan pelayanan selama 24 jam sehingga pelanggan dapat memperoleh respon dengan lebih cepat tanpa harus menunggu admin membalas pesan secara manual.
 
@@ -528,7 +528,7 @@ Pengguna dapat menambahkan, mengurangi jumlah, atau menghapus produk dari keranj
 
 1.  Checkout dan Pembayaran
 
-Pengguna dapat melakukan proses pemesanan dengan mengisi alamat pengiriman, memilih metode pembayaran, serta melakukan pembayaran online melalui Midtrans menggunakan berbagai metode pembayaran digital.
+Pengguna dapat melakukan proses pemesanan dengan mengisi alamat pengiriman, memilih metode pembayaran, serta melakukan pembayaran online melalui Pakasir (tautan pembayaran/QRIS) yang telah disediakan.
 
 1.  Riwayat Pesanan
 
@@ -630,7 +630,7 @@ Berdasarkan hasil analisis dan pemetaan interaksi sistem melalui use case diagra
 
 1.  Pilih Alamat: Memasukkan alamat pengiriman.
 2.  Pilih Kurir & Ongkir: Menghitung ongkos kirim secara real-time via Biteship.
-3.  Bayar Tagihan: Memproses pembayaran secara online terintegrasi Midtrans.
+3.  Bayar Tagihan: Memproses pembayaran secara online terintegrasi Pakasir (tautan pembayaran/QRIS).
 4.  Gunakan Kupon Promo: Untuk memasukkan kode diskon opsional.
     
     1.  Lacak Pengiriman: Pelanggan dapat memantau pergerakan kurir pengiriman Biteship secara real-time di halaman pesanan.
@@ -668,7 +668,7 @@ Pengembangan dan pengujian website Gegares dilakukan menggunakan perangkat keras
     4.  Kartu Grafis : NVIDIA GeForce GTX 750 Ti 2 GB
     
 
-Spesifikasi perangkat keras tersebut dinilai cukup untuk mendukung proses pengembangan dan pengujian sistem berbasis web menggunakan Laravel 13, database MySQL, AI Chatbot, serta integrasi API seperti Midtrans dan Fonnte. Selain itu, perangkat tersebut juga mampu menjalankan web server lokal, browser, dan editor kode secara bersamaan dengan performa yang stabil.
+Spesifikasi perangkat keras tersebut dinilai cukup untuk mendukung proses pengembangan dan pengujian sistem berbasis web menggunakan Laravel 13, database MySQL, AI Chatbot, serta integrasi API seperti Pakasir dan Fonnte. Selain itu, perangkat tersebut juga mampu menjalankan web server lokal, browser, dan editor kode secara bersamaan dengan performa yang stabil.
 
 2\. Analisis Kebutuhan Perangkat Lunak (Software)
 
@@ -682,7 +682,7 @@ Perangkat lunak yang digunakan dalam pengembangan website Gegares adalah sebagai
     6.  Livewire digunakan untuk mendukung tampilan website yang lebih interaktif tanpa perlu melakukan reload halaman secara penuh.
     7.  Editor kode yang digunakan adalah Visual Studio Code untuk menulis dan mengelola source code program.
     8.  Browser seperti Google Chrome dan Microsoft Edge digunakan untuk menjalankan serta menguji tampilan website pada berbagai kondisi perangkat.
-    9.  Sistem pembayaran online menggunakan layanan payment gateway Midtrans yang terintegrasi melalui API.
+    9.  Sistem pembayaran online menggunakan layanan payment gateway Pakasir yang terintegrasi melalui API.
     10.  Sistem notifikasi WhatsApp menggunakan layanan API Fonnte untuk mendukung pengiriman pesan otomatis kepada pelanggan.
     11.  Sistem AI Chatbot digunakan untuk membantu pelayanan pelanggan secara otomatis dalam memberikan informasi terkait produk, pembayaran, dan status pesanan.
     
@@ -779,7 +779,7 @@ Gambar 3. 6 Activity Diagram Pelanggan
 
 Alur activity diagram Pelanggan dimulai saat pelanggan membuka halaman website Gegares, yang direspon oleh sistem dengan menampilkan halaman depan. Sebelum login, pelanggan diarahkan pada bilah sinkronisasi (fork) untuk mengakses beberapa menu secara bebas dan dinamis, meliputi membuka halaman produk, detail produk, tentang toko, kontak toko, serta menu login. Jika pelanggan memilih menu login dan belum memiliki akun, alur akan diarahkan melalui keputusan (decision) menuju halaman pendaftaran, di mana pelanggan mengklik daftar, mengisi formulir registrasi, dan diarahkan kembali untuk mengisi formulir login. Apabila pelanggan sudah memiliki akun, pelanggan dapat langsung mengisi formulir login untuk divalidasi oleh sistem. Setelah validasi login dinyatakan benar, sistem akan menampilkan halaman depan dalam kondisi login aktif.
 
-Setelah masuk ke sistem, pelanggan memulai aktivitas transaksi dengan mencari dan memilih jajanan pasar, lalu memasukkannya ke keranjang belanja atau daftar favorit (wishlist), yang segera direspon sistem dengan menampilkan keranjang atau wishlist terbaru. Proses dilanjutkan dengan melakukan checkout pesanan, di mana pelanggan mengisi alamat pengiriman dan memilih kurir untuk dihitung tarif pengirimannya (ongkir) secara otomatis via API Biteship. Pelanggan selanjutnya diarahkan untuk melakukan pembayaran secara online via payment gateway Midtrans. Sistem akan memverifikasi status pembayaran tersebut secara berulang hingga dinyatakan sukses. Setelah pembayaran sukses, pelanggan dapat memantau status pengiriman pada menu pesanan saya. Ketika pesanan telah tiba di tujuan, pelanggan melakukan konfirmasi penerimaan pesanan untuk disimpan sistem sebagai pesanan selesai. Sebagai penutup, pelanggan dapat menulis ulasan produk (berupa rating, teks, dan foto) untuk disimpan ke basis data, sebelum akhirnya mengklik logout untuk mengakhiri sesi interaksi dengan sistem.
+Setelah masuk ke sistem, pelanggan memulai aktivitas transaksi dengan mencari dan memilih jajanan pasar, lalu memasukkannya ke keranjang belanja atau daftar favorit (wishlist), yang segera direspon sistem dengan menampilkan keranjang atau wishlist terbaru. Proses dilanjutkan dengan melakukan checkout pesanan, di mana pelanggan mengisi alamat pengiriman dan memilih kurir untuk dihitung tarif pengirimannya (ongkir) secara otomatis via API Biteship. Pelanggan selanjutnya diarahkan untuk melakukan pembayaran secara online via layanan Pakasir (tautan pembayaran/QRIS). Sistem akan memverifikasi status pembayaran melalui API Pakasir hingga dinyatakan sukses. Setelah pembayaran sukses, pelanggan dapat memantau status pengiriman pada menu pesanan saya. Ketika pesanan telah tiba di tujuan, pelanggan melakukan konfirmasi penerimaan pesanan untuk disimpan sistem sebagai pesanan selesai. Sebagai penutup, pelanggan dapat menulis ulasan produk (berupa rating, teks, dan foto) untuk disimpan ke basis data, sebelum akhirnya mengklik logout untuk mengakhiri sesi interaksi dengan sistem.
 
 #### <a id="_Toc230995861"></a>Class Diagram
 
@@ -942,7 +942,7 @@ Tabel 3. 8 Tabel coupons
 
 8\. Tabel orders
 
-Tabel ini bertindak sebagai entitas transaksi utama yang menyimpan rangkuman nota pembelian pelanggan, merekam biaya subtotal, kupon diskon yang digunakan, tarif ongkos kirim, jenis kurir logistik Biteship, token integrasi gerbang pembayaran Midtrans, catatan tambahan belanja, serta status pelacakan logistik pengiriman dari awal hingga selesai.
+Tabel ini bertindak sebagai entitas transaksi utama yang menyimpan rangkuman nota pembelian pelanggan, merekam biaya subtotal, kupon diskon yang digunakan, tarif ongkos kirim, jenis kurir logistik Biteship, tautan/ID integrasi layanan pembayaran Pakasir, catatan tambahan belanja, serta status pelacakan logistik pengiriman dari awal hingga selesai.
 
 Tabel 3. 9 Tabel orders
 
@@ -960,10 +960,10 @@ Tabel 3. 9 Tabel orders
 | 10 | total | decimal(12,2) |  | Total biaya akhir transaksi yang dibayar pelanggan. |
 | 11 | status | enum(…) |  | Status pesanan (‘pending’, ‘awaiting\_payment’, ‘paid’, ‘processing’, ‘shipped’, ‘completed’, ‘cancelled’). |
 | 12 | coupon\_id | bigint(20) unsigned | FK | ID kupon yang digunakan (merujuk ke coupons.id). |
-| 13 | payment\_status | enum(…) |  | Status bayar Midtrans (‘unpaid’, ‘pending’, ‘paid’, ‘failed’, ‘expired’). |
+| 13 | payment\_status | enum(…) |  | Status pembayaran (unpaid, pending, paid, failed, expired). |
 | 14 | payment\_method | varchar(255) |  | Jenis metode pembayaran (misal: bank\_transfer, gopay). |
-| 15 | snap\_token | varchar(255) |  | Token snap bayar Midtrans untuk memicu popup widget. |
-| 16 | midtrans\_order\_id | varchar(255) |  | Kode rujukan ID order Midtrans. |
+| 15 | pakasir\_link | varchar(1024) |  | Tautan pembayaran Pakasir (hosted payment / QRIS) untuk diarahkan ke halaman bayar. |
+| 16 | pakasir\_order\_id | varchar(255) |  | Kode rujukan ID order pada layanan Pakasir. |
 | 17 | shipping\_courier | varchar(255) |  | Kode kurir ekspedisi (misal: gojek, grab, jne). |
 | 18 | shipping\_service | varchar(255) |  | Jenis layanan kurir (misal: instant, reg). |
 | 19 | tracking\_number | varchar(255) |  | Nomor resi pelacakan kurir dari Biteship. |

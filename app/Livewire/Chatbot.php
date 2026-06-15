@@ -498,7 +498,7 @@ Jam Operasional: Senin - Minggu, 07:00 - 21:00 WIB
 Lokasi: {$address}
 Kontak: WhatsApp ({$phone}), Email ({$email})
 
-METODE PEMBAYARAN (via Midtrans):
+METODE PEMBAYARAN (via Pakasir):
 - QRIS (GoPay, ShopeePay, Dana, OVO)
 - Virtual Account (BCA, BNI, Mandiri, BRI, Permata)
 - Kartu Kredit/Debit
