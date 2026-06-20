@@ -359,10 +359,9 @@ class Chatbot extends Component
     {
         $memory = [];
         $textMessages = array_filter($this->chatHistory, function ($chat) {
-            // Only include text messages, skip images and the initial greeting
+            // Only include text messages, skip images
             return isset($chat['content'])
-                && (!isset($chat['type']) || $chat['type'] === 'text')
-                && !isset($chat['suggestions']); // Skip greeting with suggestions
+                && (!isset($chat['type']) || $chat['type'] === 'text');
         });
 
         // Take last N messages
@@ -619,6 +618,8 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
    ---BUY---NamaProduk|Jumlah
    NamaProduk harus PERSIS sesuai dengan daftar produk di katalog. Jumlah harus berupa angka bulat positif (default 1 jika user tidak menentukan jumlah).
    Contoh: ---BUY---Klepon|4
+   
+   ⚠️ DILARANG KERAS menyertakan tag ---BUY--- jika user mengonfirmasi bahwa mereka sudah membayar atau jika pesanan yang dimaksud sudah berstatus Paid (Lunas) di data pesanan. Jika user mengatakan 'saya sudah bayar' atau sejenisnya, cukup konfirmasikan status pembayaran mereka dari data pesanan yang diberikan (jika terdeteksi Paid) dan jangan menambahkan kembali produk tersebut ke keranjang belanja.
 
 # PRODUK TERLARIS (BEST SELLERS)
 {$bestSellers}

@@ -249,4 +249,59 @@ class ChatbotPaidOrderNotificationTest extends TestCase
         // No order should be created
         $this->assertEquals(0, Order::count());
     }
+
+    public function test_it_preserves_assistant_replies_with_suggestions_in_history()
+    {
+        $user = User::factory()->create();
+
+        // 1. Setup mock chatbot history with suggestions
+        $history = [
+            [
+                'role' => 'user',
+                'type' => 'text',
+                'content' => 'pesankan saya 4 Klepon',
+                'time' => '05:00',
+            ],
+            [
+                'role' => 'assistant',
+                'type' => 'text',
+                'content' => 'Saya sudah memasukkan Klepon',
+                'time' => '05:01',
+                'suggestions' => ['Lacak pengiriman'], // suggestions key present!
+            ]
+        ];
+
+        // 2. Mock Gemini chat method
+        $mockGemini = $this->createMock(\App\Services\GeminiService::class);
+        $mockGemini->expects($this->once())
+            ->method('chat')
+            ->with(
+                $this->equalTo('saya sudah bayar'),
+                $this->anything(),
+                $this->callback(function($historyPassed) {
+                    // History should contain the user message and the assistant message (which had suggestions)
+                    return count($historyPassed) === 2
+                        && $historyPassed[0]['role'] === 'user'
+                        && $historyPassed[0]['content'] === 'pesankan saya 4 Klepon'
+                        && $historyPassed[1]['role'] === 'assistant'
+                        && $historyPassed[1]['content'] === 'Saya sudah memasukkan Klepon';
+                })
+            )
+            ->willReturn("Terima kasih Kak! Pembayaran Anda sudah kami terima.");
+
+        $this->app->instance(\App\Services\GeminiService::class, $mockGemini);
+
+        $hash = hash_hmac('sha256', serialize($history), config('app.key'));
+
+        $this->actingAs($user)
+            ->withSession([
+                'gegares_chat_history' => $history,
+                'gegares_chat_hash' => $hash,
+            ]);
+
+        Livewire::test(Chatbot::class)
+            ->set('isOpen', true)
+            ->call('processAi', 'saya sudah bayar')
+            ->assertSee('Terima kasih Kak! Pembayaran Anda sudah kami terima.');
+    }
 }
