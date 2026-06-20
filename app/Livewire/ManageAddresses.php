@@ -17,6 +17,8 @@ class ManageAddresses extends Component
     public $showModal = false;
     public $isEditing = false;
     public $editId = null;
+    public $showDeleteModal = false;
+    public $addressIdToDelete = null;
 
     // Form fields
     public $label = 'Rumah';
@@ -249,8 +251,21 @@ class ManageAddresses extends Component
         $this->loadAddresses();
     }
 
-    public function deleteAddress($id, BiteshipService $biteshipService)
+    public function confirmDelete($id)
     {
+        $this->addressIdToDelete = $id;
+        $this->showDeleteModal = true;
+    }
+
+    public function deleteAddress($id = null, BiteshipService $biteshipService = null)
+    {
+        $id = $id ?? $this->addressIdToDelete;
+        if (!$id) return;
+
+        if (!$biteshipService) {
+            $biteshipService = app(BiteshipService::class);
+        }
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $address = Address::where('user_id', $user->id)->where('id', $id)->first();
@@ -266,6 +281,9 @@ class ManageAddresses extends Component
         if ($this->selectedAddressId == $id) {
             $this->selectedAddressId = optional($this->addresses->first())->id ?? null;
         }
+
+        $this->showDeleteModal = false;
+        $this->addressIdToDelete = null;
     }
 
     public function resetFields()
