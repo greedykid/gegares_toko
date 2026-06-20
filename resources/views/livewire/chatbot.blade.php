@@ -1,4 +1,4 @@
-<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end" x-data="{ open: @entangle('isOpen') }" id="gegares-chatbot">
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end" x-data="{ open: @entangle('isOpen'), showScrollBottom: false }" id="gegares-chatbot">
     {{-- Backdrop Overlay on Mobile --}}
     <div x-show="open" 
          x-transition:enter="transition ease-out duration-300"
@@ -19,30 +19,32 @@
          x-transition:leave="transition transform ease-in duration-200"
          x-transition:leave-start="opacity-100 translate-y-0 scale-100 origin-bottom-right"
          x-transition:leave-end="opacity-0 translate-y-10 scale-90 origin-bottom-right"
-         class="fixed inset-x-0 bottom-0 sm:static z-50 sm:z-auto sm:mb-4 w-full sm:w-[400px] h-[85vh] sm:h-[600px] bg-white dark:bg-slate-950 sm:rounded-2xl rounded-t-3xl shadow-2xl dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-t border-slate-200/60 dark:border-slate-800/60 sm:border flex flex-col overflow-hidden"
+         class="fixed inset-0 sm:static z-50 sm:z-auto sm:mb-4 w-full sm:w-[400px] h-[100dvh] sm:h-[600px] bg-white dark:bg-slate-950 rounded-none sm:rounded-2xl shadow-2xl dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-0 sm:border border-slate-200/60 dark:border-slate-800/60 flex flex-col overflow-hidden relative"
          style="display: none;">
         
         {{-- ═══ Header ═══ --}}
-        <div class="relative px-4 py-3.5 bg-primary-600 dark:bg-primary-700 flex items-center justify-between">
+        <div class="relative px-4 py-3.5 bg-primary-700 dark:bg-primary-900 border-b border-primary-800 dark:border-primary-950 flex items-center justify-between">
             {{-- Brand --}}
             <div class="flex items-center gap-3">
                 <div class="relative">
-                    <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="white">
-                            <circle cx="12" cy="3.5" r="1" />
-                            <rect x="11.25" y="4" width="1.5" height="2" rx="0.75" />
-                            <rect x="5" y="7" width="14" height="10" rx="4" />
-                            <circle cx="9" cy="12" r="1.5" fill="currentColor" class="text-primary-600 dark:text-primary-700" />
-                            <circle cx="15" cy="12" r="1.5" fill="currentColor" class="text-primary-600 dark:text-primary-700" />
-                            <path d="M7 18.5 L5.5 21 L9 19 Z" />
+                    <div class="w-9 h-9 rounded-xl bg-primary-800 dark:bg-primary-950 flex items-center justify-center text-white">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="4" r="1.5" fill="currentColor" />
+                            <line x1="12" y1="5.5" x2="12" y2="8" />
+                            <rect x="4" y="8" width="16" height="12" rx="4" fill="currentColor" fill-opacity="0.15" />
+                            <circle cx="9" cy="13" r="1.5" fill="currentColor" />
+                            <circle cx="15" cy="13" r="1.5" fill="currentColor" />
+                            <path d="M10 17c1 1 3 1 4 0" />
+                            <rect x="2" y="12" width="2" height="4" rx="1" fill="currentColor" />
+                            <rect x="20" y="12" width="2" height="4" rx="1" fill="currentColor" />
                         </svg>
                     </div>
                     {{-- Online indicator --}}
-                    <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-primary-600 dark:border-primary-700 rounded-full"></div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-primary-700 dark:border-primary-900 rounded-full"></div>
                 </div>
                 <div>
                     <h3 class="font-bold text-white text-sm tracking-tight leading-none">Gegares Assistant</h3>
-                    <p class="text-[10px] text-primary-100 mt-0.5 font-medium">Online • Siap membantu</p>
+                    <p class="text-[10px] text-primary-200 dark:text-primary-400 mt-1 font-medium">Online • Siap membantu</p>
                 </div>
             </div>
 
@@ -50,13 +52,13 @@
             <div class="flex items-center gap-0.5">
                 <button wire:click="clearChat" 
                         onclick="confirm('Hapus riwayat chat?') || event.stopImmediatePropagation()"
-                        class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all" 
+                        class="p-2 text-primary-100 hover:text-white hover:bg-primary-800 dark:hover:bg-primary-950 rounded-lg transition-all" 
                         aria-label="Hapus Riwayat Chat"
                         title="Hapus Riwayat Chat">
                     <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                 </button>
                 <button @click="open = false" 
-                        class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                        class="p-2 text-primary-100 hover:text-white hover:bg-primary-800 dark:hover:bg-primary-950 rounded-lg transition-all"
                         aria-label="Tutup Chatbot">
                     <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
@@ -66,20 +68,23 @@
         {{-- ═══ Messages ═══ --}}
         <div class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-50/50 dark:bg-slate-950" 
              id="chat-messages"
+             @scroll="showScrollBottom = $el.scrollHeight - $el.scrollTop - $el.clientHeight > 150"
              x-init="if($wire.isOpen) { setTimeout(() => $el.scrollTo({ top: $el.scrollHeight, behavior: 'instant' }), 100) }"
              wire:poll.10s="checkRecentPaidOrders">
             @foreach($chatHistory as $chatIndex => $chat)
                 <div class="flex {{ $chat['role'] === 'user' ? 'justify-end' : 'justify-start' }}">
                     @if($chat['role'] === 'assistant')
                         {{-- Bot Avatar --}}
-                        <div class="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0 mr-2 mt-1">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" class="text-primary-600 dark:text-primary-400">
-                                <circle cx="12" cy="3.5" r="0.9" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
-                                <rect x="11.3" y="4" width="1.4" height="1.8" rx="0.7" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
-                                <rect x="5.5" y="6.5" width="13" height="9.5" rx="3.8" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
-                                <circle cx="9" cy="11.5" r="1.3" fill="white" />
-                                <circle cx="15" cy="11.5" r="1.3" fill="white" />
-                                <path d="M7.2 17 L5.8 19.8 L9 17.5 Z" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
+                        <div class="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0 mr-2 mt-1 text-primary-600 dark:text-primary-400">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="4" r="1.5" fill="currentColor" />
+                                <line x1="12" y1="5.5" x2="12" y2="8" />
+                                <rect x="4" y="8" width="16" height="12" rx="4" fill="currentColor" fill-opacity="0.15" />
+                                <circle cx="9" cy="13" r="1.5" fill="currentColor" />
+                                <circle cx="15" cy="13" r="1.5" fill="currentColor" />
+                                <path d="M10 17c1 1 3 1 4 0" />
+                                <rect x="2" y="12" width="2" height="4" rx="1" fill="currentColor" />
+                                <rect x="20" y="12" width="2" height="4" rx="1" fill="currentColor" />
                             </svg>
                         </div>
                     @endif
@@ -303,14 +308,16 @@
             {{-- Typing Indicator --}}
             @if($isTyping)
                 <div class="flex justify-start">
-                    <div class="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0 mr-2 mt-1">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24">
-                            <circle cx="12" cy="3.5" r="0.9" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
-                            <rect x="11.3" y="4" width="1.4" height="1.8" rx="0.7" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
-                            <rect x="5.5" y="6.5" width="13" height="9.5" rx="3.8" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
-                            <circle cx="9" cy="11.5" r="1.3" fill="white" />
-                            <circle cx="15" cy="11.5" r="1.3" fill="white" />
-                            <path d="M7.2 17 L5.8 19.8 L9 17.5 Z" class="text-primary-600 dark:text-primary-400" fill="currentColor" />
+                    <div class="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0 mr-2 mt-1 text-primary-600 dark:text-primary-400">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="4" r="1.5" fill="currentColor" />
+                            <line x1="12" y1="5.5" x2="12" y2="8" />
+                            <rect x="4" y="8" width="16" height="12" rx="4" fill="currentColor" fill-opacity="0.15" />
+                            <circle cx="9" cy="13" r="1.5" fill="currentColor" />
+                            <circle cx="15" cy="13" r="1.5" fill="currentColor" />
+                            <path d="M10 17c1 1 3 1 4 0" />
+                            <rect x="2" y="12" width="2" height="4" rx="1" fill="currentColor" />
+                            <rect x="20" y="12" width="2" height="4" rx="1" fill="currentColor" />
                         </svg>
                     </div>
                     <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1"
@@ -324,8 +331,27 @@
             @endif
         </div>
 
+        {{-- Floating Scroll to Bottom Button --}}
+        <div class="relative w-full">
+            <button x-show="showScrollBottom"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                    @click="const container = document.getElementById('chat-messages'); if(container) { container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); }"
+                    class="absolute -top-12 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 rounded-full shadow-lg border border-slate-200/80 dark:border-slate-800/80 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-700 dark:hover:text-primary-300 transition-all active:scale-95 cursor-pointer"
+                    style="display: none;">
+                <svg class="w-4 h-4 text-primary-600 dark:text-primary-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                </svg>
+                <span>Lihat pesan baru</span>
+            </button>
+        </div>
+
         {{-- ═══ Footer / Input ═══ --}}
-        <div class="p-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800/60">
+        <div class="p-3 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800/80">
             {{-- Honeypot --}}
             <div class="hidden" aria-hidden="true">
                 <input type="text" wire:model="honeyPot" tabindex="-1" autocomplete="off">
@@ -336,10 +362,10 @@
                 <div class="relative">
                     <input type="file" wire:model="image" class="hidden" id="chatbot-image-upload" accept="image/*">
                     <label for="chatbot-image-upload" 
-                           class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:bg-primary-50 dark:hover:bg-primary-900/40 hover:text-primary-600 dark:hover:text-primary-400 transition-all cursor-pointer active:scale-95" 
+                           class="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-400 dark:hover:border-primary-700 transition-all cursor-pointer active:scale-95 shadow-sm" 
                            aria-label="Unggah foto jajanan (Snap & Buy)"
                            title="Snap & Buy">
-                        <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"/></svg>
+                        <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"/></svg>
                     </label>
                 </div>
 
@@ -350,7 +376,7 @@
                            wire:keydown.enter="sendMessage"
                            placeholder="Ketik pesan..."
                            aria-label="Ketik pesan di sini"
-                           class="w-full pl-3.5 pr-9 py-2.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50 rounded-xl text-sm dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-400 transition-all">
+                           class="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-sm">
                     <button @click="$wire.sendMessage()" 
                             class="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all active:scale-90"
                             aria-label="Kirim pesan">
@@ -358,7 +384,7 @@
                     </button>
                 </div>
             </div>
-            <p class="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-2 select-none">Powered by Gegares AI</p>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-2.5 select-none font-medium">Powered by Gegares AI</p>
         </div>
     </div>
 
