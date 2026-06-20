@@ -227,21 +227,47 @@ class OrderController extends Controller
         if (!$note) return '';
 
         $mappings = [
+            // Confirmed / Allocated
             'Order has been confirmed. Locating nearest driver to pick up.' => 'Pesanan kurir telah dikonfirmasi. Mencari kurir terdekat untuk penjemputan.',
             'Courier has been allocated. Waiting to pick up.' => 'Kurir telah ditemukan dan siap menjemput pesanan.',
+            'Courier order is confirmed' => 'Pesanan kurir telah dikonfirmasi',
+            'Courier is allocated and ready to pick up' => 'Kurir telah ditemukan dan siap menjemput',
+            'has been notified to pick up' => 'telah diberitahu untuk menjemput',
+            'is notified to pick up' => 'telah diberitahu untuk menjemput',
+            'Pickup number' => 'Nomor penjemputan',
+            'is trying to find courier' => 'sedang mencoba mencarikan kurir',
+            'Failed to find courier' => 'Gagal menemukan kurir untuk penjemputan',
+            'no courier available' => 'tidak ada kurir tersedia',
+
+            // Picking up
             'Courier is on the way to pick up item.' => 'Kurir sedang dalam perjalanan menuju lokasi penjemputan.',
+            'Courier is on the way to pick up location' => 'Kurir sedang menuju lokasi penjemputan',
+
+            // Picked up
             'Item has been picked and ready to be shipped.' => 'Pesanan telah dijemput dan siap untuk dikirim.',
+            'Item has been picked by courier' => 'Pesanan telah diambil oleh kurir',
+
+            // In Transit / Dropping off
             'Item is on the way to customer.' => 'Paket sedang dalam perjalanan menuju alamat tujuan.',
-            'Order is on the way back to the origin.' => 'Pesanan sedang dalam proses pengembalian ke penjual.',
+            'Courier is dropping off item to destination' => 'Kurir sedang mengantar pesanan ke tujuan',
+            
+            // Hold / Issue
             'Your shipment is on hold at the moment.' => 'Pengiriman Anda sedang ditangguhkan sementara.',
+            'Order is on hold for a moment due to shipment issue' => 'Pesanan ditangguhkan sementara karena kendala pengiriman',
+            
+            // Delivered
             'Item has been delivered.' => 'Pesanan telah sampai di tujuan.',
+            'Order has been delivered' => 'Pesanan telah sampai di tujuan',
+            'Order is delivered' => 'Pesanan telah sampai di tujuan',
+            'Order is completed' => 'Pesanan selesai',
+
+            // Rejected / Cancelled / Returned
             'Your shipment has been rejected.' => 'Pengiriman Anda telah ditolak oleh kurir.',
             'Your shipment is canceled because there\'s no courier available.' => 'Pengiriman dibatalkan karena tidak ada kurir yang tersedia saat ini.',
+            'rejected because no courier picking up order' => 'ditolak karena tidak ada kurir yang menjemput pesanan',
+            'Order is on the way back to the origin.' => 'Pesanan sedang dalam proses pengembalian ke penjual.',
             'Order successfully returned.' => 'Pesanan telah berhasil dikembalikan ke penjual.',
             'Order successfully disposed.' => 'Pesanan telah berhasil dihancurkan/dibuang.',
-            'has been notified to pick up' => 'telah diberitahu untuk menjemput',
-            'Pickup number' => 'Nomor penjemputan',
-            'rejected because no courier picking up order' => 'ditolak karena tidak ada kurir yang menjemput pesanan',
         ];
 
         $translated = $note;

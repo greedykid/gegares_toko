@@ -22,7 +22,7 @@
 
 **2026**
 
-# <a id="_Toc230995803"></a>PERNYATAAN ORISINALITAS DAN PUBLIKASI
+# <a id="_Toc232721189"></a>PERNYATAAN ORISINALITAS DAN PUBLIKASI
 
 Saya yang bertanda tangan di bawah ini,
 
@@ -39,7 +39,7 @@ Jakarta, tgl bulan 2024
 
 (Rizki Arbiansyah)
 
-# <a id="_Toc230995804"></a>LEMBAR PENGESAHAN
+# <a id="_Toc232721190"></a>LEMBAR PENGESAHAN
 
 | Judul Skripsi : | Pengembangan Chatbot Ecommerce Jajanan Pasar Kue Tradisional Berbasis Web Menggunakan Laravel dan Mysql |
 | --- | --- |
@@ -64,9 +64,7 @@ Jakarta, tgl bulan 2024
 |  |  |
 | **(Dr. Ana Kurniawati, ST., MMSI)** | **(Dr. Edi Sukirman, S.Si., MM., M.I.Kom.)** |
 
-# <a id="_Toc230995805"></a>
-
-# ABSTRAK
+# <a id="_Toc232721191"></a>ABSTRAK
 
 <a id="_Hlk223914135"></a>Rizki Arbiansyah, 11122292
 
@@ -82,7 +80,7 @@ Isi abstrak
 
 Daftar Pustaka (tahun awal-tahun akhir)
 
-# <a id="_Toc230995806"></a>ABSTRACT
+# <a id="_Toc232721192"></a>ABSTRACT
 
 Rizki Arbiansyah, 11122292
 
@@ -96,7 +94,7 @@ Keywords:
 
 Bibliography (tahun awal-tahun akhir)
 
-# <a id="_Toc230995807"></a>KATA PENGANTAR
+# <a id="_Toc232721193"></a>KATA PENGANTAR
 
 Segala puji dan Syukur penulis panjatkan ke Tuhan Yang Maha Kuasa yang telah memberikan berkat, anugerah dan karunia yang melimpah, sehingga penulis dapat menyelesaikan tugas akhir ini.
 
@@ -119,133 +117,135 @@ Walaupun banyak kesulitan yang penulis harus hadapi ketika menyusun tugas akhir 
 |  |
 | Rizki Arbiansyah |
 
-# <a id="_Toc230995808"></a>DAFTAR ISI
+# <a id="_Toc232721194"></a>DAFTAR ISI
 
-[PERNYATAAN ORISINALITAS DAN PUBLIKASI 2](#_Toc230995803)
+[PERNYATAAN ORISINALITAS DAN PUBLIKASI ii](#_Toc232721189)
 
-[LEMBAR PENGESAHAN 3](#_Toc230995804)
+[LEMBAR PENGESAHAN iii](#_Toc232721190)
 
-[ABSTRAK 4](#_Toc230995805)
+[ABSTRAK iv](#_Toc232721191)
 
-[ABSTRACT 5](#_Toc230995806)
+[ABSTRACT v](#_Toc232721192)
 
-[KATA PENGANTAR 6](#_Toc230995807)
+[KATA PENGANTAR vi](#_Toc232721193)
 
-[DAFTAR ISI 8](#_Toc230995808)
+[DAFTAR ISI viii](#_Toc232721194)
 
-[DAFTAR TABEL 11](#_Toc230995809)
+[DAFTAR TABEL xi](#_Toc232721195)
 
-[DAFTAR GAMBAR 12](#_Toc230995810)
+[DAFTAR GAMBAR xii](#_Toc232721196)
 
-[DAFTAR LAMPIRAN 13](#_Toc230995811)
+[DAFTAR LAMPIRAN xiii](#_Toc232721197)
 
-[1\. PENDAHULUAN 14](#_Toc230995812)
+[1\. PENDAHULUAN 1](#_Toc232721198)
 
-[1.1 Latar Belakang 14](#_Toc230995813)
+[1.1 Latar Belakang 1](#_Toc232721199)
 
-[1.2 Rumusan Masalah 15](#_Toc230995814)
+[1.2 Rumusan Masalah 2](#_Toc232721200)
 
-[1.3 Tujuan Penelititan 16](#_Toc230995815)
+[1.3 Tujuan Penelititan 3](#_Toc232721201)
 
-[1.4 Manfaat Penelitian 16](#_Toc230995816)
+[1.4 Manfaat Penelitian 3](#_Toc232721202)
 
-[1.5 Sistematika Penulisan 17](#_Toc230995817)
+[1.5 Sistematika Penulisan 4](#_Toc232721203)
 
-[2\. TINJUAN PUSTAKA 18](#_Toc230995818)
+[2\. TINJUAN PUSTAKA 5](#_Toc232721204)
 
-[2.1 Jajanan Pasar 18](#_Toc230995819)
+[2.1 Jajanan Pasar 5](#_Toc232721205)
 
-[2.2 E-Commerce 18](#_Toc230995820)
+[2.2 E-Commerce 5](#_Toc232721206)
 
-[2.3 Website 18](#_Toc230995821)
+[2.3 Website 5](#_Toc232721207)
 
-[2.4 MySQL 19](#_Toc230995822)
+[2.4 MySQL 6](#_Toc232721208)
 
-[2.5 PHP (Hypertext Preprocessor) 19](#_Toc230995823)
+[2.5 PHP (Hypertext Preprocessor) 6](#_Toc232721209)
 
-[2.6 Laravel 19](#_Toc230995824)
+[2.6 Laravel 6](#_Toc232721210)
 
-[2.7 Unified Modeling Language (UML) 20](#_Toc230995825)
+[2.7 Unified Modeling Language (UML) 7](#_Toc232721211)
 
-[2.7.1 Use Case Diagram 20](#_Toc230995826)
+[2.7.1 Use Case Diagram 7](#_Toc232721212)
 
-[2.7.2 Class Diagram 21](#_Toc230995827)
+[2.7.2 Class Diagram 8](#_Toc232721213)
 
-[2.7.3 Activity Diagram 23](#_Toc230995828)
+[2.7.3 Activity Diagram 10](#_Toc232721214)
 
-[2.8 Struktur Navigasi 24](#_Toc230995829)
+[2.8 Struktur Navigasi 11](#_Toc232721215)
 
-[2.8.1 Struktur Navigasi Linier 24](#_Toc230995830)
+[2.8.1 Struktur Navigasi Linier 11](#_Toc232721216)
 
-[2.8.2 Struktur Navigasi Hirarki 25](#_Toc230995831)
+[2.8.2 Struktur Navigasi Hirarki 12](#_Toc232721217)
 
-[2.8.3 Struktur Navigasi Non-Linier 25](#_Toc230995832)
+[2.8.3 Struktur Navigasi Non-Linier 12](#_Toc232721218)
 
-[2.8.4 Struktur Navigasi Campuran 26](#_Toc230995833)
+[2.8.4 Struktur Navigasi Campuran 13](#_Toc232721219)
 
-[2.9 XAMPP 26](#_Toc230995834)
+[2.9 XAMPP 13](#_Toc232721220)
 
-[2.10 HTML (HyperText Markup Language) 27](#_Toc230995835)
+[2.10 HTML (HyperText Markup Language) 14](#_Toc232721221)
 
-[2.11 Visual Studio Code 27](#_Toc230995836)
+[2.11 Visual Studio Code 14](#_Toc232721222)
 
-[2.12 CSS (Cascading Style Sheets) 27](#_Toc230995837)
+[2.12 CSS (Cascading Style Sheets) 14](#_Toc232721223)
 
-[2.13 Javascript 28](#_Toc230995838)
+[2.13 Javascript 15](#_Toc232721224)
 
-[2.14 Pakasir 28](#_Toc230995839)
+[2.14 Pakasir 15](#_Toc232721225)
 
-[2.15 Fonnte 28](#_Toc230995840)
+[2.15 Fonnte 16](#_Toc232721226)
 
-[2.16 Balsamiq 29](#_Toc230995841)
+[2.16 Balsamiq 16](#_Toc232721227)
 
-[2.17 Black-box Testing 29](#_Toc230995842)
+[2.17 Black-box Testing 16](#_Toc232721228)
 
-[2.18 Chatbot 29](#_Toc230995843)
+[2.18 Chatbot 17](#_Toc232721229)
 
-[2.19 Artificial Intelligence (AI) 30](#_Toc230995844)
+[2.19 Artificial Intelligence (AI) 17](#_Toc232721230)
 
-[2.20 Application Programming Interface (API) 30](#_Toc230995845)
+[2.20 Application Programming Interface (API) 17](#_Toc232721231)
 
-[3\. METODE PENELITIAN 31](#_Toc230995846)
+[3\. METODE PENELITIAN 18](#_Toc232721232)
 
-[3.1 Gambaran Umum Penelitian 31](#_Toc230995847)
+[3.1 Gambaran Umum Penelitian 18](#_Toc232721233)
 
-[3.1.1 Gambaran Umum Website 31](#_Toc230995848)
+[3.1.1 Gambaran Umum Website 18](#_Toc232721234)
 
-[3.2 Tahap Perencanaan 34](#_Toc230995849)
+[3.2 Tahap Perencanaan 21](#_Toc232721235)
 
-[3.2.1 Melakukan Interview 35](#_Toc230995850)
+[3.2.1 Melakukan Interview 22](#_Toc232721236)
 
-[3.3 Tahap Analisis 36](#_Toc230995851)
+[3.3 Tahap Analisis 23](#_Toc232721237)
 
-[3.3.1 Analisis Masalah 36](#_Toc230995852)
+[3.3.1 Analisis Masalah 23](#_Toc232721238)
 
-[3.3.2 Analisis Kebutuhan Fungsional 38](#_Toc230995853)
+[3.3.2 Analisis Kebutuhan Fungsional 25](#_Toc232721239)
 
-[3.3.3 Analasis Kebutuhan Non Fungsional 40](#_Toc230995854)
+[3.3.3 Analasis Kebutuhan Non Fungsional 27](#_Toc232721240)
 
-[3.4 Tahap Perancangan 43](#_Toc230995855)
+[3.4 Tahap Perancangan 29](#_Toc232721241)
 
-[3.4.1 Struktur Navigasi 43](#_Toc230995856)
+[3.4.1 Struktur Navigasi 29](#_Toc232721242)
 
-[3.4.2 Unified Modeling Language 43](#_Toc230995857)
+[3.4.1.1 Struktur Navigasi Admin 30](#_Toc232721243)
 
-[3.4.2.1 Use Case Diagram 43](#_Toc230995858)
+[3.4.1.2 Struktur Navigasi Pengguna 30](#_Toc232721244)
 
-[3.4.2.2 Activity Diagram 43](#_Toc230995859)
+[3.4.2 Unified Modeling Language 32](#_Toc232721245)
 
-[3.4.2.3 Sequence Diagram 43](#_Toc230995860)
+[3.4.2.1 Use Case Diagram 33](#_Toc232721246)
 
-[3.4.2.4 Class Diagram 43](#_Toc230995861)
+[3.4.2.2 Activity Diagram 34](#_Toc232721247)
 
-[3.4.3 Rancangan Database 43](#_Toc230995862)
+[3.4.2.3 Class Diagram 38](#_Toc232721248)
 
-[3.4.4 Rancangan Tampilan Halaman 43](#_Toc230995863)
+[3.4.3 Rancangan Database 40](#_Toc232721249)
 
-[3.4.4.1 Rancangan Halaman Login 43](#_Toc230995864)
+[3.4.4 Rancangan Tampilan Halaman 56](#_Toc232721250)
 
-# <a id="_Toc230995809"></a>DAFTAR TABEL
+[3.4.4.1 Rancangan Halaman Login 56](#_Toc232721251)
+
+# <a id="_Toc232721195"></a>DAFTAR TABEL
 
 [Tabel 2. 1 Simbol Pada Use Case Diagram 7](#_Toc230996411)
 
@@ -255,7 +255,7 @@ Walaupun banyak kesulitan yang penulis harus hadapi ketika menyusun tugas akhir 
 
 [Tabel 3. 1 Daftar Pertanyaan Interview Pemilik Toko Gegares 22](#_Toc230996434)
 
-# <a id="_Toc230995810"></a>DAFTAR GAMBAR
+# <a id="_Toc232721196"></a>DAFTAR GAMBAR
 
 [Gambar 2. 1 Linier 11](#_Toc230996533)
 
@@ -265,13 +265,31 @@ Walaupun banyak kesulitan yang penulis harus hadapi ketika menyusun tugas akhir 
 
 [Gambar 2. 4 Struktur Navigasi Campuran 13](#_Toc230996536)
 
-# <a id="_Toc230995811"></a>DAFTAR LAMPIRAN
+[Gambar 3. 1 Struktur Navigasi Admin 31](#_Toc232724896)
+
+[Gambar 3. 2 Struktur Navigasi Pengguna Tanpa Login 31](#_Toc232724897)
+
+[Gambar 3. 3 Struktur Navigasi User Dengan Login 32](#_Toc232724898)
+
+[Gambar 3. 4 Use Case Diagram 34](#_Toc232724899)
+
+[Gambar 3. 5 Activity Diagram Admin 36](#_Toc232724900)
+
+[Gambar 3. 6 Activity Diagram Pelanggan 38](#_Toc232724901)
+
+[Gambar 3. 7 Class Diagram 40](#_Toc232724902)
+
+[Gambar 3. 8 Rancangan Halaman Login 58](#_Toc232724903)
+
+[Gambar 3. 9 Rancangan Halaman Daftar 59](#_Toc232724904)
+
+# <a id="_Toc232721197"></a>DAFTAR LAMPIRAN
 
 Isi
 
-# <a id="_Toc230995812"></a>PENDAHULUAN
+# <a id="_Toc232721198"></a>PENDAHULUAN
 
-## <a id="_Toc230995813"></a>Latar Belakang
+## <a id="_Toc232721199"></a>Latar Belakang
 
 Perkembangan teknologi informasi dan komunikasi telah membawa perubahan signifikan dalam gaya hidup masyarakat, terutama dalam cara bertransaksi. Digitalisasi ekonomi telah mendorong munculnya berbagai platform e-commerce yang memungkinkan konsumen untuk berbelanja tanpa batasan waktu dan tempat. Di tengah arus modernisasi ini, produk kuliner lokal seperti jajanan pasar dan kue tradisional memiliki nilai budaya dan potensi ekonomi yang tinggi. Namun, keterbatasan akses dan strategi pemasaran digital seringkali membuat produk tradisional ini sulit bersaing dengan produk kuliner modern. Platform Gegares hadir sebagai solusi untuk menjembatani kesenjangan tersebut dengan menyediakan wadah khusus bagi penjualan kue tradisional secara daring agar lebih mudah dijangkau oleh masyarakat luas.
 
@@ -279,57 +297,59 @@ Persaingan di industri kuliner yang semakin kompetitif menuntut para pelaku usah
 
 Untuk mengatasi permasalahan efisiensi layanan tersebut, integrasi teknologi Artificial Intelligence (AI) dalam bentuk chatbot menjadi langkah strategis yang sangat relevan. Chatbot mampu bertindak sebagai asisten virtual yang siaga selama 24 jam untuk melayani berbagai pertanyaan pelanggan secara instan dan akurat. Dengan adanya chatbot, beban kerja admin dapat berkurang sehingga pengelolaan operasional lainnya dapat lebih optimal. Selain itu, penggunaan chatbot pada platform Gegares diharapkan dapat memberikan pengalaman belanja yang lebih interaktif dan personal bagi konsumen, sekaligus memperkuat citra merek sebagai toko kue tradisional yang inovatif.
 
+Penggunaan pencarian informasi produk konvensional pada website e-commerce umumnya menggunakan kueri database relasional (SQL Query) dengan metode pencocokan kata kunci (keyword matching) yang kaku. Metode ini memiliki keterbatasan karena tidak mampu memahami variasi bahasa alami pelanggan yang beragam dan tidak terstruktur. Oleh karena itu, penelitian ini menerapkan teknologi Artificial Intelligence (AI) berupa Generative AI (Google Gemini API) yang dipadukan dengan kueri database MySQL. Kombinasi ini memungkinkan asisten virtual (chatbot) untuk memahami maksud (intent) pertanyaan pelanggan secara fleksibel, sekaligus melakukan analisis visual terhadap gambar jajanan pasar tradisional (fitur Snap & Buy) yang tidak dapat diproses menggunakan kueri database konvensional.
+
 Pengembangan sistem e-commerce Gegares ini menggunakan framework Laravel yang dikenal dengan efisiensi, keamanan, dan struktur arsitekturnya yang rapi. Penggunaan Laravel memudahkan dalam mengintegrasikan logika bisnis yang kompleks serta memastikan aplikasi dapat berjalan dengan performa yang optimal. Sementara itu, MySQL digunakan sebagai sistem manajemen basis data untuk mengelola data produk, akun pengguna, dan riwayat transaksi secara terstruktur. Melalui kombinasi teknologi ini, diharapkan dapat tercipta sebuah platform penjualan jajanan pasar yang tidak hanya fungsional secara fitur, tetapi juga handal secara teknis untuk mendukung kelancaran bisnis kue tradisional di era digital.
 
-## <a id="_Toc230995814"></a>Rumusan Masalah
+## <a id="_Toc232721200"></a>Rumusan Masalah
 
-Dalam proses pengembangan website e-commerce jajanan pasar kue tradisional untuk Gegares, beberapa permasalahan muncul yang perlu dibahas oleh penulis agar dapat memandu proses pembuatan dengan baik. Salah satu permasalahan yang muncul adalah bagaimana merencanakan dan menganalisis kebutuhan website e-commerce yang dilengkapi dengan fitur chatbot AI agar sesuai dengan karakteristik dan target pasar Gegares. Dalam hal ini, perlu dipertimbangkan desain antarmuka pengguna serta arsitektur sistem yang dibangun menggunakan framework Laravel dan pengelolaan database dengan MySQL. Pertanyaan yang muncul adalah apakah website dan chatbot yang dibangun dapat responsif dan berfungsi dengan baik menggunakan teknologi tersebut. Selain itu, penulis juga perlu membahas integrasi asisten virtual (chatbot) ke dalam sistem e-commerce Gegares untuk mengoptimalkan efisiensi pelayanan pelanggan. Hal ini mencakup kemampuan chatbot dalam merespons pertanyaan pelanggan terkait katalog produk, harga, hingga informasi operasional secara otomatis selama 24 jam. Integrasi ini penting untuk memastikan bahwa sistem e-commerce dapat berjalan dengan lancar dan memberikan pengalaman belanja yang lebih interaktif sesuai dengan kebutuhan Gegares dan pelanggan.
+Dalam proses pengembangan website e-commerce jajanan pasar kue tradisional untuk Gegares, beberapa permasalahan muncul yang perlu dibahas oleh penulis agar dapat memandu proses pembuatan dengan baik. Salah satu permasalahan yang muncul adalah bagaimana merencanakan dan menganalisis kebutuhan website e-commerce yang dilengkapi dengan fitur chatbot AI agar sesuai dengan karakteristik dan target pasar Gegares. Dalam hal ini, perlu dipertimbangkan desain antarmuka pengguna serta arsitektur sistem yang dibangun menggunakan framework Laravel dan pengelolaan database dengan MySQL. Pertanyaan yang muncul adalah apakah website dan chatbot yang dibangun dapat responsif dan berfungsi dengan baik menggunakan teknologi tersebut. Selain itu, penulis juga perlu membahas integrasi asisten virtual (chatbot) ke dalam sistem e-commerce Gegares untuk mengoptimalkan efisiensi pelayanan pelanggan. Hal ini mencakup kemampuan chatbot dalam merespons pertanyaan pelanggan terkait katalog produk, harga, hingga informasi operasional secara otomatis selama 24 jam. Integrasi ini penting untuk memastikan bahwa sistem e-commerce dapat berjalan dengan lancar dan memberikan pengalaman belanja yang lebih interaktif sesuai dengan kebutuhan Gegares dan pelanggan. Selain itu, perlu juga dirumuskan bagaimana mengintegrasikan kueri database MySQL dengan model kecerdasan buatan (Gemini AI API) agar chatbot dapat memberikan informasi katalog produk dan status transaksi secara akurat tanpa mengalami kesalahan informasi (*hallucination*).
 
-## <a id="_Toc230995815"></a>Tujuan Penelititan
+## <a id="_Toc232721201"></a>Tujuan Penelititan
 
 Penelitian ini bertujuan untuk meningkatkan penjualan dan memperluas jangkauan pemasaran produk jajanan pasar dan kue tradisional melalui platform Gegares. Selain itu, penelitian ini juga berfokus pada memberikan kemudahan bagi pelanggan yang ingin berbelanja dan mencari informasi mengenai kue tradisional secara efisien tanpa batasan waktu dan jarak. Tujuan utama penelitian ini adalah membuat website e-commerce untuk Gegares, mengembangkan website tersebut sebagai sarana penjualan dan promosi secara daring. Website ini akan membantu toko memodernisasi usahanya dan menjangkau target pasar yang lebih luas. Menerapkan fitur chatbot AI yang diintegrasikan ke dalam sistem bertujuan untuk mempermudah proses pelayanan pelanggan, menjadikan komunikasi terkait ketersediaan produk, harga, dan operasional toko menjadi lebih cepat, otomatis, dan tersedia selama 24 jam. Membuat halaman website admin dengan menggunakan framework Laravel dan database MySQL, mengembangkan tampilan admin yang memungkinkan pengelolaan data produk jajanan pasar, data pelanggan, log percakapan asisten virtual, dan transaksi dengan mudah. Website admin ini akan membantu pengelola Gegares dalam memantau dan mengontrol berbagai aspek operasional penjualan secara efektif.
 
-## <a id="_Toc230995816"></a>Manfaat Penelitian
+## <a id="_Toc232721202"></a>Manfaat Penelitian
 
 Manfaat dari penelitian ini adalah meningkatkan efisiensi dan produktivitas operasional platform Gegares dengan memperkenalkan sistem e-commerce yang terintegrasi fitur chatbot AI, yang dapat mengoptimalkan proses penjualan, pemasaran produk jajanan pasar, serta pelayanan informasi pelanggan secara otomatis. Selain itu, sistem e-commerce dan keberadaan chatbot yang siaga 24 jam ini juga akan memberikan kemudahan akses bagi pelanggan yang memiliki keterbatasan waktu, memungkinkan pelanggan untuk mendapatkan jawaban instan terkait produk serta berbelanja kue tradisional dengan lebih fleksibel dan nyaman melalui platform online.
 
-## <a id="_Toc230995817"></a>Sistematika Penulisan
+## <a id="_Toc232721203"></a>Sistematika Penulisan
 
 Dalam sistematika penulisan ini berupa gambaran umum dalam 5 bab pokok bahasan yang kemudian diuraikan. Pada bab pertama adalah "Pendahuluan" yang membahas latar belakang, rumusan masalah, tujuan penelitian, manfaat penelitian, dan sistematika penulisan. Kemudian, bab dua adalah "Tinjauan Pustaka" yang memberikan gambaran yang meliputi penjelasan teori dan alat-alat yang digunakan dalam pembuatan aplikasi e-commerce dan chatbot pada toko Gegares berbasis website, seperti sistem e-commerce, chatbot AI, website, PHP, framework Laravel, MySQL, HTML, CSS, dan Visual Studio Code. Selanjutnya, bab tiga adalah "Metode Penelitian" yang berisi tentang deskripsi gambaran umum website, perancangan struktur navigasi dan UML, pembuatan database dan rincian tahapan dalam pembuatan atau pengembangan website penjualan online terintegrasi asisten virtual menggunakan metode pengembangan sistem berupa perencanaan, analisis, perancangan, implementasi, dan pengujian. Kemudian, bab empat "Hasil dan Pembahasan" yang berisi hasil rancangan termasuk kelebihan dan kekurangan dari hasil rancangan website e-commerce dan chatbot yang telah dibuat. Terakhir, bab lima adalah "Penutup" berisi kesimpulan berdasarkan hasil pembahasan dari penulisan dan proses perancangan yang telah dilakukan serta terdapat saran yang bertujuan untuk pengembangan website ke depannya.
 
-# <a id="_Toc230995818"></a>TINJUAN PUSTAKA
+# <a id="_Toc232721204"></a>TINJUAN PUSTAKA
 
-## <a id="_Toc230995819"></a>Jajanan Pasar
+## <a id="_Toc232721205"></a>Jajanan Pasar
 
 Jajanan pasar merupakan istilah yang digunakan untuk menyebut berbagai jenis makanan atau camilan tradisional yang dijual di pasar atau warung di Indonesia. Jajanan ini dikenal karena keanekaragaman rasa dan keunikannya, serta menjadi bagian integral dari budaya kuliner lokal (Novita & Sundari, 2023). Rasa yang khas dari jajanan pasar sering kali mencerminkan tradisi dan inovasi masyarakat setempat, di mana setiap daerah memiliki jajanan pasar yang berbedabeda sesuai dengan bahan baku dan cita rasanya (Musyaffa et al., 2021). Selain menghadirkan rasa yang menggugah selera, jajanan pasar juga sering kali kaya akan nilai gizi dan ditawarkan dengan harga yang terjangkau, membuatnya sangat populer di kalangan masyarakat (Nasution, 2020).
 
-## <a id="_Toc230995820"></a>E-Commerce
+## <a id="_Toc232721206"></a>E-Commerce
 
 E-commerce, atau perdagangan elektronik, merupakan bentuk transaksi bisnis yang dilakukan secara online melalui internet, mencakup pembelian dan penjualan barang atau jasa. E-Commerce melibatkan pengembangan platform yang dapat memfasilitasi transaksi secara efisien dan aman. Pengembangan website ecommerce bertujuan untuk meningkatkan pemasaran produk dengan menerapkan metode sekuensial linear. Dengan pendekatan ini, perusahaan atau pemilik usaha dapat mengurangi biaya yang dikeluarkan dan meningkatkan efisiensi operasional, serta membuat proses bisnis lebih efektif dibandingkan dengan metode tradisional (Hidayatun et al., 2020).
 
-## <a id="_Toc230995821"></a>Website
+## <a id="_Toc232721207"></a>Website
 
 Website, atau situs web, dapat didefinisikan sebagai kumpulan halaman web interkoneksi yang terorganisir di dalam satu domain atau subdomain di World Wide Web (WWW). Istilah ini merujuk pada fasilitas internet yang berfungsi sebagai media penyampaian informasi, berisikan teks, gambar, dan video yang menyampaikan berbagai macam informasi kepada pengguna (Meilani et al., 2023).
 
 Ini menunjukkan bahwa website bukan hanya sekedar satu halaman, melainkan sebuah ekosistem dari berbagai halaman yang saling berkaitan dan menyediakan akses informasi kepada penggunanya. Website dapat berupa situs statis, yang kontennya tetap, atau situs dinamis, yang kontennya dapat berubah dan diperbarui secara real-time. (Fuadi & Candra, 2020).
 
-## <a id="_Toc230995822"></a>MySQL
+## <a id="_Toc232721208"></a>MySQL
 
 MySQL adalah sebuah sistem manajemen basis data (DBMS) yang menggunakan model relational database management system (RDBMS) yang banyak digunakan di seluruh dunia. Sebagai perangkat lunak sumber terbuka, MySQL memungkinkan pengguna untuk melakukan pengolahan data dengan bahasa Structured Query Language (SQL), yang mendukung berbagai operasi seperti penyimpanan, pengambilan, serta manipulasi data secara efisien (Hidayat et al., 2023; Alifsyah et al., 2023).
 
-## <a id="_Toc230995823"></a>PHP (Hypertext Preprocessor)
+## <a id="_Toc232721209"></a>PHP (Hypertext Preprocessor)
 
 PHP (Hypertext Preprocessor) adalah bahasa pemrograman server-side yang sangat populer digunakan dalam pengembangan web (Agustine & Seimahuira, 2023). Sejak diperkenalkan, PHP telah berkembang menjadi alat yang memungkinkan pembuatan situs web yang dinamis dan interaktif. Sebagai bahasa pemrograman sumber terbuka, PHP memberikan fleksibilitas kepada pengembang untuk memodifikasi dan mengembangkan aplikasi yang kompleks sesuai dengan kebutuhan pengguna (Pangestu et al., 2024).
 
-## <a id="_Toc230995824"></a>Laravel
+## <a id="_Toc232721210"></a>Laravel
 
 Laravel adalah framework PHP open source yang dirancang untuk memudahkan pengembangan aplikasi web dengan mengikuti arsitektur ModelView-Controller (MVC). Framework ini menawarkan berbagai fitur canggih yang memungkinkan pengembang untuk membangun aplikasi web dengan cepat dan efisien, termasuk routing yang sederhana serta alat untuk autentikasi dan pengelolaan database. Dengan struktur yang bersih dan sintaks yang elegan, Laravel membantu pengembang dalam mempertahankan kode yang terorganisir dan mudah dibaca, sehingga mengurangi waktu pengembangan dan potensi kesalahan. Populer di kalangan komunitas pengembang, Laravel telah menjadi salah satu framework paling banyak digunakan dalam pengembangan aplikasi web di Indonesia maupun secara global. Selain itu, dukungan komunitas dan dokumentasi yang kaya juga menjadi salah satu alasan utama mengapa banyak pengembang memilih Laravel (Sari & Wijanarko, 2020; Melyani et al., 2023).
 
-## <a id="_Toc230995825"></a>Unified Modeling Language (UML)
+## <a id="_Toc232721211"></a>Unified Modeling Language (UML)
 
 UML adalah bahasa pemodelan visual yang bersifat umum dan digunakan untuk menspesifikasikan, memvisualisasikan, membangun, dan mendokumentasikan artefak dari sebuah sistem perangkat lunak. UML menyediakan diagram-diagram yang merupakan alat penting dalam pengembangan perangkat lunak, pemodelan sistem, dan desain arsitektur, karena diagram-diagram tersebut memungkinkan representasi visual dari struktur dan perilaku suatu sistem, sehingga memfasilitasi pemahaman dan komunikasi konsep-konsep yang kompleks (Torcal et al., 2024).
 
-### <a id="_Toc230995826"></a>Use Case Diagram
+### <a id="_Toc232721212"></a>Use Case Diagram
 
 Use Case Diagram merupakan model hasil analisis sistem yang digunakan untuk menggambarkan interaksi antara aktor dengan sistem, serta mendeskripsikan fungsionalitas yang diharapkan dari sistem. Diagram ini memvisualisasikan hubungan antara pengguna dengan berbagai use case atau aktivitas yang dapat dilakukan terhadap sistem (Ramdany et al., 2024).
 
@@ -350,7 +370,7 @@ Use Case Diagram merupakan model hasil analisis sistem yang digunakan untuk meng
 | Generalisasi  
 ![image-7.png](media/image-7.png) | Relasi antara aktor atau use case yang bersifat hirarki, dari yang umum ke yang khusus. Aktor turunan mewarisi hak akses dari aktor induk. |
 
-### <a id="_Toc230995827"></a>Class Diagram
+### <a id="_Toc232721213"></a>Class Diagram
 
 Class Diagram adalah gambaran struktur sistem yang menunjukkan kelas-kelas yang akan dibangun, lengkap dengan atribut, metode, serta relasi antar kelas seperti asosiasi, generalisasi, dan agregasi. Diagram ini sangat penting dalam mendefinisikan aturan dan tanggung jawab setiap entitas yang ada dalam sistem (Ramdany et al., 2024).
 
@@ -371,7 +391,7 @@ Class Diagram adalah gambaran struktur sistem yang menunjukkan kelas-kelas yang 
 | Dependency  
 ![image-13.png](media/image-13.png) | Menunjukkan bahwa satu class menggunakan class lain dalam operasinya. Digambarkan dengan panah putus-putus. |
 
-### <a id="_Toc230995828"></a>Activity Diagram
+### <a id="_Toc232721214"></a>Activity Diagram
 
 Activity Diagram merupakan diagram yang digunakan untuk memodelkan alur kerja atau proses bisnis dalam sistem secara visual. Diagram ini menggambarkan urutan aktivitas, kondisi keputusan, serta alur input-output yang terjadi selama proses berlangsung dalam sistem (Ramdany et al., 2024).
 
@@ -388,11 +408,11 @@ Activity Diagram merupakan diagram yang digunakan untuk memodelkan alur kerja at
 | ![image-20.png](media/image-20.png) | Fork | Menyatakan untuk memecah behavior menjadi activity atau action yang parallel. |
 | ![image-21.png](media/image-21.png) | Decision | Menunjukkan pengambilan suatu keputusan/tindakan yang harus diambil pada kondisi tertentu. |
 
-## <a id="_Toc230995829"></a>Struktur Navigasi
+## <a id="_Toc232721215"></a>Struktur Navigasi
 
 Struktur navigasi adalah susunan atau alur dalam sebuah program yang menggambarkan rancangan hubungan serta aliran kerja antara berbagai bagian yang berbeda. Fungsinya adalah membantu mengatur dan mengorganisasikan seluruh elemen dalam pembuatan sebuah website. Penentuan struktur navigasi sebaiknya dilakukan sebelum proses pembuatan website dimulai. Umumnya, terdapat empat bentuk dasar struktur navigasi yang sering digunakan dalam pengembangan website yaitu struktur navigasi linier, hirarki, non-linier, dan campuran.
 
-### <a id="_Toc230995830"></a>Struktur Navigasi Linier
+### <a id="_Toc232721216"></a>Struktur Navigasi Linier
 
 ![image-22.png](media/image-22.png)
 
@@ -400,7 +420,7 @@ Struktur navigasi adalah susunan atau alur dalam sebuah program yang menggambark
 
 Struktur navigasi linier adalah jenis navigasi yang memiliki alur tunggal dan berurutan, di mana tampilan layar disajikan satu per satu sesuai urutannya. Dalam struktur ini, pengguna hanya dapat berpindah ke halaman sebelumnya atau ke halaman berikutnya, tetapi tidak bisa langsung melompat ke dua halaman sebelum atau sesudahnya
 
-### <a id="_Toc230995831"></a>Struktur Navigasi Hirarki
+### <a id="_Toc232721217"></a>Struktur Navigasi Hirarki
 
 ![image-23.png](media/image-23.png)
 
@@ -408,7 +428,7 @@ Struktur navigasi linier adalah jenis navigasi yang memiliki alur tunggal dan be
 
 Struktur navigasi hirarki, atau sering disebut struktur bercabang, adalah jenis navigasi yang menggunakan percabangan untuk menampilkan data sesuai kriteria tertentu. Menu utama pada struktur ini disebut Master Page (halaman utama pertama) dan memiliki halaman turunan yang disebut Slave Page (halaman pendukung). Jika salah satu halaman pendukung dibuka, halaman tersebut akan menjadi Master Page (halaman utama berikutnya), dan proses ini berlanjut seterusnya. Pada jenis navigasi ini, alur linier tidak digunakan.
 
-### <a id="_Toc230995832"></a>Struktur Navigasi Non-Linier
+### <a id="_Toc232721218"></a>Struktur Navigasi Non-Linier
 
 ![image-24.png](media/image-24.png)
 
@@ -416,67 +436,83 @@ Struktur navigasi hirarki, atau sering disebut struktur bercabang, adalah jenis 
 
 Struktur navigasi non-linier adalah pengembangan dari struktur navigasi linier, di mana pengguna dapat membuat navigasi bercabang. Namun, percabangan pada struktur ini berbeda dengan struktur hirarki, karena setiap tampilan memiliki kedudukan yang setara dan tidak ada halaman utama (_Master Page_).
 
-### <a id="_Toc230995833"></a>Struktur Navigasi Campuran
+### <a id="_Toc232721219"></a>Struktur Navigasi Campuran
 
 ![image-25.png](media/image-25.png)
 
-<a id="_Toc205908536"></a><a id="_Toc230996536"></a>Gambar 2. 4 Struktur Navigasi Campuran
+<a id="_Toc205908536"></a><a id="_Toc230996536"></a>Gambar 2. Struktur Navigasi Campuran
 
 Struktur navigasi composite (campuran) adalah kombinasi dari tiga jenis struktur navigasi yang sudah ada, yaitu linier, hirarki, dan non-linier. Jenis navigasi ini sering digunakan dalam pembuatan multimedia karena mampu memberikan tingkat interaktivitas yang lebih tinggi dan fleksibilitas dalam mengakses informasi. Dengan struktur ini, pengguna dapat dengan mudah memilih jalur navigasi sesuai kebutuhan, sehingga pengalaman penggunaan menjadi lebih dinamis dan menarik.
 
-## <a id="_Toc203506496"></a><a id="_Toc204906137"></a><a id="_Toc230995834"></a>XAMPP
+## <a id="_Toc203506496"></a><a id="_Toc204906137"></a><a id="_Toc232721220"></a>XAMPP
 
 XAMPP adalah perangkat lunak yang menyediakan paket instalasi PHP, Apache, dan MySQL yang bertujuan untuk mempermudah pengembangan aplikasi web. Secara khusus, XAMPP adalah program open source yang dirancang agar pengguna dapat menjalankan server lokal di komputer mereka dengan mudah. Dengan dukungan berbagai sistem operasi, XAMPP memungkinkan pengembang untuk menguji aplikasi yang dikembangkan dalam lingkungan yang mirip dengan platform produksi, tanpa perlu konfigurasi yang rumit. Hal ini menjadikan XAMPP pilihan populer bagi banyak pengembang pemula maupun profesional dalam menciptakan aplikasi web yang dinamis dan interaktif. Dukungan terhadap bahasa pemrograman PHP dan sistem manajemen basis data MySQL juga menjadikan XAMPP sebagai alat yang efisien untuk pengembangan aplikasi berbasis web Abdilah & Suparni, 2024).
 
-## <a id="_Toc203506497"></a><a id="_Toc204906138"></a><a id="_Toc230995835"></a>HTML (HyperText Markup Language)
+## <a id="_Toc203506497"></a><a id="_Toc204906138"></a><a id="_Toc232721221"></a>HTML (HyperText Markup Language)
 
 HTML (Hypertext Markup Language) adalah bahasa markup standar yang digunakan untuk membuat dan menyusun halaman web. HTML menyusun konten menjadi struktur yang terorganisir, membantu browser menampilkan teks, gambar, dan multimedia lainnya dalam format yang dapat diakses oleh pengguna. Dengan menggunakan tag-tag yang berfungsi sebagai instruksi dalam penulisan dokumen, HTML menjadi dasar dari setiap halaman web yang dapat dipublikasikan di internet. Untuk belajar dan menggunakan HTML dalam pengembangan web, khususnya bagi pengembang pemula, program pelatihan telah dirancang untuk meningkatkan keterampilan peserta dalam membuat website sederhana menggunakan HTML dan teknologi terkait (Jevanda et al., 2023).
 
-## <a id="_Toc203506498"></a><a id="_Toc204906139"></a><a id="_Toc230995836"></a>Visual Studio Code
+## <a id="_Toc203506498"></a><a id="_Toc204906139"></a><a id="_Toc232721222"></a>Visual Studio Code
 
 Visual Studio Code (VS Code) adalah editor kode sumber yang dikembangkan oleh Microsoft. VS Code bersifat multiplatform, sehingga dapat dijalankan di berbagai sistem operasi seperti Windows, macOS, dan Linux. Editor ini menawarkan fitur canggih yang mendukung banyak bahasa pemrograman, termasuk JavaScript, TypeScript, dan Python, serta dilengkapi dengan berbagai ekstensi untuk meningkatkan produktivitas pengembang. Salah satu keunggulan VS Code adalah kemampuan untuk mengintegrasikan alat-alat pengembangan lainnya melalui sistem ekstensi, yang memungkinkan para pengembang untuk menyesuaikan lingkungan pengembangan sesuai dengan kebutuhan spesifik proyek mereka. Dengan antarmuka yang ramah pengguna dan dukungan untuk debugging, VS Code telah menjadi salah satu alat favorit di kalangan pengembang perangkat lunak (Bismi et al., 2023).
 
-## <a id="_Toc204906140"></a><a id="_Toc230995837"></a>CSS (Cascading Style Sheets)
+## <a id="_Toc204906140"></a><a id="_Toc232721223"></a>CSS (Cascading Style Sheets)
 
 CSS, atau _Cascading Style Sheets_, adalah bahasa stylesheet yang digunakan untuk menggambarkan presentasi visual dari dokumen yang ditulis dalam HTML atau XML. CSS memisahkan konten dari desain dan layout, memungkinkan desainer web untuk mengontrol aspek visual dari sebuah halaman web, termasuk warna, font, jarak, dan tata letak (Ghazali et al., 2024). Dengan menggunakan CSS, pengembang dapat menerapkan tata letak responsif, yang membuat halaman web dapat menyesuaikan tampilan mereka di berbagai perangkat, seperti ponsel, tablet, dan desktop (Riyanto et al., 2022).
 
-## <a id="_Toc204906141"></a><a id="_Toc230995838"></a>Javascript
+## <a id="_Toc204906141"></a><a id="_Toc232721224"></a>Javascript
 
 JavaScript adalah bahasa pemrograman scripting lintas platform yang sering digunakan dalam pengembangan web untuk meningkatkan fungsionalitas dinamis pada halaman web. Pertama kali dikembangkan untuk menjalankan program di sisi klien dalam browser, JavaScript kini telah meluas penggunaannya ke berbagai bidang, termasuk pemrograman sisi server, basis data, dan Internet of Things (IoT) Shukla (2023). Bahasa ini memungkinkan pengembang untuk menyisipkan logika kompleks, berinteraksi dengan elemen HTML, dan mengubah konten halaman secara dinamis berdasarkan aksi pengguna, seperti klik atau pengisian formulir (Shoikhedbrod, 2023).
 
-## <a id="_Toc204906142"></a><a id="_Toc230995839"></a>Pakasir
+## <a id="_Toc232721225"></a>Pakasir
 
-Pakasir adalah platform pembayaran dan point-of-sale berbasis Indonesia yang menyediakan layanan pembuatan tautan pembayaran terhost (hosted payment) dan dukungan QRIS untuk memproses pembayaran elektronik. Dengan API Pakasir, pemilik usaha dapat menghasilkan tautan pembayaran yang mengarahkan pelanggan ke halaman pembayaran ter-host, serta memverifikasi status transaksi melalui endpoint API untuk memastikan konfirmasi pembayaran secara andal. Fungsi utama Pakasir dalam konteks e-commerce ini adalah memfasilitasi penerimaan pembayaran (terutama QRIS) dan menyediakan mekanisme verifikasi transaksi yang sesuai untuk integrasi dengan sistem penjualan online.
+Pakasir adalah platform layanan link pembayaran Indonesia yang memungkinkan merchant menerima pembayaran secara instan tanpa proses aktivasi berhari-hari seperti payment gateway konvensional. Meskipun bukan payment gateway resmi (dana diproses oleh payment gateway mitra), Pakasir memanfaatkan layanan berizin Bank Indonesia untuk membuat link pembayaran yang mendukung QRIS (GoPay, OVO, ShopeePay, Dana), Virtual Account (BNI, BRI, Mandiri, CIMB Niaga, Permata, Maybank), dan e-wallet lainnya. Fungsi utama Pakasir adalah menyediakan link pembayaran dengan aktivasi instan, integrasi mudah, biaya rendah, settlement H+1 pukul 12.00 WIB, serta penarikan dana gratis ke semua bank dan e-wallet Indonesia (PT Geksa, 2024).
 
-## <a id="_Toc204906143"></a><a id="_Toc230995840"></a>Fonnte
+Sumber:
+
+PT Geksa. (2024). _Layanan Link Pembayaran - Pakasir_. https://pakasir.com
+
+## <a id="_Toc204906143"></a><a id="_Toc232721226"></a>Fonnte
 
 Fonnte merupakan sebuah solusi unofficial WhatsApp API gateway yang memanfaatkan antarmuka WhatsApp Web untuk menjalankan berbagai fungsi otomatisasi pengiriman pesan, broadcast massal, auto-reply, dan integrasi API dengan aplikasi atau website tanpa menggunakan layanan resmi dari Meta (Facebook) (ArunaJR, 2025). Meski tidak resmi, Fonnte menawarkan fitur yang cukup lengkap dan mudah digunakan, termasuk dashboard pengelolaan pesan dan webhook untuk notifikasi otomatis seperti pengingat, tagihan, serta pengiriman OTP (Pamela, 2025).
 
-## <a id="_Toc204906144"></a><a id="_Toc230995841"></a>Balsamiq
+## Figma
 
-Balsamiq merupakan aplikasi prototyping yang digunakan untuk merancang antarmuka pengguna _(user interface)_ secara visual, memberikan kemudahan bagi pengembang untuk menciptakan rancangan layout aplikasi secara cepat dan interaktif. Hasil dari penggunaan Balsamiq menunjukkan bahwa tampilan yang dihasilkan menjadi lebih menarik dan interaktif bagi pengguna, yang pada gilirannya dapat meningkatkan pengalaman pengguna _(user experience)_ dan mempermudah navigasi dalam aplikasi tersebut (Setiawan et al., 2023).
+Figma adalah alat desain UI/UX berbasis web yang digunakan untuk membuat prototipe aplikasi dengan fitur kolaborasi real-time yang memungkinkan tim bekerja bersama dalam satu file secara bersamaan. Alat ini diaplikasikan dalam metode prototyping untuk pembuatan aplikasi layanan pengadilan yang mencakup proses pengumpulan data, identifikasi masalah, pembuatan alur penggunaan, kerangka kerja, sketsa, dan desain antarmuka akhir. Penggunaan Figma meningkatkan pemahaman terhadap konsep desain UI/UX serta memperkaya kreativitas dan keterampilan teknis dalam mengembangkan prototipe digital. Fungsi utama Figma adalah membuat mockup desain, wireframe, prototyping interaktif, dan komponen reusable untuk pengembangan aplikasi yang efisien (Senubekti et al., 2024)
 
-## <a id="_Toc204906145"></a><a id="_Toc230995842"></a>Black-box Testing
+Sumber:
+
+Senubekti, M. A., Dajoreyta, G. L., & Anggraini, N. (2024). Pembuatan Desain UI/UX dengan Metode Prototyping pada Aplikasi Layanan Pengadilan Negeri Bale Bandung menggunakan Figma. _Jurnal Informatika Terpadu_, _10_(1), 1–10. https://doi.org/10.54914/jit.v10i1.1001
+
+## <a id="_Toc204906145"></a><a id="_Toc232721228"></a>Black-box Testing
 
 Teknik black-box testing merupakan pendekatan pengujian perangkat lunak yang penting dalam memastikan bahwa aplikasi berfungsi sesuai dengan spesifikasi yang diharapkan tanpa melihat ke dalam kode sumbernya. Metode ini berfokus pada pengujian fungsionalitas perangkat lunak dari perspektif pengguna, di mana pengujian dilakukan berdasarkan input yang diterima dan output yang dihasilkan. Dalam konteks pengujian ini, black-box testing dapat membantu mengidentifikasi berbagai jenis kesalahan, seperti kesalahan fungsional yang tidak sesuai, kesalahan pada antarmuka pengguna, serta masalah performansi (Shadiq et al., 2021).
 
-## <a id="_Toc230995843"></a>Chatbot
+## <a id="_Toc232721229"></a>Chatbot
 
-Chatbot adalah sistem komputer yang dirancang untuk berinteraksi dengan pengguna melalui medium teks atau suara. Chatbot menggunakan algoritma pemrograman untuk memahami permintaan pengguna dan memberikan respons yang sesuai. Chatbot dapat digunakan dalam berbagai aplikasi, seperti layanan pelanggan, pendidikan, dan hiburan (Mann, 2019). Dalam perkembangannya, chatbot modern saat ini banyak mengadopsi teknologi *Large Language Model* (LLM) untuk menghasilkan respons yang lebih natural, kontekstual, dan dinamis dibandingkan dengan chatbot berbasis aturan (*rule-based*) tradisional. Salah satu LLM terkemuka yang digunakan adalah Google Gemini API yang memiliki kemampuan pemahaman bahasa alami yang sangat baik serta mendukung interaksi multi-turn (percakapan banyak langkah) secara konsisten.
+Chatbot adalah sistem komputer yang dirancang untuk berinteraksi dengan pengguna melalui medium teks atau suara. Chatbot menggunakan algoritma pemrograman untuk memahami permintaan pengguna dan memberikan respons yang sesuai. Chatbot dapat digunakan dalam berbagai aplikasi, seperti layanan pelanggan, pendidikan, dan hiburan (Mann, 2019).
 
 **Referensi:**
 
 Mann, J. (2019). "The Rise of Chatbots: How Conversational AI is Transforming Customer Service." Journal of Business Research, 102, 1-10. [Link](https://www.sciencedirect.com/science/article/pii/S0148296318301555)
 
-## <a id="_Toc230995844"></a>Artificial Intelligence (AI)
+## <a id="_Toc232721230"></a>Artificial Intelligence (AI)
 
-Artificial Intelligence (AI) adalah cabang ilmu pengetahuan yang berfokus pada pengembangan sistem komputer yang dapat melakukan tugas yang sebelumnya hanya dilakukan oleh manusia, seperti belajar, mengevaluasi, dan memecahkan masalah. AI menggunakan berbagai teknik, seperti machine learning, deep learning, dan reasoning untuk membangun sistem yang mampu memaksimalkan performa dalam berbagai aplikasi (Russell & Norvig, 2020). Salah satu cabang penting dari AI modern adalah *Multimodal AI*, yaitu kemampuan sistem kecerdasan buatan untuk memproses, memahami, dan menghubungkan informasi dari berbagai jenis modalitas input yang berbeda, seperti teks dan gambar. Dengan teknologi multimodal, sistem AI dapat menganalisis gambar visual (seperti foto produk makanan) dan memberikan respons teks berupa identifikasi objek, informasi bahan, hingga saran tindakan yang relevan.
+Artificial Intelligence (AI) adalah cabang ilmu pengetahuan yang berfokus pada pengembangan sistem komputer yang dapat melakukan tugas yang sebelumnya hanya dilakukan oleh manusia, seperti belajar, mengevaluasi, dan memecahkan masalah. AI menggunakan berbagai teknik, seperti machine learning, deep learning, dan reasoning untuk membangun sistem yang mampu memaksimalkan performa dalam berbagai aplikasi (Russell & Norvig, 2020).
 
 **Referensi:**
 
 Russell, S., & Norvig, P. (2020). "Artificial Intelligence: A Modern Approach." Pearson. [Link](https://www.pearson.com/us/higher-education/program/Russell-Artificial-Intelligence-A-Modern-Approach-4th-Edition/PGM344667.html)
 
-## <a id="_Toc230995845"></a>Application Programming Interface (API)
+## Retrieval-Augmented Generation (RAG)
+
+Retrieval-Augmented Generation (RAG) adalah metode yang mengoptimalkan keluaran dari Large Language Model (LLM) dengan memanfaatkan data dari sumber luar (dalam hal ini, database MySQL) sebelum menghasilkan respons. Melalui RAG, sistem chatbot tidak hanya mengandalkan pengetahuan bawaan model AI, melainkan melakukan kueri (retrieval) data riil dari sistem terlebih dahulu (seperti harga produk, stok, dan data pesanan), kemudian menyajikannya sebagai konteks bagi model AI untuk merumuskan jawaban akhir yang faktual dan bebas dari halusinasi data (Lewis et al., 2020).
+
+**Referensi:**
+
+Lewis, P., et al. (2020). "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." Advances in Neural Information Processing Systems, 33, 9459-9474.
+
+## <a id="_Toc232721231"></a>Application Programming Interface (API)
 
 Application Programming Interface (API) adalah sebuah perantara yang memungkinkan dua sistem komputer berkomunikasi dengan satu sama lain. API memungkinkan pengguna atau aplikasi lain untuk mengakses layanan atau data dari sistem yang telah disediakan. API seringkali digunakan dalam pengembangan aplikasi web dan mobile untuk memungkinkan integrasi antar layanan atau data (Rouse, 2021).
 
@@ -484,21 +520,21 @@ Application Programming Interface (API) adalah sebuah perantara yang memungkinka
 
 Rouse, M. (2021). "What is an API? - Definition, Types, and Examples." Techopedia. [Link](https://www.techopedia.com/definition/33265/api)
 
-# <a id="_Toc230995846"></a>METODE PENELITIAN
+# <a id="_Toc232721232"></a>METODE PENELITIAN
 
-## <a id="_Toc230995847"></a>Gambaran Umum Penelitian
+## <a id="_Toc232721233"></a>Gambaran Umum Penelitian
 
 Penelitian ini dilakukan untuk mengembangkan sebuah sistem e-commerce jajanan pasar tradisional berbasis web yang terintegrasi dengan fitur chatbot AI pada platform Gegares. Sistem ini dirancang untuk membantu proses penjualan, promosi produk, serta meningkatkan pelayanan pelanggan secara otomatis dan efisien. Dalam proses pengembangannya, penelitian menggunakan framework Laravel sebagai backend dan MySQL sebagai sistem manajemen basis data. Selain itu, teknologi chatbot diterapkan untuk memberikan respon otomatis terhadap pertanyaan pelanggan terkait produk, harga, stok, dan informasi pemesanan.
 
 Metode penelitian yang digunakan dalam pengembangan sistem ini adalah metode pengembangan sistem secara bertahap yang meliputi tahap perencanaan, analisis, perancangan, implementasi, dan pengujian. Pada tahap perencanaan dilakukan pengumpulan informasi dan identifikasi kebutuhan sistem melalui wawancara dengan pemilik usaha. Tahap analisis dilakukan untuk mengetahui permasalahan yang terjadi pada sistem penjualan yang berjalan saat ini. Selanjutnya dilakukan proses perancangan antarmuka, struktur navigasi, UML, dan basis data sebelum sistem diimplementasikan menggunakan Laravel dan MySQL. Setelah sistem selesai dibangun, dilakukan pengujian menggunakan metode black-box testing untuk memastikan seluruh fitur berjalan dengan baik sesuai kebutuhan pengguna.
 
-### <a id="_Toc230995848"></a>Gambaran Umum Website
+### <a id="_Toc232721234"></a>Gambaran Umum Website
 
 Website yang dikembangkan merupakan sistem e-commerce pemesanan jajanan pasar tradisional bernama Gegares yang dilengkapi dengan fitur AI Chatbot untuk membantu pelayanan pelanggan secara otomatis. Sistem ini dirancang untuk memudahkan proses pemesanan produk, pengelolaan data pelanggan, manajemen produk, transaksi pembayaran, serta pelayanan informasi secara digital baik bagi pelanggan maupun admin toko.
 
-Website dibangun menggunakan framework Laravel 13 sebagai backend dan Livewire untuk mendukung komponen interaktif pada frontend. Data sistem disimpan menggunakan basis data MySQL sebagai media penyimpanan utama. Selain itu, website juga terintegrasi dengan Pakasir sebagai layanan pembayaran (hosted QRIS) untuk mendukung proses pembayaran online dan Fonnte API untuk mendukung pengiriman notifikasi WhatsApp kepada pelanggan.
+Website dibangun menggunakan framework Laravel 13 sebagai backend dan Livewire untuk mendukung komponen interaktif pada frontend. Data sistem disimpan menggunakan basis data MySQL sebagai media penyimpanan utama. Selain itu, website juga terintegrasi dengan Pakasir sebagai payment gateway untuk mendukung proses pembayaran online dan Fonnte API untuk mendukung pengiriman notifikasi WhatsApp kepada pelanggan.
 
-Sistem ini juga dilengkapi dengan fitur AI Chatbot yang berfungsi sebagai asisten virtual untuk membantu pelanggan mendapatkan informasi secara otomatis terkait produk, harga, stok, metode pembayaran, dan status pesanan. Chatbot dirancang untuk memberikan pelayanan selama 24 jam sehingga pelanggan dapat memperoleh respon dengan lebih cepat tanpa harus menunggu admin membalas pesan secara manual.
+Sistem ini juga dilengkapi dengan fitur AI Chatbot yang berfungsi sebagai asisten virtual untuk membantu pelanggan mendapatkan informasi secara otomatis terkait produk, harga, stok, metode pembayaran, dan status pesanan. Chatbot dirancang untuk memberikan pelayanan selama 24 jam sehingga pelanggan dapat memperoleh respon dengan lebih cepat tanpa harus menunggu admin membalas pesan secara manual. Fitur AI Chatbot Gegares dirancang secara hybrid menggunakan metode Retrieval-Augmented Generation (RAG). Proses pengolahan jawaban tidak dilakukan secara mandiri oleh AI, melainkan diawali dengan pengambilan data aktual dari database MySQL menggunakan kueri Eloquent ORM di Laravel (untuk mengambil data stok, harga, promo aktif, dan riwayat pesanan pengguna). Data aktual tersebut kemudian digabungkan ke dalam instruksi sistem (system prompt) sebelum dikirimkan ke server Gemini AI API guna menghasilkan respons bahasa alami yang akurat.
 
 Secara umum, website Gegares terdiri dari beberapa halaman utama yang dapat diakses oleh pengguna maupun admin toko, yaitu sebagai berikut:
 
@@ -528,7 +564,7 @@ Pengguna dapat menambahkan, mengurangi jumlah, atau menghapus produk dari keranj
 
 1.  Checkout dan Pembayaran
 
-Pengguna dapat melakukan proses pemesanan dengan mengisi alamat pengiriman, memilih metode pembayaran, serta melakukan pembayaran online melalui Pakasir (tautan pembayaran/QRIS) yang telah disediakan.
+Pengguna dapat melakukan proses pemesanan dengan mengisi alamat pengiriman, memilih metode pembayaran, serta melakukan pembayaran online melalui Pakasir menggunakan berbagai metode pembayaran digital.
 
 1.  Riwayat Pesanan
 
@@ -544,7 +580,7 @@ Setelah pesanan selesai, pengguna dapat memberikan ulasan dan rating terhadap pr
 
 1.  AI Chatbot
 
-Fitur AI Chatbot berfungsi untuk membantu pelanggan memperoleh informasi secara otomatis terkait produk, stok, harga, metode pembayaran, status pesanan, dan pertanyaan umum lainnya. Chatbot ini dibangun menggunakan Livewire dan diintegrasikan dengan Google Gemini API (model `gemini-3-flash-preview`) sehingga mampu menghasilkan respons secara natural, kontekstual, dan dinamis berdasarkan riwayat percakapan multi-turn. Selain respons teks, chatbot ini memiliki kemampuan multimodal (fitur *Snap & Buy*) yang memungkinkan pelanggan untuk mengunggah foto jajanan pasar; sistem akan menganalisis foto tersebut secara visual, mengidentifikasinya, dan mencocokkannya dengan katalog produk toko untuk menampilkan kartu pembelian produk secara instan.
+Fitur AI Chatbot berfungsi untuk membantu pelanggan memperoleh informasi secara otomatis terkait produk, stok, harga, metode pembayaran, status pesanan, dan pertanyaan umum lainnya. Chatbot dirancang agar dapat memberikan respon secara cepat dan membantu meningkatkan kualitas pelayanan pelanggan.
 
 1.  Dashboard Admin
 
@@ -552,13 +588,13 @@ Halaman admin digunakan untuk mengelola data produk, kategori produk, pesanan pe
 
 Website Gegares dirancang dengan tampilan antarmuka yang sederhana, responsif, dan mudah digunakan oleh berbagai kalangan pengguna. Desain user interface (UI) dibuat modern namun tetap mempertahankan nuansa khas jajanan pasar tradisional melalui penggunaan warna, ikon, dan elemen visual yang sesuai dengan identitas toko Gegares. Dengan adanya sistem ini diharapkan proses penjualan, pelayanan pelanggan, dan pengelolaan usaha dapat berjalan lebih efektif, efisien, dan terintegrasi secara digital.
 
-## <a id="_Toc230995849"></a>Tahap Perencanaan
+## <a id="_Toc232721235"></a>Tahap Perencanaan
 
 Tahap perencanaan merupakan tahap awal dalam proses pengembangan website e-commerce Gegares. Pada tahap ini dilakukan identifikasi kebutuhan sistem, pengumpulan informasi terkait proses bisnis yang berjalan, serta penentuan teknologi yang digunakan dalam pengembangan website. Perencanaan dilakukan agar proses pengembangan sistem dapat berjalan sesuai tujuan penelitian dan kebutuhan pengguna.
 
 Dalam tahap ini ditentukan bahwa website akan dibangun menggunakan framework Laravel dengan database MySQL karena dinilai mampu mendukung pengembangan sistem yang terstruktur, aman, dan mudah dikembangkan. Selain itu, dilakukan perencanaan terhadap fitur-fitur utama yang akan diterapkan pada website seperti sistem pemesanan online, pengelolaan produk, integrasi payment gateway, integrasi WhatsApp API, dan chatbot AI untuk pelayanan pelanggan otomatis.
 
-### <a id="_Toc230995850"></a>Melakukan Interview
+### <a id="_Toc232721236"></a>Melakukan Interview
 
 Pada tahap ini penulis melakukan wawancara secara langsung dengan pemilik usaha Gegares yaitu Ibu Marsiah untuk memperoleh informasi mengenai proses bisnis yang sedang berjalan dan kebutuhan sistem yang akan dikembangkan. Wawancara dilakukan untuk mengetahui kendala yang dihadapi dalam proses penjualan jajanan pasar tradisional, terutama pada proses pemasaran, pelayanan pelanggan, pengelolaan produk, dan transaksi pemesanan.
 
@@ -579,15 +615,32 @@ Analisis terhadap hasil wawancara dilakukan guna menggali pemahaman yang lebih k
 | 9. | Apakah diperlukan sistem pembayaran online pada website? |
 | 10. | Apa harapan pemilik usaha terhadap sistem e-commerce dan chatbot yang akan dibangun? |
 
-Berdasarkan hasil wawancara, diketahui bahwa proses pemesanan masih dilakukan secara manual melalui WhatsApp sehingga sering terjadi keterlambatan respon terhadap pelanggan. Selain itu, proses pencatatan pesanan dan pengelolaan data produk masih belum terstruktur dengan baik sehingga menyulitkan pemilik usaha dalam mengelola transaksi dan stok produk. Oleh karena itu, diperlukan sebuah sistem e-commerce berbasis web yang dapat membantu proses penjualan secara online dan meningkatkan efisiensi pelayanan pelanggan melalui integrasi chatbot AI.
+Interview dilakukan dengan pemilik Toko Gegares, yaitu Ibu Marsiah, untuk memperoleh informasi mengenai proses bisnis yang berjalan, permasalahan yang dihadapi, serta kebutuhan sistem yang akan dikembangkan. Hasil interview digunakan sebagai dasar dalam analisis kebutuhan dan perancangan website Gegares. Adapun daftar pertanyaan dan hasil jawaban interview dapat dilihat pada tabel berikut
 
-## <a id="_Toc230995851"></a>Tahap Analisis
+Tabel 3. 2 Tabel Hasil Jawaban Interview Pemilik Toko Gegares
+
+| No | Jawaban Pemilik Toko Gegares |
+| --- | --- |
+| 1 | Proses penjualan masih dilakukan secara manual dengan menerima pesanan pelanggan secara langsung maupun melalui WhatsApp. |
+| 2 | Media yang digunakan untuk menerima pesanan adalah WhatsApp dan komunikasi langsung dengan pelanggan di pasar. |
+| 3 | Kendala yang sering terjadi adalah keterlambatan membalas pesan pelanggan ketika pesanan sedang banyak dan kesulitan melayani pertanyaan pelanggan secara bersamaan. |
+| 4 | Pencatatan pesanan masih dilakukan secara manual sehingga terkadang sulit memantau jumlah pesanan dan transaksi yang masuk. |
+| 5 | Pernah terjadi kesalahan pencatatan pesanan dan stok karena data belum tersimpan secara otomatis dalam sistem. |
+| 6 | Pelanggan sering menanyakan informasi yang sama seperti harga produk, stok, isi produk, dan jadwal pengiriman. |
+| 7 | Saat ini promosi online masih terbatas menggunakan WhatsApp dan media sosial sederhana. |
+| 8 | Pemilik usaha menginginkan fitur katalog produk, pemesanan online, pembayaran online, chatbot otomatis, dan pengelolaan data produk serta transaksi. |
+| 9 | Ya, diperlukan sistem pembayaran online agar pelanggan lebih mudah melakukan transaksi tanpa harus transfer manual dan konfirmasi secara terpisah. |
+| 10 | Harapan pemilik usaha adalah agar website dapat membantu meningkatkan penjualan, mempermudah pengelolaan pesanan, serta mempercepat pelayanan pelanggan melalui chatbot otomatis selama 24 jam |
+
+Berdasarkan hasil wawancara tersebut, diketahui bahwa proses pemesanan masih dilakukan secara manual melalui WhatsApp sehingga sering terjadi keterlambatan respon terhadap pelanggan. Selain itu, proses pencatatan pesanan dan pengelolaan data produk masih belum terstruktur dengan baik sehingga menyulitkan pemilik usaha dalam mengelola transaksi dan stok produk. Oleh karena itu, diperlukan sebuah sistem e-commerce berbasis web yang dapat membantu proses penjualan secara online dan meningkatkan efisiensi pelayanan pelanggan melalui integrasi chatbot AI.
+
+## <a id="_Toc232721237"></a>Tahap Analisis
 
 Tahap analisis dilakukan untuk mempelajari dan memahami kebutuhan sistem berdasarkan hasil wawancara dan observasi terhadap proses bisnis yang sedang berjalan pada Gegares. Pada tahap ini dilakukan identifikasi masalah, analisis kebutuhan pengguna, serta analisis fitur yang akan diterapkan pada website e-commerce dan chatbot AI.
 
 Hasil analisis digunakan sebagai dasar dalam proses perancangan sistem agar website yang dikembangkan dapat sesuai dengan kebutuhan pengguna dan mampu menyelesaikan permasalahan yang ada. Analisis dilakukan terhadap proses pemesanan, pengelolaan produk, pelayanan pelanggan, dan proses transaksi yang berjalan secara manual sebelumnya.
 
-### <a id="_Toc230995852"></a>Analisis Masalah
+### <a id="_Toc232721238"></a>Analisis Masalah
 
 Analisis masalah dilakukan untuk mengidentifikasi berbagai permasalahan yang dihadapi oleh Toko Gegares dalam proses penjualan dan pelayanan pelanggan yang masih dilakukan secara manual. Berdasarkan hasil observasi dan wawancara dengan pemilik usaha, permasalahan-permasalahan yang ditemukan dirangkum sebagai berikut:
 
@@ -613,7 +666,7 @@ Toko Gegares belum memiliki sistem chatbot atau layanan otomatis yang dapat memb
 
 Berdasarkan permasalahan tersebut, diperlukan sebuah sistem e-commerce berbasis web yang mampu membantu proses pemesanan, pengelolaan data produk, transaksi, dan pelayanan pelanggan secara terkomputerisasi. Selain itu, integrasi chatbot AI diharapkan dapat membantu memberikan respon otomatis kepada pelanggan sehingga pelayanan menjadi lebih cepat, efektif, dan efisien.
 
-### <a id="_Toc230995853"></a>Analisis Kebutuhan Fungsional
+### <a id="_Toc232721239"></a>Analisis Kebutuhan Fungsional
 
 Analisis kebutuhan fungsional merupakan tahap penting dalam pengembangan sistem yang bertujuan untuk menentukan fitur dan fungsi utama yang harus tersedia agar sistem dapat berjalan sesuai kebutuhan pengguna. Pada penelitian ini, analisis kebutuhan fungsional dilakukan dengan mengidentifikasi kebutuhan pengguna baik dari sisi pelanggan maupun pemilik toko Gegares, serta menentukan fungsi-fungsi yang diperlukan dalam mendukung proses penjualan jajanan pasar tradisional berbasis web yang terintegrasi dengan AI Chatbot.
 
@@ -630,13 +683,13 @@ Berdasarkan hasil analisis dan pemetaan interaksi sistem melalui use case diagra
 
 1.  Pilih Alamat: Memasukkan alamat pengiriman.
 2.  Pilih Kurir & Ongkir: Menghitung ongkos kirim secara real-time via Biteship.
-3.  Bayar Tagihan: Memproses pembayaran secara online terintegrasi Pakasir (tautan pembayaran/QRIS).
+3.  Bayar Tagihan: Memproses pembayaran secara online terintegrasi Pakasir.
 4.  Gunakan Kupon Promo: Untuk memasukkan kode diskon opsional.
     
     1.  Lacak Pengiriman: Pelanggan dapat memantau pergerakan kurir pengiriman Biteship secara real-time di halaman pesanan.
     2.  Selesaikan Pesanan: Pelanggan dapat melakukan konfirmasi bahwa pesanan telah diterima dengan baik .
     3.  Berikan Ulasan: Pelanggan dapat memberikan rating bintang, komentar teks, dan unggah foto produk jajanan, yang merupakan perluasan opsional setelah melakukan Selesaikan Pesanan.
-    4.  Tanya AI Chatbot: Pelanggan dapat berinteraksi dengan asisten virtual menggunakan pesan teks atau gambar (fitur multimodal). Pelanggan dapat menanyakan informasi seputar produk, harga, stok, maupun status pesanan secara otomatis selama 24 jam, serta mengirimkan foto jajanan pasar untuk diidentifikasi secara otomatis oleh AI dan mendapatkan rekomendasi pembelian produk terkait.
+    4.  Tanya AI Chatbot: Pelanggan dapat berinteraksi dengan asisten virtual untuk mendapatkan informasi seputar produk, harga, stok, maupun status pesanan secara otomatis selama 24 jam.
     
 
 2\. Fungsi untuk Admin atau Pemilik Toko
@@ -649,10 +702,10 @@ Berdasarkan hasil analisis dan pemetaan interaksi sistem melalui use case diagra
     6.  Moderasi Ulasan Admin: dapat menyetujui ulasan pelanggan agar tampil di website atau menghapus ulasan spam. Admin juga dapat memperluas tindakan dengan melihat detail foto ulasan melalui fitur Lihat Zoom Foto.
     7.  Kelola Kupon Promo Admin: dapat menambahkan, mengedit, atau menonaktifkan kupon potongan harga.
     8.  Kelola Pengguna Admin: dapat melihat dan mengelola data pelanggan terdaftar.
-    9.  Pantau Aktivitas & Chatbot Admin: dapat memantau logs aktivitas operasional sistem serta mengawasi aktivitas AI Chatbot yang sedang berjalan. Admin dapat mengakses halaman khusus (*Security Dashboard*) untuk melihat riwayat aktivitas chatbot, status tingkat keparahan pelanggaran keamanan (seperti percobaan *jailbreak* atau *content block*), melihat data statistik keamanan, serta melakukan tindakan pemblokiran (*ban*) atau pembukaan blokir (*unban*) alamat IP secara manual.
+    9.  Pantau Aktivitas & Chatbot Admin: dapat memantau logs aktivitas operasional sistem serta mengawasi aktivitas AI Chatbot yang sedang berjalan.
     
 
-### <a id="_Toc230995854"></a>Analasis Kebutuhan Non Fungsional
+### <a id="_Toc232721240"></a>Analasis Kebutuhan Non Fungsional
 
 Analisis kebutuhan non fungsional merupakan tahap yang berfokus pada kebutuhan pendukung sistem yang berkaitan dengan kualitas, performa, keamanan, dan kemudahan penggunaan sistem. Dalam pengembangan website e-commerce Gegares berbasis web yang terintegrasi dengan AI Chatbot, kebutuhan non fungsional sangat penting untuk memastikan sistem dapat berjalan secara stabil, aman, responsif, dan mudah digunakan oleh pelanggan maupun admin toko.
 
@@ -689,41 +742,35 @@ Perangkat lunak yang digunakan dalam pengembangan website Gegares adalah sebagai
 
 3\. Analisis Keamanan Sistem
 
-Keamanan sistem merupakan aspek penting dalam pengembangan website e-commerce Gegares karena sistem menyimpan data pelanggan, transaksi, dan informasi pembayaran. Oleh karena itu, sistem dirancang dengan beberapa mekanisme keamanan standar serta mekanisme pertahanan khusus pada fitur AI Chatbot guna mencegah penyalahgunaan API dan serangan manipulasi model AI (*jailbreak*):
+Keamanan sistem merupakan aspek penting dalam pengembangan website e-commerce Gegares karena sistem menyimpan data pelanggan, transaksi, dan informasi pembayaran. Oleh karena itu, sistem dirancang dengan beberapa mekanisme keamanan seperti:
 
 1.  Penggunaan sistem autentikasi login dan register untuk membatasi akses pengguna.
 2.  Password pengguna disimpan menggunakan metode hashing agar lebih aman.
 3.  Validasi input data dilakukan untuk mencegah kesalahan input dan serangan terhadap sistem.
 4.  Penggunaan token keamanan pada proses autentikasi dan transaksi data.
 5.  Hak akses dibedakan antara pelanggan dan admin untuk menjaga keamanan data sistem.
-6.  *Chatbot AI Security Framework*, yang secara teknis mencakup:
-    *   **Honeypot Validation**: Penggunaan kolom input tersembunyi (*honeypot*) pada antarmuka chat untuk mendeteksi dan menolak interaksi otomatis yang dilakukan oleh bot spam secara instan.
-    *   **Session Integrity Hash Check**: Sistem melakukan verifikasi integritas riwayat percakapan menggunakan algoritma hashing SHA-256 HMAC yang dikombinasikan dengan kunci rahasia aplikasi (*application key*). Hal ini mencegah pengguna memodifikasi riwayat obrolan di sisi klien sebelum dikirim ke server AI.
-    *   **PII Masking & Sanitization**: Sistem menyaring dan menyembunyikan informasi identitas pribadi (*Personally Identifiable Information* / PII) seperti alamat email dan nomor telepon pelanggan menggunakan ekspresi reguler (*regular expression*) sebelum pesan disimpan atau dikirim ke API kecerdasan buatan untuk menjaga privasi.
-    *   **API Throttling / Rate Limiting**: Membatasi frekuensi interaksi pengguna ke chatbot maksimal 15 pesan per menit untuk mencegah kelebihan beban server (*abuse*) dan pemborosan kuota pemanggilan API.
-    *   **Automated IP Ban System**: Mencatat setiap aktivitas mencurigakan atau pelanggaran konten (*jailbreak attempt*) ke dalam tabel `security_events` beserta tingkat keparahannya (*low, medium, high, critical*). Jika sebuah alamat IP memicu pelanggaran tingkat tinggi sebanyak 5 kali dalam waktu 1 jam, sistem akan memblokir alamat IP tersebut secara otomatis selama 24 jam dengan mencatatnya di tabel `banned_ips`.
 
-## <a id="_Toc230995855"></a>Tahap Perancangan
+## <a id="_Toc232721241"></a>Tahap Perancangan
 
 Tahap perancangan merupakan proses pembuatan rancangan sistem berdasarkan hasil analisis kebutuhan yang telah dilakukan sebelumnya. Pada tahap ini dilakukan perancangan struktur navigasi, desain antarmuka pengguna (user interface), Unified Modeling Language (UML), serta perancangan basis data yang akan digunakan pada website Gegares. Tujuan dari tahap perancangan ini adalah untuk memberikan gambaran mengenai alur kerja sistem dan hubungan antar fitur sehingga proses pengembangan website e-commerce berbasis Laravel 13 yang terintegrasi dengan AI Chatbot dapat berjalan secara terstruktur dan sesuai dengan kebutuhan pengguna.
 
-### <a id="_Toc230995856"></a>Struktur Navigasi
+### <a id="_Toc232721242"></a>Struktur Navigasi
 
 Struktur navigasi merupakan gambaran hubungan antar halaman yang terdapat dalam website serta alur perpindahan pengguna ketika mengakses sistem. Pada website Gegares, struktur navigasi dirancang menggunakan model hirarki untuk memudahkan pengguna dalam menemukan informasi dan menggunakan fitur yang tersedia. Struktur navigasi dibedakan berdasarkan hak akses pengguna, yaitu pengguna yang belum login, pengguna yang telah login, dan admin. Perancangan struktur navigasi ini bertujuan untuk menciptakan alur penggunaan yang terorganisir, mudah dipahami, serta memberikan pengalaman pengguna yang lebih efektif dalam mengakses berbagai fitur pada website Gegares.
 
-#### Struktur Navigasi Admin
+#### <a id="_Toc232721243"></a>Struktur Navigasi Admin
 
 ![image-26.png](media/image-26.png)
 
-Gambar 3. 1 Struktur Navigasi Admin
+<a id="_Toc232724896"></a>Gambar 3. 1 Struktur Navigasi Admin
 
 Struktur navigasi admin pada website Gegares dimulai dengan halaman Admin Login sebagai pintu autentikasi sebelum memasuki sistem, lalu setelah berhasil masuk admin diarahkan ke Dashboard Admin yang menjadi pusat pengelolaan, dari dashboard ini admin dapat membuka menu utama seperti Pengaturan Toko untuk mengelola info dan konfigurasi situs, Kelola Pesanan untuk memantau serta memperbarui status transaksi pelanggan, Kelola Kategori dan Kelola Produk untuk mengatur data kategori dan barang, Kelola Ulasan untuk mengawasi masukan pelanggan, Kelola Pengguna untuk mengelola akun terdaftar, serta Kelola Kupon untuk membuat dan menata kupon diskon, sehingga keseluruhan navigasi memudahkan pengelolaan aktivitas operasional website secara terpusat dan terorganisir.
 
-#### Struktur Navigasi Pengguna
+#### <a id="_Toc232721244"></a>Struktur Navigasi Pengguna
 
 ![image-27.png](media/image-27.png)
 
-Gambar 3. 2 Struktur Navigasi Pengguna Tanpa Login
+<a id="_Toc232724897"></a>Gambar 3. 2 Struktur Navigasi Pengguna Tanpa Login
 
 Struktur navigasi pengguna yang belum melakukan login (tamu) pada website Gegares menggunakan struktur navigasi hierarkis, di mana halaman Beranda berperan sebagai halaman utama (master page) yang menjadi pusat akses menuju fungsionalitas lainnya. Dari halaman Beranda, pengguna dapat mengakses beberapa menu utama yaitu AI Chatbot, Produk, Tentang, Kontak, Masuk, dan Daftar. Menu AI Chatbot menyediakan akses interaktif bagi pengguna umum untuk menanyakan informasi umum seputar produk dan layanan toko. Pada menu Produk, pengguna dapat menjelajahi daftar katalog jajanan pasar tradisional yang tersedia dan dapat menavigasi secara timbal balik menuju halaman Detail Produk untuk memperoleh deskripsi produk secara rinci. Menu Tentang menyajikan informasi profil, visi, dan misi Toko Gegares, sedangkan menu Kontak memuat saluran komunikasi yang dapat digunakan untuk menghubungi pihak toko secara dua arah.
 
@@ -731,21 +778,21 @@ Selain itu, tersedia menu Masuk bagi pengguna yang telah memiliki akun dan menu 
 
 ![image-28.png](media/image-28.png)
 
-Gambar 3. 3 Struktur Navigasi User Dengan Login
+<a id="_Toc232724898"></a>Gambar 3. 3 Struktur Navigasi User Dengan Login
 
 Struktur navigasi pengguna yang telah melakukan login pada website Gegares menggunakan struktur navigasi hierarki dengan halaman Beranda sebagai halaman utama. Setelah berhasil login, pengguna memperoleh akses ke lebih banyak fitur dibandingkan pengguna yang belum login. Dari halaman Beranda, pengguna dapat mengakses menu AI Chatbot, Pesanan Saya, Produk, Tentang, Kontak, Pengaturan Akun, Keranjang, dan Wishlist. Menu AI Chatbot menyediakan asisten virtual interaktif untuk menanyakan informasi seputar produk dan layanan toko. Pada menu Produk, pengguna dapat melihat daftar produk yang tersedia dan mengakses halaman Detail Produk secara timbal balik untuk melihat informasi lengkap mengenai produk yang dipilih. Menu Keranjang digunakan untuk mengelola produk yang akan dibeli, kemudian pengguna dapat melanjutkan ke halaman Checkout dan Bayar Pesanan untuk menyelesaikan proses transaksi.
 
 Selain itu, pengguna dapat mengakses menu Pesanan Saya untuk melihat daftar pesanan yang telah dilakukan dan membuka halaman Detail Pesanan guna memantau status serta informasi transaksi secara lebih rinci. Menu Pengaturan Akun berfungsi untuk mengelola data profil pengguna, sedangkan menu Wishlist digunakan untuk menyimpan produk favorit yang ingin dibeli di kemudian hari. Struktur navigasi ini dirancang untuk memudahkan pengguna dalam melakukan pemesanan, mengelola akun, serta memantau transaksi secara terorganisir melalui satu sistem yang terintegrasi.
 
-### <a id="_Toc230995857"></a>Unified Modeling Language
+### <a id="_Toc232721245"></a>Unified Modeling Language
 
 Unified Modeling Language (UML) merupakan bahasa pemodelan standar yang digunakan untuk menggambarkan dan merancang sistem secara visual sebelum proses implementasi dilakukan. Pada penelitian ini, UML digunakan untuk memodelkan website e-commerce Gegares yang terintegrasi dengan AI Chatbot agar kebutuhan sistem, alur proses, interaksi pengguna dengan sistem, serta struktur data dapat digambarkan dengan jelas. Diagram UML yang digunakan meliputi Use Case Diagram, Activity Diagram, Sequence Diagram, dan Class Diagram, yang masing-masing berfungsi untuk menggambarkan kebutuhan fungsional, alur aktivitas, interaksi antar objek, serta struktur kelas pada sistem yang akan dikembangkan.
 
-#### <a id="_Toc230995858"></a>Use Case Diagram
+#### <a id="_Toc232721246"></a>Use Case Diagram
 
 ![image-29.png](media/image-29.png)
 
-Gambar 3. 4 Use Case Diagram
+<a id="_Toc232724899"></a>Gambar 3. 4 Use Case Diagram
 
 Use case diagram pada sistem pemesanan jajanan pasar tradisional berbasis web di Toko Gegares menggambarkan interaksi Pelanggan dengan sistem. Pelanggan dapat mendaftar dan login ke dalam akun, menjelajahi katalog produk, mengelola wishlist untuk produk favorit, memantau keranjang belanja, melacak status pengiriman, serta dapat berinteraksi dengan Tanya AI Chatbot untuk memperoleh informasi otomatis terkait produk atau transaksi. Selain itu, Pelanggan dapat melakukan checkout pesanan yang selalu mencakup (include) pemilihan alamat pengiriman, pemilihan kurir/ongkos kirim, dan pembayaran pesanan secara online, yang dapat diperluas (extend) dengan penggunaan kupon promo, serta dapat melakukan penyelesaian pesanan yang diperluas (extend) dengan memberikan ulasan produk.
 
@@ -753,7 +800,7 @@ Admin bertindak sebagai pengelola internal sistem yang memiliki hak akses khusus
 
 Secara keseluruhan, diagram ini menunjukkan pembagian peran yang jelas di mana Pelanggan berfokus pada aktivitas transaksi pembelian dan pencarian informasi secara interaktif melalui chatbot, sedangkan Admin berfokus pada manajemen, pemrosesan transaksi, dan pemeliharaan operasional website.
 
-#### <a id="_Toc230995859"></a>Activity Diagram
+#### <a id="_Toc232721247"></a>Activity Diagram
 
 Activity diagram merupakan diagram yang menggambarkan aliran kerja (workflow) atau aktivitas dari suatu sistem, mulai dari awal aktivitas, keputusan (decision) yang mungkin terjadi, hingga akhir dari aktivitas tersebut. Diagram ini digunakan untuk memodelkan proses bisnis dan mendokumentasikan interaksi dinamis antara pengguna (actor) dengan sistem Gegares. Melalui activity diagram, dapat diidentifikasi bagaimana sistem merespons setiap aksi yang dilakukan oleh aktor secara berurutan.
 
@@ -765,7 +812,7 @@ Activity diagram Admin menggambarkan secara komprehensif alur aktivitas serta ur
 
 ![image-30.png](media/image-30.png)
 
-Gambar 3. 5 Activity Diagram Admin
+<a id="_Toc232724900"></a>Gambar 3. 5 Activity Diagram Admin
 
 Alur activity diagram Admin dimulai dengan tahap autentikasi, di mana Admin membuka halaman login Admin dan sistem merespons dengan menampilkan halaman login Admin. Admin kemudian mengisi formulir login Admin yang selanjutnya divalidasi oleh sistem melalui proses validasi login. Jika data login salah, alur akan kembali ke proses pengisian formulir login Admin, sedangkan jika benar, sistem akan menampilkan halaman Dashboard Admin. Dari halaman Dashboard Admin, alur diteruskan menuju bilah sinkronisasi (fork) di mana Admin dapat mengakses dan mengelola berbagai fitur secara paralel atau pilihan opsional. Fitur-fitur tersebut meliputi menu Mengelola Kategori, Mengelola Produk, Mengelola Kupon Diskon, Mengelola Pesanan, Moderasi Ulasan, Mengelola Pengguna, dan Mengatur Toko. Pada setiap pilihan menu tersebut, sistem akan menampilkan halaman manajemen terkait agar Admin dapat memilih aksi tambah, ubah, atau hapus data serta menyimpannya kembali ke sistem sebelum alur dikembalikan ke bilah sinkronisasi. Terakhir, Admin dapat mengakhiri sesi pengelolaan dengan memilih aksi mengklik logout dari bilah sinkronisasi, yang kemudian akan diproses oleh sistem menuju status selesai.
 
@@ -775,23 +822,23 @@ Activity diagram Pelanggan menggambarkan secara komprehensif seluruh alur intera
 
 ![image-31.png](media/image-31.png)
 
-Gambar 3. 6 Activity Diagram Pelanggan
+<a id="_Toc232724901"></a>Gambar 3. 6 Activity Diagram Pelanggan
 
-Alur activity diagram Pelanggan dimulai saat pelanggan membuka halaman website Gegares, yang direspon oleh sistem dengan menampilkan halaman depan. Sebelum login, pelanggan diarahkan pada bilah sinkronisasi (fork) untuk mengakses beberapa menu secara bebas dan dinamis, meliputi membuka halaman produk, detail produk, tentang toko, kontak toko, serta menu login. Jika pelanggan memilih menu login dan belum memiliki akun, alur akan diarahkan melalui keputusan (decision) menuju halaman pendaftaran, di mana pelanggan mengklik daftar, mengisi formulir registrasi, dan diarahkan kembali untuk mengisi formulir login. Apabila pelanggan sudah memiliki akun, pelanggan dapat langsung mengisi formulir login untuk divalidasi oleh sistem. Setelah validasi login dinyatakan benar, sistem akan menampilkan halaman depan dalam kondisi login aktif.
+Activity Diagram Pelanggan menggambarkan alur aktivitas yang dilakukan pelanggan saat menggunakan website Gegares, mulai dari mengakses website hingga menyelesaikan transaksi dan memberikan ulasan produk. Proses diawali ketika pelanggan membuka website dan sistem menampilkan halaman beranda. Selanjutnya pelanggan dapat mengakses berbagai halaman seperti produk, detail produk, tentang, kontak, serta menggunakan fitur AI Chatbot untuk memperoleh informasi terkait produk dan layanan. Pada proses penggunaan AI Chatbot, ketika pelanggan mengirimkan pertanyaan teks atau gambar, sistem Laravel terlebih dahulu mengeksekusi kueri database (database query) ke MySQL untuk menarik informasi kontekstual yang relevan (seperti ketersediaan produk, harga, kupon diskon aktif, atau status transaksi pelanggan). Setelah itu, data hasil kueri dikirim bersama pesan pelanggan ke server Gemini AI untuk dirumuskan menjadi jawaban percakapan alami sebelum ditampilkan kembali ke antarmuka obrolan pelanggan. Untuk melakukan pemesanan, pelanggan harus melakukan login terlebih dahulu. Jika belum memiliki akun, pelanggan dapat melakukan registrasi dengan mengisi formulir pendaftaran, kemudian login menggunakan akun yang telah dibuat.
 
-Setelah masuk ke sistem, pelanggan memulai aktivitas transaksi dengan mencari dan memilih jajanan pasar, lalu memasukkannya ke keranjang belanja atau daftar favorit (wishlist), yang segera direspon sistem dengan menampilkan keranjang atau wishlist terbaru. Proses dilanjutkan dengan melakukan checkout pesanan, di mana pelanggan mengisi alamat pengiriman dan memilih kurir untuk dihitung tarif pengirimannya (ongkir) secara otomatis via API Biteship. Pelanggan selanjutnya diarahkan untuk melakukan pembayaran secara online via layanan Pakasir (tautan pembayaran/QRIS). Sistem akan memverifikasi status pembayaran melalui API Pakasir hingga dinyatakan sukses. Setelah pembayaran sukses, pelanggan dapat memantau status pengiriman pada menu pesanan saya. Ketika pesanan telah tiba di tujuan, pelanggan melakukan konfirmasi penerimaan pesanan untuk disimpan sistem sebagai pesanan selesai. Sebagai penutup, pelanggan dapat menulis ulasan produk (berupa rating, teks, dan foto) untuk disimpan ke basis data, sebelum akhirnya mengklik logout untuk mengakhiri sesi interaksi dengan sistem.
+Setelah berhasil login, pelanggan dapat mencari dan memilih produk jajanan pasar yang diinginkan, lalu menambahkannya ke keranjang belanja atau wishlist. Pelanggan kemudian melakukan checkout dengan mengisi alamat pengiriman dan memilih layanan kurir, selanjutnya sistem akan menghitung biaya pengiriman secara otomatis. Setelah itu pelanggan melakukan pembayaran online dan sistem melakukan verifikasi pembayaran. Jika pembayaran berhasil, pelanggan dapat memantau status pengiriman melalui menu pesanan saya hingga pesanan diterima. Setelah pesanan selesai, pelanggan dapat memberikan ulasan berupa rating, komentar, dan foto produk sebagai bentuk penilaian terhadap produk yang telah dibeli. Proses berakhir ketika pelanggan keluar dari sistem melalui fitur logout.
 
-#### <a id="_Toc230995861"></a>Class Diagram
+#### <a id="_Toc232721248"></a>Class Diagram
 
 Class diagram merupakan diagram struktur statis yang menggambarkan struktur sistem dengan menunjukkan kelas-kelas, atributnya, serta hubungan keterkaitan antar-kelas. Penerapan class diagram ini bertujuan untuk mendokumentasikan secara rinci arsitektur penyimpanan data, tipe data fisik kolom database, serta relasi kardinalitas (seperti one-to-many dan many-to-many) yang menghubungkan entitas pengguna, produk, kategori, alamat, promo kupon, pesanan, detail pesanan, wishlist, ulasan produk, dan pengaturan toko.
 
 ![image-32.png](media/image-32.png)
 
-Gambar 3. 7 Class Diagram
+<a id="_Toc232724902"></a>Gambar 3. 7 Class Diagram
 
-Struktur basis data sistem e-commerce Gegares tersusun atas interelasi sistematis dari dua entitas utama, yaitu pengguna (Users) dan produk (Products). Kelas Users memiliki relasi one-to-many untuk mengelola banyak alamat pengiriman pada Addresses, menyimpan produk pilihan dalam Wishlists, menulis ulasan rating pada Reviews, serta membuat transaksi pada Orders. Di sisi lain, kelas Categories mencakup banyak entitas Products yang masing-masing memiliki galeri foto tambahan di ProductImages dan pilihan detail di ProductVariants. Proses transaksi pembelian direpresentasikan secara terpusat oleh kelas Orders yang mengaitkan alamat rujukan dari Addresses, penggunaan promo dari Coupons, serta detail item belanja pada OrderItems yang terhubung secara fisik ke produk dan varian yang dipilih pelanggan. Setelah transaksi diselesaikan, data tersebut terintegrasi dengan kelas Reviews yang menampung umpan balik pembeli untuk produk yang dibeli, sementara konfigurasi operasional toko dikelola secara independen melalui kelas StoreSettings yang berdiri sendiri tanpa relasi basis data langsung.
+Class Diagram digunakan untuk menggambarkan struktur statis sistem yang terdiri dari kelas, atribut, serta hubungan antar kelas yang terdapat pada website Gegares. Pada sistem ini, kelas utama yang digunakan meliputi Users, Products, Categories, ProductVariants, ProductImages, Addresses, Orders, OrderItems, Coupons, Wishlists, Reviews, dan StoreSettings. Kelas Users berperan sebagai penyimpan data pengguna yang memiliki hubungan dengan kelas Addresses, Orders, Wishlists, dan Reviews. Kelas Products menyimpan informasi produk dan berelasi dengan Categories, ProductVariants, ProductImages, OrderItems, Wishlists, serta Reviews. Proses transaksi direpresentasikan oleh kelas Orders yang berhubungan dengan OrderItems, Addresses, Coupons, dan Reviews untuk mencatat data pesanan, detail produk yang dipesan, alamat pengiriman, penggunaan kupon, serta ulasan pelanggan. Selain itu, kelas StoreSettings digunakan untuk menyimpan informasi dan konfigurasi toko yang ditampilkan pada website. Hubungan antar kelas tersebut membentuk struktur data yang saling terintegrasi sehingga mampu mendukung seluruh proses bisnis pada website Gegares, mulai dari pengelolaan produk, pemesanan, pembayaran, pengiriman, hingga pemberian ulasan oleh pelanggan.
 
-### <a id="_Toc230995862"></a>Rancangan Database
+### <a id="_Toc232721249"></a>Rancangan Database
 
 Rancangan database (database design) memetakan secara fisik bagaimana data dalam sistem e-commerce Gegares disimpan, diatur, dan saling berhubungan. Sistem ini menggunakan sistem manajemen basis data relasional (RDBMS) MySQL/MariaDB. Berikut adalah penjelasan struktur tabel beserta atribut, tipe data, indeks, dan relasi integritas referensial dari basis data.
 
@@ -799,7 +846,7 @@ Rancangan database (database design) memetakan secara fisik bagaimana data dalam
 
 Tabel ini digunakan untuk menyimpan seluruh informasi profil pengguna di dalam sistem Gegares, mencakup data kredensial login, nomor telepon, dan status hak akses baik untuk pelanggan (user) maupun administrator (admin). Selain itu, tabel ini juga mendukung integrasi fitur registrasi dan login secara praktis berbasis OAuth Google menggunakan identitas ID Google unik pelanggan.
 
-Tabel 3. 2 Tabel users
+Tabel 3. 3 Tabel users
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -822,7 +869,7 @@ Tabel 3. 2 Tabel users
 
 Tabel ini berfungsi untuk mengelompokkan setiap jenis produk jajanan pasar tradisional ke dalam kategori tertentu secara spesifik (seperti Kue Basah, Gorengan, atau Jajanan Kukus). Pengelompokan ini bertujuan untuk mempermudah pelanggan dalam menelusuri katalog jajanan serta memudahkan administrator dalam mengelola keaktifan kelompok produk di dalam sistem.
 
-Tabel 3. 3 Tabel categories
+Tabel 3. 4 Tabel categories
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -840,7 +887,7 @@ Tabel 3. 3 Tabel categories
 
 Tabel ini digunakan untuk menyimpan seluruh data katalog jajanan pasar yang ditawarkan kepada pelanggan, lengkap dengan harga dasar, kapasitas stok fisik, status produk unggulan, dan path gambar utama. Untuk mengoptimalkan kinerja kueri saat memuat data, tabel ini juga menyimpan ringkasan akumulasi rata-rata rating serta total ulasan produk secara instan.
 
-Tabel 3. 4 Tabel products
+Tabel 3. 5 Tabel products
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -863,7 +910,7 @@ Tabel 3. 4 Tabel products
 
 Tabel ini berfungsi untuk menampung data galeri foto tambahan (multi-gambar) bagi setiap produk jajanan pasar. Dengan adanya tabel ini, satu produk dapat memiliki lebih dari satu gambar visual untuk mempresentasikan produk secara menarik dari berbagai sudut dengan urutan tampilan yang telah ditentukan oleh administrator.
 
-Tabel 3. 5 Tabel product\_images
+Tabel 3. 6 Tabel product\_images
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -878,7 +925,7 @@ Tabel 3. 5 Tabel product\_images
 
 Tabel ini dirancang untuk mengakomodasi opsi variasi produk jajanan secara dinamis (seperti perbedaan rasa, ukuran kemasan, atau jenis isian). Adanya tabel ini memungkinkan sistem untuk memisahkan manajemen stok fisik, kode SKU, dan penyesuaian harga khusus dari masing-masing varian secara independen dari harga dasar produk utamanya.
 
-Tabel 3. 6 Tabel product\_variants
+Tabel 3. 7 Tabel product\_variants
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -897,7 +944,7 @@ Tabel 3. 6 Tabel product\_variants
 
 Tabel ini berfungsi untuk mencatat data alamat pengiriman lengkap yang didaftarkan oleh pelanggan untuk keperluan distribusi pesanan. Data ini telah terintegrasi dengan kode identifikasi area Biteship API, data kodepos, serta titik koordinat geografis lintang (latitude) dan bujur (longitude) guna mendukung akurasi pencarian lokasi dan perhitungan tarif ongkos kirim otomatis.
 
-Tabel 3. 7 Tabel addresses
+Tabel 3. 8 Tabel addresses
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -922,7 +969,7 @@ Tabel 3. 7 Tabel addresses
 
 Tabel ini digunakan untuk mencatat dan mengelola data kupon promosi belanja yang diterbitkan oleh pihak toko Gegares untuk menarik minat beli pelanggan. Tabel ini mencakup tipe potongan harga (nominal tetap maupun persentase), batasan minimum transaksi belanja, limitasi pemakaian kupon, serta periode masa berlaku promo.
 
-Tabel 3. 8 Tabel coupons
+Tabel 3. 9 Tabel coupons
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -942,9 +989,9 @@ Tabel 3. 8 Tabel coupons
 
 8\. Tabel orders
 
-Tabel ini bertindak sebagai entitas transaksi utama yang menyimpan rangkuman nota pembelian pelanggan, merekam biaya subtotal, kupon diskon yang digunakan, tarif ongkos kirim, jenis kurir logistik Biteship, tautan/ID integrasi layanan pembayaran Pakasir, catatan tambahan belanja, serta status pelacakan logistik pengiriman dari awal hingga selesai.
+Tabel ini bertindak sebagai entitas transaksi utama yang menyimpan rangkuman nota pembelian pelanggan, merekam biaya subtotal, kupon diskon yang digunakan, tarif ongkos kirim, jenis kurir logistik Biteship, token integrasi gerbang pembayaran Pakasir, catatan tambahan belanja, serta status pelacakan logistik pengiriman dari awal hingga selesai.
 
-Tabel 3. 9 Tabel orders
+Tabel 3. 10 Tabel orders
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -977,7 +1024,7 @@ Tabel 3. 9 Tabel orders
 
 Tabel ini bertindak sebagai tabel detail transaksi yang memetakan relasi antara transaksi pesanan dengan produk beserta variannya. Tabel ini menyimpan catatan historis harga satuan, kuantitas item, subtotal belanja, serta salinan nama produk dan nama varian saat transaksi diselesaikan guna menjaga integritas data laporan keuangan dari perubahan data katalog di masa depan.
 
-Tabel 3. 10 Tabel order\_items
+Tabel 3. 11 Tabel order\_items
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -997,7 +1044,7 @@ Tabel 3. 10 Tabel order\_items
 
 Tabel ini berfungsi untuk menampung penilaian umpan balik (feedback) dari pelanggan pasca-transaksi pembelian selesai dilakukan. Tabel ini mencatat skor rating kepuasan (skala 1-5), ulasan komentar tertulis, unggahan bukti foto jajanan, serta kolom persetujuan (approval) dari administrator sebagai langkah moderasi ulasan sebelum ditampilkan ke publik.
 
-Tabel 3. 11 Tabel reviews
+Tabel 3. 12 Tabel reviews
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -1017,7 +1064,7 @@ Tabel 3. 11 Tabel reviews
 
 Tabel ini menyimpan konfigurasi operasional dasar toko e-commerce Gegares dalam bentuk konfigurasi baris tunggal (single row). Informasi penting di dalamnya meliputi detail kontak resmi, alamat fisik toko asal pengiriman barang, titik koordinat geografis toko, serta kode identifikasi lokasi Biteship untuk dihubungkan dengan perhitungan ongkos kirim otomatis.
 
-Tabel 3. 12 Tabel store\_settings
+Tabel 3. 13 Tabel store\_settings
 
 | No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
 | --- | --- | --- | --- | --- |
@@ -1048,6 +1095,36 @@ Tabel ini bertindak sebagai tabel persimpangan (junction table) yang menghubungk
 | 4 | created\_at | timestamp |  | Waktu data dibuat. |
 | 5 | updated\_at | timestamp |  | Waktu data diperbarui. |
 
-### <a id="_Toc230995863"></a>Rancangan Tampilan Halaman
+### <a id="_Toc232721250"></a>Rancangan Tampilan Halaman
 
-#### <a id="_Toc230995864"></a>Rancangan Halaman Login
+Rancangan tampilan halaman dibuat untuk memberikan gambaran antarmuka pengguna pada website Gegares sebelum tahap implementasi dilakukan. Perancangan ini bertujuan agar setiap fitur dapat diakses dengan mudah, memiliki tampilan yang konsisten, serta memberikan pengalaman penggunaan yang nyaman bagi pelanggan maupun admin. Pada bagian ini akan dijelaskan rancangan halaman-halaman yang terdapat pada website Gegares.
+
+#### <a id="_Toc232721251"></a>Rancangan Halaman Pelanggan
+
+Rancangan halaman pelanggan dibuat untuk menggambarkan tampilan dan fitur yang dapat diakses oleh pelanggan pada website Gegares. Halaman ini dirancang agar mudah digunakan, responsif, dan mendukung seluruh proses pemesanan produk secara online.
+
+1.  Rancangan Halaman Login
+
+Rancangan halaman pelanggan dibuat untuk memberikan gambaran antarmuka yang akan digunakan oleh pelanggan saat mengakses website Gegares. Halaman-halaman yang dirancang mencakup seluruh aktivitas pelanggan, mulai dari proses login, registrasi, melihat produk, melakukan pemesanan, pembayaran, hingga memberikan ulasan produk. Perancangan ini bertujuan untuk memastikan setiap fitur dapat diakses dengan mudah, memiliki tampilan yang konsisten, serta memberikan pengalaman penggunaan yang nyaman dan responsif bagi pelanggan.
+
+![image-33.png](media/image-33.png)
+
+<a id="_Toc232724903"></a>Gambar 3. 8 Rancangan Halaman Login
+
+1.  Rancangan Halaman Daftar
+
+Rancangan halaman daftar digunakan sebagai halaman registrasi bagi pengguna yang belum memiliki akun pada website Gegares. Halaman ini terdiri dari dua bagian utama, yaitu bagian kiri yang menampilkan logo, nama toko, dan deskripsi singkat mengenai Gegares, serta bagian kanan yang berisi formulir pendaftaran akun. Formulir registrasi menyediakan beberapa kolom input, yaitu Nama Lengkap, Email, Nomor WhatsApp, Password, dan Konfirmasi Password yang harus diisi oleh pengguna. Selain itu, tersedia fitur Ingat Saya, tombol Daftar untuk menyelesaikan proses registrasi, serta opsi Daftar dengan Google untuk memudahkan pengguna membuat akun menggunakan akun Google. Pada bagian bawah halaman juga terdapat tautan Masuk Sekarang yang dapat digunakan oleh pengguna yang telah memiliki akun untuk berpindah ke halaman login.
+
+![image-34.png](media/image-34.png)
+
+<a id="_Toc232724904"></a>Gambar 3. 9 Rancangan Halaman Daftar
+
+1.  Rancangan Halaman Utama Tanpa Login
+
+Rancangan halaman utama tanpa login merupakan halaman yang ditampilkan saat pengguna pertama kali mengakses website Gegares. Halaman ini terdiri dari navbar, hero section, kategori produk, produk unggulan, FAQ, dan footer. Melalui halaman ini, pengguna dapat melihat informasi toko, menjelajahi produk, serta mengakses halaman login dan registrasi sebelum melakukan pemesanan. Desain halaman dibuat sederhana dan informatif untuk memudahkan pengguna mengenal layanan yang tersedia pada website Gegares.
+
+![image-35.png](media/image-35.png)
+
+Gambar 3. 10 Rancangan Halaman Utama Tanpa Login
+
+1.  Rancangan Halaman Utama dengan Login
