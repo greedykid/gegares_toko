@@ -52,6 +52,9 @@ class Chatbot extends Component
         }
 
         $this->isOpen = session('gegares_chat_open', false);
+        if ($this->isOpen) {
+            $this->checkRecentPaidOrders();
+        }
     }
 
     protected function getRateLimitKey()
@@ -65,8 +68,221 @@ class Chatbot extends Component
         session(['gegares_chat_open' => $this->isOpen]);
         
         if ($this->isOpen) {
+            $this->checkRecentPaidOrders();
             $this->dispatch('chat-opened');
         }
+    }
+
+    public function checkRecentPaidOrders()
+    {
+        if (!$this->isOpen || !Auth::check()) {
+            return;
+        }
+
+        // Get paid orders from the last 2 hours
+        $recentPaidOrders = Order::where('user_id', Auth::id())
+            ->where('payment_status', 'paid')
+            ->where('paid_at', '>=', now()->subHours(2))
+            ->get();
+
+        if ($recentPaidOrders->isEmpty()) {
+            return;
+        }
+
+        $acknowledged = session('gegares_acknowledged_paid_orders', []);
+        $updated = false;
+
+        foreach ($recentPaidOrders as $order) {
+            if (in_array($order->id, $acknowledged)) {
+                continue;
+            }
+
+            // Acknowledge this order ID
+            $acknowledged[] = $order->id;
+            $updated = true;
+
+            // Generate bot message confirming payment success
+            $content = "Yey! Pembayaran untuk pesanan dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** telah berhasil kami terima. Terima kasih banyak ya Kak! Pesanan Kakak akan segera kami proses dan kirim.";
+
+            // Add detail / history buttons and follow-up suggestions
+            $this->chatHistory[] = [
+                'role' => 'assistant',
+                'content' => $content,
+                'time' => now()->format('H:i'),
+                'buttons' => [
+                    [
+                        'label' => 'Lihat Detail Pesanan',
+                        'url' => route('orders.show', $order->id),
+                        'style' => 'primary',
+                    ],
+                    [
+                        'label' => 'Lihat Riwayat Pesanan',
+                        'url' => route('orders.index'),
+                        'style' => 'secondary',
+                    ]
+                ],
+                'suggestions' => [
+                    'Lacak pengiriman',
+                    'Jam operasional & lokasi toko',
+                    'Hubungi CS via WhatsApp'
+                ]
+            ];
+        }
+
+        if ($updated) {
+            session(['gegares_acknowledged_paid_orders' => $acknowledged]);
+            $this->persist();
+            $this->dispatch('bot-replied');
+        }
+    }
+
+    public function checkoutDirectly()
+    {
+        if (!Auth::check()) {
+            return $this->redirectRoute('login');
+        }
+
+        $cartService = app(\App\Services\CartService::class);
+        $cartItems = $cartService->getItems();
+
+        if (empty($cartItems)) {
+            $this->addBotMessage("Keranjang belanja Kakak masih kosong. Silakan tambahkan produk terlebih dahulu.");
+            return;
+        }
+
+        $errors = $cartService->validateStock();
+        if (!empty($errors)) {
+            $this->addBotMessage("Waduh Kak, ada kendala stok: " . implode(' ', $errors));
+            return;
+        }
+
+        $user = Auth::user();
+        $address = $user->addresses()->orderByDesc('is_primary')->first();
+
+        if (!$address) {
+            $this->chatHistory[] = [
+                'role' => 'assistant',
+                'content' => "Waduh Kak, Kakak belum menambahkan alamat pengiriman. Silakan tambahkan alamat terlebih dahulu di menu Pengaturan Alamat agar kami dapat memproses pesanan Kakak.",
+                'time' => now()->format('H:i'),
+                'buttons' => [
+                    [
+                        'label' => 'Tambah Alamat Sekarang',
+                        'url' => route('settings.index') . '#addresses',
+                        'style' => 'primary',
+                    ]
+                ]
+            ];
+            $this->persist();
+            $this->dispatch('bot-replied');
+            return;
+        }
+
+        // Calculate shipping rates
+        $shippingCourier = 'jne';
+        $shippingService = 'reg';
+        $shippingCost = 9000; // fallback standard shipping cost
+
+        if ($address->area_id) {
+            $biteshipService = app(\App\Services\BiteshipService::class);
+            try {
+                $rates = $biteshipService->getShippingRates(
+                    $address->area_id,
+                    $cartItems,
+                    null,
+                    $address->latitude ? (float) $address->latitude : null,
+                    $address->longitude ? (float) $address->longitude : null
+                );
+                
+                if (!empty($rates)) {
+                    $shippingCourier = $rates[0]['courier_code'] ?? 'jne';
+                    $shippingService = $rates[0]['courier_service_code'] ?? 'reg';
+                    $shippingCost = $rates[0]['price'] ?? 9000;
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Chatbot direct checkout shipping estimation failed: ' . $e->getMessage());
+            }
+        }
+
+        $subtotal = $cartService->getSubtotal();
+        $coupon = $cartService->getCoupon();
+        $discountAmount = $cartService->getDiscountAmount();
+        $total = $subtotal + $shippingCost - $discountAmount;
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => Order::generateOrderNumber(),
+            'address_id' => $address->id,
+            'coupon_id' => $coupon['id'] ?? null,
+            'discount_amount' => $discountAmount,
+            'subtotal' => $subtotal,
+            'shipping_cost' => $shippingCost,
+            'total' => $total,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => $shippingCourier,
+            'shipping_service' => $shippingService,
+            'notes' => 'Dipesan otomatis via AI Chatbot',
+        ]);
+
+        if ($coupon) {
+            \App\Models\Coupon::where('id', $coupon['id'])->increment('used_count');
+        }
+
+        foreach ($cartItems as $item) {
+            $order->items()->create([
+                'product_id' => $item['product_id'],
+                'product_variant_id' => $item['variant_id'] ?? null,
+                'product_name' => $item['name'],
+                'variant_name' => $item['variant_name'] ?? null,
+                'product_price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['price'] * $item['quantity'],
+            ]);
+        }
+
+        $pakasirService = app(\App\Services\PakasirService::class);
+        $paymentUrl = $pakasirService->createPaymentUrl($order);
+
+        if (!$paymentUrl) {
+            $order->delete();
+            $this->addBotMessage("Maaf Kak, terjadi kendala saat menghubungi payment gateway Pakasir. Silakan coba kembali beberapa saat lagi.");
+            return;
+        }
+
+        // Clear cart
+        $cartService->clear();
+
+        // Dispatch events
+        $this->dispatch('cart-updated');
+        $this->dispatch('wishlist-updated');
+        $this->dispatch('toast', type: 'success', message: "Pesanan berhasil dibuat!");
+
+        // Append success message with payment link
+        $this->chatHistory[] = [
+            'role' => 'assistant',
+            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp " . number_format($shippingCost, 0, ',', '.') . ") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
+            'time' => now()->format('H:i'),
+            'buttons' => [
+                [
+                    'label' => 'Bayar Sekarang (Pakasir)',
+                    'url' => $paymentUrl,
+                    'style' => 'primary',
+                ],
+                [
+                    'label' => 'Lihat Detail Pesanan',
+                    'url' => route('orders.show', $order->id),
+                    'style' => 'secondary',
+                ]
+            ],
+            'suggestions' => [
+                'Cek status pesanan saya',
+                'Jam operasional & lokasi toko'
+            ]
+        ];
+
+        $this->persist();
+        $this->dispatch('bot-replied');
     }
 
     public function clearChat()
@@ -399,6 +615,10 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
    - Lalu langsung tulis [[NamaProduk]] untuk setiap produk yang direkomendasikan (kartu produk akan otomatis muncul)
    - JANGAN tulis deskripsi detail tiap produk satu per satu. Informasi nama, harga, dan stok sudah ditampilkan di kartu produk.
    - Boleh tutup dengan 1 kalimat ajakan singkat (contoh: 'Langsung klik Beli di kartu produk ya Kak!')
+9. **INTENSI MEMESAN / CHECKOUT / BELI**: Jika user meminta untuk membeli, memesan, checkout, atau menambahkan produk ke keranjang belanja (contoh: 'pesankan saya 4 Klepon', 'beli Klepon 3', 'tambah klepon ke keranjang'), kamu WAJIB menyertakan tag pemesanan berikut di baris baru di bagian paling akhir jawabanmu (sebelum ---SUGGESTIONS---):
+   ---BUY---NamaProduk|Jumlah
+   NamaProduk harus PERSIS sesuai dengan daftar produk di katalog. Jumlah harus berupa angka bulat positif (default 1 jika user tidak menentukan jumlah).
+   Contoh: ---BUY---Klepon|4
 
 # PRODUK TERLARIS (BEST SELLERS)
 {$bestSellers}
@@ -649,6 +869,67 @@ CARA PESAN:
             }
         }
 
+        // ── 0.5. Extract buy instructions from AI response ──
+        $buyInstructions = null;
+        if (str_contains($aiText, '---BUY---')) {
+            $parts = explode('---BUY---', $aiText, 2);
+            $aiText = trim($parts[0]);
+            if (isset($parts[1])) {
+                $buyInstructions = trim($parts[1]);
+            }
+        }
+
+        $foundButtons = [];
+        if ($buyInstructions) {
+            $buyParts = explode('|', $buyInstructions, 2);
+            $productName = trim($buyParts[0] ?? '');
+            $quantity = max(1, (int)trim($buyParts[1] ?? '1'));
+
+            if ($productName) {
+                $product = Product::where('name', $productName)->first();
+                if ($product) {
+                    if (!Auth::check()) {
+                        $aiText = "Maaf Kak, untuk memproses pemesanan, silakan login ke akun Kakak terlebih dahulu agar kami dapat menyiapkan keranjang belanja Anda.";
+                        $foundButtons[] = [
+                            'label' => 'Login Sekarang',
+                            'url' => route('login'),
+                            'style' => 'primary',
+                        ];
+                    } else {
+                        if ($product->stock <= 0) {
+                            $aiText = "Maaf Kak, produk **{$productName}** saat ini sedang habis.";
+                        } else {
+                            $cartService = app(\App\Services\CartService::class);
+                            $result = $cartService->add($product->id, $quantity);
+
+                            if ($result['success'] ?? false) {
+                                // Dispatch events to update the UI
+                                $this->dispatch('cart-updated');
+                                $this->dispatch('wishlist-updated');
+                                $this->dispatch('toast', type: 'success', message: "{$productName} ditambahkan ke keranjang");
+
+                                $aiText = "Saya sudah berhasil memasukkan **{$quantity} porsi {$product->name}** ke keranjang belanja Kakak. Silakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
+                                $foundButtons[] = [
+                                    'label' => 'Bayar Langsung via Chatbot',
+                                    'action' => 'checkoutDirectly',
+                                    'style' => 'primary',
+                                ];
+                                $foundButtons[] = [
+                                    'label' => 'Buka Halaman Checkout',
+                                    'url' => route('checkout.index'),
+                                    'style' => 'secondary',
+                                ];
+                            } else {
+                                $aiText = "Maaf Kak, gagal menambahkan **{$productName}** ke keranjang: " . ($result['message'] ?? 'Stok tidak mencukupi.');
+                            }
+                        }
+                    }
+                } else {
+                    $aiText = "Maaf Kak, saya tidak menemukan produk bernama **{$productName}** di katalog kami.";
+                }
+            }
+        }
+
         // ── Generate contextual fallback suggestions if AI didn't provide any ──
         if (empty($suggestions)) {
             $suggestions = $this->generateFallbackSuggestions($aiText, $context);
@@ -718,6 +999,9 @@ CARA PESAN:
         }
         if (!empty($foundOrders)) {
             $entry['orders'] = $foundOrders;
+        }
+        if (!empty($foundButtons)) {
+            $entry['buttons'] = $foundButtons;
         }
         if (!empty($suggestions)) {
             $entry['suggestions'] = $suggestions;

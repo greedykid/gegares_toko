@@ -66,7 +66,8 @@
         {{-- ═══ Messages ═══ --}}
         <div class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-50/50 dark:bg-slate-950" 
              id="chat-messages"
-             x-init="if($wire.isOpen) { setTimeout(() => $el.scrollTo({ top: $el.scrollHeight, behavior: 'instant' }), 100) }">
+             x-init="if($wire.isOpen) { setTimeout(() => $el.scrollTo({ top: $el.scrollHeight, behavior: 'instant' }), 100) }"
+             wire:poll.10s="checkRecentPaidOrders">
             @foreach($chatHistory as $chatIndex => $chat)
                 <div class="flex {{ $chat['role'] === 'user' ? 'justify-end' : 'justify-start' }}">
                     @if($chat['role'] === 'assistant')
@@ -247,6 +248,35 @@
                                                     </a>
                                                 </div>
                                             </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                {{-- Custom Action Buttons --}}
+                                @if(isset($chat['buttons']) && count($chat['buttons']) > 0)
+                                    <div class="mt-3 flex flex-col gap-1.5">
+                                        @foreach($chat['buttons'] as $btn)
+                                            @if(isset($btn['action']))
+                                                <button wire:click="{{ $btn['action'] }}"
+                                                        class="w-full text-center py-2.5 rounded-xl text-xs font-extrabold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 {{ ($btn['style'] ?? 'primary') === 'primary' ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-600/10' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                                                    @if(($btn['style'] ?? 'primary') === 'primary')
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"/></svg>
+                                                    @else
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18"/></svg>
+                                                    @endif
+                                                    {{ $btn['label'] }}
+                                                </button>
+                                            @else
+                                                <a href="{{ $btn['url'] }}"
+                                                   class="w-full text-center py-2.5 rounded-xl text-xs font-extrabold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 {{ ($btn['style'] ?? 'primary') === 'primary' ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-600/10' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                                                    @if(($btn['style'] ?? 'primary') === 'primary')
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"/></svg>
+                                                    @else
+                                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18"/></svg>
+                                                    @endif
+                                                    {{ $btn['label'] }}
+                                                </a>
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endif

@@ -193,7 +193,7 @@ Walaupun banyak kesulitan yang penulis harus hadapi ketika menyusun tugas akhir 
 
 [2.14 Pakasir 15](#_Toc232721225)
 
-[2.15 Fonnte 16](#_Toc232721226)
+[2.15 SumoPod SMTP 16](#_Toc232721226)
 
 [2.16 Balsamiq 16](#_Toc232721227)
 
@@ -204,6 +204,8 @@ Walaupun banyak kesulitan yang penulis harus hadapi ketika menyusun tugas akhir 
 [2.19 Artificial Intelligence (AI) 17](#_Toc232721230)
 
 [2.20 Application Programming Interface (API) 17](#_Toc232721231)
+
+[2.21 Simple Mail Transfer Protocol (SMTP) 17](#_Toc232721231b)
 
 [3\. METODE PENELITIAN 18](#_Toc232721232)
 
@@ -315,7 +317,8 @@ Manfaat dari penelitian ini adalah meningkatkan efisiensi dan produktivitas oper
 
 ## <a id="_Toc232721203"></a>Sistematika Penulisan
 
-Dalam sistematika penulisan ini berupa gambaran umum dalam 5 bab pokok bahasan yang kemudian diuraikan. Pada bab pertama adalah "Pendahuluan" yang membahas latar belakang, rumusan masalah, tujuan penelitian, manfaat penelitian, dan sistematika penulisan. Kemudian, bab dua adalah "Tinjauan Pustaka" yang memberikan gambaran yang meliputi penjelasan teori dan alat-alat yang digunakan dalam pembuatan aplikasi e-commerce dan chatbot pada toko Gegares berbasis website, seperti sistem e-commerce, chatbot AI, website, PHP, framework Laravel, MySQL, HTML, CSS, dan Visual Studio Code. Selanjutnya, bab tiga adalah "Metode Penelitian" yang berisi tentang deskripsi gambaran umum website, perancangan struktur navigasi dan UML, pembuatan database dan rincian tahapan dalam pembuatan atau pengembangan website penjualan online terintegrasi asisten virtual menggunakan metode pengembangan sistem berupa perencanaan, analisis, perancangan, implementasi, dan pengujian. Kemudian, bab empat "Hasil dan Pembahasan" yang berisi hasil rancangan termasuk kelebihan dan kekurangan dari hasil rancangan website e-commerce dan chatbot yang telah dibuat. Terakhir, bab lima adalah "Penutup" berisi kesimpulan berdasarkan hasil pembahasan dari penulisan dan proses perancangan yang telah dilakukan serta terdapat saran yang bertujuan untuk pengembangan website ke depannya.
+Sistematika penulisan laporan penelitian ini dirancang secara terstruktur ke dalam lima bab pembahasan yang saling berkesinambungan. Bab pertama, Pendahuluan, menguraikan latar belakang masalah digitalisasi penjualan jajanan pasar tradisional, rumusan masalah, batasan masalah, tujuan dan manfaat penelitian, serta sistematika penulisan laporan. Bab kedua, Tinjauan Pustaka, menyajikan landasan teori dasar dan teknologi pendukung yang digunakan, meliputi konsep e-commerce, asisten virtual (AI chatbot) berbasis RAG (Retrieval-Augmented Generation), Laravel 13, MySQL, pemodelan UML, payment gateway Pakasir, serta layanan server SMTP SumoPod untuk pengiriman surat elektronik transaksi dan pemulihan kata sandi. Bab ketiga, Metode Penelitian, menjelaskan tahapan pengembangan sistem mulai dari pengumpulan data (interview), analisis kebutuhan fungsional dan non-fungsional, perancangan struktur navigasi, pembuatan diagram UML (Use Case, Activity, Class), rancangan database (skema tabel), serta perancangan antarmuka pengguna (wireframe) halaman pelanggan dan admin. Bab keempat, Hasil dan Pembahasan, memaparkan hasil implementasi kode program, tampilan antarmuka sistem e-commerce dan chatbot Gegares, serta hasil evaluasi fungsionalitas sistem menggunakan metode pengujian black-box testing. Akhirnya, Bab kelima, Penutup, menyajikan kesimpulan dari keseluruhan hasil analisis, implementasi, dan pengujian sistem Gegares, disertai dengan saran-saran konstruktif untuk pengembangan sistem lebih lanjut di masa mendatang.
+
 
 # <a id="_Toc232721204"></a>TINJUAN PUSTAKA
 
@@ -472,9 +475,13 @@ Sumber:
 
 PT Geksa. (2024). _Layanan Link Pembayaran - Pakasir_. https://pakasir.com
 
-## <a id="_Toc204906143"></a><a id="_Toc232721226"></a>Fonnte
+## <a id="_Toc204906143"></a><a id="_Toc232721226"></a>SumoPod SMTP
 
-Fonnte merupakan sebuah solusi unofficial WhatsApp API gateway yang memanfaatkan antarmuka WhatsApp Web untuk menjalankan berbagai fungsi otomatisasi pengiriman pesan, broadcast massal, auto-reply, dan integrasi API dengan aplikasi atau website tanpa menggunakan layanan resmi dari Meta (Facebook) (ArunaJR, 2025). Meski tidak resmi, Fonnte menawarkan fitur yang cukup lengkap dan mudah digunakan, termasuk dashboard pengelolaan pesan dan webhook untuk notifikasi otomatis seperti pengingat, tagihan, serta pengiriman OTP (Pamela, 2025).
+SumoPod SMTP adalah layanan penyedia server keluar (SMTP server) berbasis awan yang digunakan untuk mengirimkan surat elektronik (email) dari aplikasi web secara instan, aman, dan berkinerja tinggi. Layanan ini mendukung integrasi protokol SMTP aman melalui port 465 dengan protokol enkripsi SSL/TLS, serta port 587 dengan enkripsi STARTTLS (SumoPod, 2026). SumoPod SMTP menyediakan sistem autentikasi terenkripsi untuk mencegah penyalahgunaan pengiriman email, serta memastikan email notifikasi transaksi, verifikasi pendaftaran akun, dan tautan pemulihan kata sandi (lupa password) dari website e-commerce Gegares dapat terkirim secara real-time ke kotak masuk utama pengguna tanpa tergolong spam.
+
+Sumber:
+
+SumoPod. (2026). _Cloud SMTP Mail Delivery Service - SumoPod_. https://sumopod.com
 
 ## Figma
 
@@ -520,6 +527,14 @@ Application Programming Interface (API) adalah sebuah perantara yang memungkinka
 
 Rouse, M. (2021). "What is an API? - Definition, Types, and Examples." Techopedia. [Link](https://www.techopedia.com/definition/33265/api)
 
+## Simple Mail Transfer Protocol (SMTP)
+
+Simple Mail Transfer Protocol (SMTP) adalah protokol standar yang digunakan untuk mengirimkan surat elektronik (email) dari satu server ke server lainnya melalui jaringan internet. SMTP bekerja dengan cara mendengarkan port tertentu (seperti port 465 untuk koneksi SMTPS aman dengan enkripsi SSL/TLS) dan memproses pengiriman data email menggunakan arsitektur client-server. Dalam kerangka kerja Laravel, layanan pengiriman email diatur menggunakan library Symfony Mailer, yang dapat dikonfigurasi melalui protokol SMTP guna mengirimkan surat konfirmasi transaksi, verifikasi akun, maupun tautan pemulihan kata sandi (lupa password) secara instan kepada pengguna (Wood, 2021).
+
+**Referensi:**
+
+Wood, D. (2021). "Programming Internet Email: An Introduction to SMTP, POP3, and IMAP." O'Reilly Media.
+
 # <a id="_Toc232721232"></a>METODE PENELITIAN
 
 ## <a id="_Toc232721233"></a>Gambaran Umum Penelitian
@@ -532,7 +547,7 @@ Metode penelitian yang digunakan dalam pengembangan sistem ini adalah metode pen
 
 Website yang dikembangkan merupakan sistem e-commerce pemesanan jajanan pasar tradisional bernama Gegares yang dilengkapi dengan fitur AI Chatbot untuk membantu pelayanan pelanggan secara otomatis. Sistem ini dirancang untuk memudahkan proses pemesanan produk, pengelolaan data pelanggan, manajemen produk, transaksi pembayaran, serta pelayanan informasi secara digital baik bagi pelanggan maupun admin toko.
 
-Website dibangun menggunakan framework Laravel 13 sebagai backend dan Livewire untuk mendukung komponen interaktif pada frontend. Data sistem disimpan menggunakan basis data MySQL sebagai media penyimpanan utama. Selain itu, website juga terintegrasi dengan Pakasir sebagai payment gateway untuk mendukung proses pembayaran online dan Fonnte API untuk mendukung pengiriman notifikasi WhatsApp kepada pelanggan.
+Website dibangun menggunakan framework Laravel 13 sebagai backend dan Livewire untuk mendukung komponen interaktif pada frontend. Data sistem disimpan menggunakan basis data MySQL sebagai media penyimpanan utama. Selain itu, website juga terintegrasi dengan Pakasir sebagai payment gateway untuk mendukung proses pembayaran online dan server SMTP SumoPod untuk mendukung pengiriman notifikasi transaksi serta pemulihan kata sandi kepada pelanggan via email.
 
 Sistem ini juga dilengkapi dengan fitur AI Chatbot yang berfungsi sebagai asisten virtual untuk membantu pelanggan mendapatkan informasi secara otomatis terkait produk, harga, stok, metode pembayaran, dan status pesanan. Chatbot dirancang untuk memberikan pelayanan selama 24 jam sehingga pelanggan dapat memperoleh respon dengan lebih cepat tanpa harus menunggu admin membalas pesan secara manual. Fitur AI Chatbot Gegares dirancang secara hybrid menggunakan metode Retrieval-Augmented Generation (RAG). Proses pengolahan jawaban tidak dilakukan secara mandiri oleh AI, melainkan diawali dengan pengambilan data aktual dari database MySQL menggunakan kueri Eloquent ORM di Laravel (untuk mengambil data stok, harga, promo aktif, dan riwayat pesanan pengguna). Data aktual tersebut kemudian digabungkan ke dalam instruksi sistem (system prompt) sebelum dikirimkan ke server Gemini AI API guna menghasilkan respons bahasa alami yang akurat.
 
@@ -674,11 +689,13 @@ Berdasarkan hasil analisis dan pemetaan interaksi sistem melalui use case diagra
 
 1\. Fungsi untuk Pelanggan (User)
 
--   1.  Registrasi & Login Akun: Pelanggan dapat mendaftar dan melakukan login ke sistem untuk mengakses fitur pesanan, wishlist, riwayat transaksi, dan chatbot.
-    2.  Menjelajahi Produk: Pelanggan dapat mencari produk berdasarkan kata kunci atau kategori tertentu untuk mempermudah pencarian jajanan pasar.
-    3.  Mengelola Wishlist: Pelanggan dapat menyimpan produk jajanan favorit ke dalam daftar keinginan.
-    4.  Mengelola Keranjang: Belanja Pelanggan dapat menambah, mengurangi, atau menghapus produk di keranjang belanja sebelum melakukan pembelian.
-    5.  Checkout Pesanan: Pelanggan dapat memproses pesanan jajanan pasar, yang secara sistem wajib mencakup:
+-   1.  Registrasi Akun: Pelanggan dapat mendaftar untuk membuat akun baru pada sistem.
+    2.  Login Akun: Pelanggan dapat melakukan autentikasi login menggunakan email dan password untuk masuk ke dalam sistem.
+    3.  Lupa Password Akun: Pelanggan dapat memulihkan kata sandi yang lupa dengan mengajukan pemulihan akun untuk menerima email berisi tautan reset kata sandi otomatis melalui SMTP.
+    4.  Menjelajahi Produk: Pelanggan dapat mencari produk berdasarkan kata kunci atau kategori tertentu untuk mempermudah pencarian jajanan pasar.
+    5.  Mengelola Wishlist: Pelanggan dapat menyimpan produk jajanan favorit ke dalam daftar keinginan.
+    6.  Mengelola Keranjang Belanja: Pelanggan dapat menambah, mengurangi, atau menghapus produk di keranjang belanja sebelum melakukan pembelian.
+    7.  Checkout Pesanan: Pelanggan dapat memproses pesanan jajanan pasar, yang secara sistem wajib mencakup:
     
 
 1.  Pilih Alamat: Memasukkan alamat pengiriman.
@@ -686,10 +703,10 @@ Berdasarkan hasil analisis dan pemetaan interaksi sistem melalui use case diagra
 3.  Bayar Tagihan: Memproses pembayaran secara online terintegrasi Pakasir.
 4.  Gunakan Kupon Promo: Untuk memasukkan kode diskon opsional.
     
-    1.  Lacak Pengiriman: Pelanggan dapat memantau pergerakan kurir pengiriman Biteship secara real-time di halaman pesanan.
-    2.  Selesaikan Pesanan: Pelanggan dapat melakukan konfirmasi bahwa pesanan telah diterima dengan baik .
-    3.  Berikan Ulasan: Pelanggan dapat memberikan rating bintang, komentar teks, dan unggah foto produk jajanan, yang merupakan perluasan opsional setelah melakukan Selesaikan Pesanan.
-    4.  Tanya AI Chatbot: Pelanggan dapat berinteraksi dengan asisten virtual untuk mendapatkan informasi seputar produk, harga, stok, maupun status pesanan secara otomatis selama 24 jam.
+    8.  Lacak Pengiriman: Pelanggan dapat memantau pergerakan kurir pengiriman Biteship secara real-time di halaman pesanan.
+    9.  Selesaikan Pesanan: Pelanggan dapat melakukan konfirmasi bahwa pesanan telah diterima dengan baik.
+    10. Berikan Ulasan: Pelanggan dapat memberikan rating bintang, komentar teks, dan unggah foto produk jajanan, yang merupakan perluasan opsional setelah melakukan Selesaikan Pesanan.
+    11. Tanya AI Chatbot: Pelanggan dapat berinteraksi dengan asisten virtual untuk mendapatkan informasi seputar produk, harga, stok, maupun status pesanan secara otomatis selama 24 jam.
     
 
 2\. Fungsi untuk Admin atau Pemilik Toko
@@ -721,7 +738,7 @@ Pengembangan dan pengujian website Gegares dilakukan menggunakan perangkat keras
     4.  Kartu Grafis : NVIDIA GeForce GTX 750 Ti 2 GB
     
 
-Spesifikasi perangkat keras tersebut dinilai cukup untuk mendukung proses pengembangan dan pengujian sistem berbasis web menggunakan Laravel 13, database MySQL, AI Chatbot, serta integrasi API seperti Pakasir dan Fonnte. Selain itu, perangkat tersebut juga mampu menjalankan web server lokal, browser, dan editor kode secara bersamaan dengan performa yang stabil.
+Spesifikasi perangkat keras tersebut dinilai cukup untuk mendukung proses pengembangan dan pengujian sistem berbasis web menggunakan Laravel 13, database MySQL, AI Chatbot, serta integrasi API/protokol seperti Pakasir dan server SMTP SumoPod. Selain itu, perangkat tersebut juga mampu menjalankan web server lokal, browser, dan editor kode secara bersamaan dengan performa yang stabil.
 
 2\. Analisis Kebutuhan Perangkat Lunak (Software)
 
@@ -736,7 +753,7 @@ Perangkat lunak yang digunakan dalam pengembangan website Gegares adalah sebagai
     7.  Editor kode yang digunakan adalah Visual Studio Code untuk menulis dan mengelola source code program.
     8.  Browser seperti Google Chrome dan Microsoft Edge digunakan untuk menjalankan serta menguji tampilan website pada berbagai kondisi perangkat.
     9.  Sistem pembayaran online menggunakan layanan payment gateway Pakasir yang terintegrasi melalui API.
-    10.  Sistem notifikasi WhatsApp menggunakan layanan API Fonnte untuk mendukung pengiriman pesan otomatis kepada pelanggan.
+    10.  Sistem notifikasi transaksi menggunakan layanan server SMTP SumoPod untuk mendukung pengiriman email konfirmasi dan pemulihan kata sandi kepada pelanggan.
     11.  Sistem AI Chatbot digunakan untuk membantu pelayanan pelanggan secara otomatis dalam memberikan informasi terkait produk, pembayaran, dan status pesanan.
     
 
@@ -774,7 +791,7 @@ Struktur navigasi admin pada website Gegares dimulai dengan halaman Admin Login 
 
 Struktur navigasi pengguna yang belum melakukan login (tamu) pada website Gegares menggunakan struktur navigasi hierarkis, di mana halaman Beranda berperan sebagai halaman utama (master page) yang menjadi pusat akses menuju fungsionalitas lainnya. Dari halaman Beranda, pengguna dapat mengakses beberapa menu utama yaitu AI Chatbot, Produk, Tentang, Kontak, Masuk, dan Daftar. Menu AI Chatbot menyediakan akses interaktif bagi pengguna umum untuk menanyakan informasi umum seputar produk dan layanan toko. Pada menu Produk, pengguna dapat menjelajahi daftar katalog jajanan pasar tradisional yang tersedia dan dapat menavigasi secara timbal balik menuju halaman Detail Produk untuk memperoleh deskripsi produk secara rinci. Menu Tentang menyajikan informasi profil, visi, dan misi Toko Gegares, sedangkan menu Kontak memuat saluran komunikasi yang dapat digunakan untuk menghubungi pihak toko secara dua arah.
 
-Selain itu, tersedia menu Masuk bagi pengguna yang telah memiliki akun dan menu Daftar bagi pengguna yang ingin melakukan registrasi akun baru. Penerapan struktur navigasi hierarkis ini menjamin pengguna umum dapat mengeksplorasi informasi produk secara terorganisasi dan interaktif sebelum melakukan otentikasi login ke dalam sistem.
+Selain itu, tersedia menu Masuk bagi pengguna yang telah memiliki akun dan menu Daftar bagi pengguna yang ingin melakukan registrasi akun baru. Pada menu Masuk, sistem menyediakan fitur pemulihan akun melalui tautan Lupa Password yang akan mengarahkan pengguna untuk menginput email dan mengirim tautan pengaturan ulang kata sandi (reset password) melalui SMTP, yang kemudian membawa pengguna ke halaman Reset Password untuk memperbarui kata sandi secara aman. Penerapan struktur navigasi hierarkis ini menjamin pengguna umum dapat mengeksplorasi informasi produk secara terorganisasi dan interaktif sebelum melakukan otentikasi login ke dalam sistem.
 
 ![image-28.png](media/image-28.png)
 
@@ -794,7 +811,7 @@ Unified Modeling Language (UML) merupakan bahasa pemodelan standar yang digunaka
 
 <a id="_Toc232724899"></a>Gambar 3. 4 Use Case Diagram
 
-Use case diagram pada sistem pemesanan jajanan pasar tradisional berbasis web di Toko Gegares menggambarkan interaksi Pelanggan dengan sistem. Pelanggan dapat mendaftar dan login ke dalam akun, menjelajahi katalog produk, mengelola wishlist untuk produk favorit, memantau keranjang belanja, melacak status pengiriman, serta dapat berinteraksi dengan Tanya AI Chatbot untuk memperoleh informasi otomatis terkait produk atau transaksi. Selain itu, Pelanggan dapat melakukan checkout pesanan yang selalu mencakup (include) pemilihan alamat pengiriman, pemilihan kurir/ongkos kirim, dan pembayaran pesanan secara online, yang dapat diperluas (extend) dengan penggunaan kupon promo, serta dapat melakukan penyelesaian pesanan yang diperluas (extend) dengan memberikan ulasan produk.
+Use case diagram pada sistem pemesanan jajanan pasar tradisional berbasis web di Toko Gegares menggambarkan interaksi Pelanggan dengan sistem. Pelanggan dapat melakukan pendaftaran (register) akun baru, serta masuk (login) ke dalam sistem untuk dapat mengakses katalog produk, mengelola wishlist untuk produk favorit, memantau keranjang belanja, melacak status pengiriman, dan berinteraksi dengan Tanya AI Chatbot. Usecase login ini dapat diperluas (extend) oleh usecase Lupa Password jika pengguna melupakan kata sandi mereka dan memerlukan pemulihan akun melalui tautan email. Selain itu, Pelanggan dapat melakukan checkout pesanan yang secara sistem wajib mencakup (include) pemilihan alamat pengiriman, pemilihan kurir/ongkos kirim, dan pembayaran pesanan secara online. Usecase checkout ini dapat diperluas (extend) dengan penggunaan kupon promo, serta usecase penyelesaian pesanan dapat diperluas (extend) dengan memberikan ulasan produk.
 
 Admin bertindak sebagai pengelola internal sistem yang memiliki hak akses khusus untuk mengelola login admin, produk, kategori produk, kupon promo, dan data pengguna. Admin juga bertanggung jawab atas pengelolaan operasional transaksi seperti memproses pengiriman pesanan, memoderasi ulasan yang masuk dari pelanggan, serta memantau seluruh log aktivitas sistem.
 
@@ -814,7 +831,7 @@ Activity diagram Admin menggambarkan secara komprehensif alur aktivitas serta ur
 
 <a id="_Toc232724900"></a>Gambar 3. 5 Activity Diagram Admin
 
-Alur activity diagram Admin dimulai dengan tahap autentikasi, di mana Admin membuka halaman login Admin dan sistem merespons dengan menampilkan halaman login Admin. Admin kemudian mengisi formulir login Admin yang selanjutnya divalidasi oleh sistem melalui proses validasi login. Jika data login salah, alur akan kembali ke proses pengisian formulir login Admin, sedangkan jika benar, sistem akan menampilkan halaman Dashboard Admin. Dari halaman Dashboard Admin, alur diteruskan menuju bilah sinkronisasi (fork) di mana Admin dapat mengakses dan mengelola berbagai fitur secara paralel atau pilihan opsional. Fitur-fitur tersebut meliputi menu Mengelola Kategori, Mengelola Produk, Mengelola Kupon Diskon, Mengelola Pesanan, Moderasi Ulasan, Mengelola Pengguna, dan Mengatur Toko. Pada setiap pilihan menu tersebut, sistem akan menampilkan halaman manajemen terkait agar Admin dapat memilih aksi tambah, ubah, atau hapus data serta menyimpannya kembali ke sistem sebelum alur dikembalikan ke bilah sinkronisasi. Terakhir, Admin dapat mengakhiri sesi pengelolaan dengan memilih aksi mengklik logout dari bilah sinkronisasi, yang kemudian akan diproses oleh sistem menuju status selesai.
+Alur activity diagram Admin dimulai dengan tahap autentikasi (login). Setelah data login berhasil divalidasi, sistem menampilkan halaman Dashboard Admin. Melalui bilah sinkronisasi (fork), Admin dapat mengakses dan mengelola berbagai menu secara paralel atau opsional, meliputi: Kelola Kategori, Kelola Produk, Kelola Kupon Diskon, Kelola Pesanan, Moderasi Ulasan, Kelola Pengguna, dan Mengatur Toko. Di setiap menu tersebut, Admin dapat melakukan aksi tambah, ubah, atau hapus data. Proses pengelolaan berakhir ketika Admin mengklik logout untuk menyelesaikan sesi.
 
 ##### Activity Diagram Pelanggan
 
@@ -824,9 +841,7 @@ Activity diagram Pelanggan menggambarkan secara komprehensif seluruh alur intera
 
 <a id="_Toc232724901"></a>Gambar 3. 6 Activity Diagram Pelanggan
 
-Activity Diagram Pelanggan menggambarkan alur aktivitas yang dilakukan pelanggan saat menggunakan website Gegares, mulai dari mengakses website hingga menyelesaikan transaksi dan memberikan ulasan produk. Proses diawali ketika pelanggan membuka website dan sistem menampilkan halaman beranda. Selanjutnya pelanggan dapat mengakses berbagai halaman seperti produk, detail produk, tentang, kontak, serta menggunakan fitur AI Chatbot untuk memperoleh informasi terkait produk dan layanan. Pada proses penggunaan AI Chatbot, ketika pelanggan mengirimkan pertanyaan teks atau gambar, sistem Laravel terlebih dahulu mengeksekusi kueri database (database query) ke MySQL untuk menarik informasi kontekstual yang relevan (seperti ketersediaan produk, harga, kupon diskon aktif, atau status transaksi pelanggan). Setelah itu, data hasil kueri dikirim bersama pesan pelanggan ke server Gemini AI untuk dirumuskan menjadi jawaban percakapan alami sebelum ditampilkan kembali ke antarmuka obrolan pelanggan. Untuk melakukan pemesanan, pelanggan harus melakukan login terlebih dahulu. Jika belum memiliki akun, pelanggan dapat melakukan registrasi dengan mengisi formulir pendaftaran, kemudian login menggunakan akun yang telah dibuat.
-
-Setelah berhasil login, pelanggan dapat mencari dan memilih produk jajanan pasar yang diinginkan, lalu menambahkannya ke keranjang belanja atau wishlist. Pelanggan kemudian melakukan checkout dengan mengisi alamat pengiriman dan memilih layanan kurir, selanjutnya sistem akan menghitung biaya pengiriman secara otomatis. Setelah itu pelanggan melakukan pembayaran online dan sistem melakukan verifikasi pembayaran. Jika pembayaran berhasil, pelanggan dapat memantau status pengiriman melalui menu pesanan saya hingga pesanan diterima. Setelah pesanan selesai, pelanggan dapat memberikan ulasan berupa rating, komentar, dan foto produk sebagai bentuk penilaian terhadap produk yang telah dibeli. Proses berakhir ketika pelanggan keluar dari sistem melalui fitur logout.
+Activity Diagram Pelanggan diawali dengan mengakses halaman beranda. Pelanggan umum (tamu) dapat menjelajahi daftar produk, detail produk, tentang, kontak, serta berinteraksi dengan AI Chatbot (sistem Laravel mengeksekusi kueri ke MySQL untuk menarik data kontekstual sebelum dikirim ke Gemini AI API guna merumuskan jawaban percakapan alami). Untuk bertransaksi, pelanggan wajib melakukan login. Jika melupakan kata sandinya, pelanggan dapat mengajukan pemulihan akun melalui tautan Lupa Password untuk menerima email reset sandi via SMTP, lalu masuk ke halaman Reset Password guna memperbarui kata sandi. Setelah berhasil login, pelanggan dapat mencari produk, menambahkan ke keranjang/wishlist, melakukan checkout (mengisi alamat dan memilih kurir untuk penghitungan ongkos kirim otomatis), menyelesaikan pembayaran online, melacak status pengiriman, memberikan ulasan produk, dan keluar melalui fitur logout.
 
 #### <a id="_Toc232721248"></a>Class Diagram
 
@@ -1095,6 +1110,18 @@ Tabel ini bertindak sebagai tabel persimpangan (junction table) yang menghubungk
 | 4 | created\_at | timestamp |  | Waktu data dibuat. |
 | 5 | updated\_at | timestamp |  | Waktu data diperbarui. |
 
+13\. Tabel password_reset_tokens
+
+Tabel ini digunakan oleh Laravel password broker untuk menyimpan token reset password sementara beserta email pemilik akun yang melakukan permintaan pemulihan kata sandi. Token ini digunakan untuk memvalidasi permintaan reset password.
+
+Tabel 3. 14 Tabel password_reset_tokens
+
+| No | Nama Kolom | Tipe Data & Panjang | Key | Keterangan |
+| --- | --- | --- | --- | --- |
+| 1 | email | varchar(255) | PK | Email pengguna yang mengajukan reset password. |
+| 2 | token | varchar(255) |  | Token reset password yang dienkripsi. |
+| 3 | created\_at | timestamp |  | Waktu pembuatan token reset password. |
+
 ### <a id="_Toc232721250"></a>Rancangan Tampilan Halaman
 
 Rancangan tampilan halaman dibuat untuk memberikan gambaran antarmuka pengguna pada website Gegares sebelum tahap implementasi dilakukan. Perancangan ini bertujuan agar setiap fitur dapat diakses dengan mudah, memiliki tampilan yang konsisten, serta memberikan pengalaman penggunaan yang nyaman bagi pelanggan maupun admin. Pada bagian ini akan dijelaskan rancangan halaman-halaman yang terdapat pada website Gegares.
@@ -1118,6 +1145,14 @@ Rancangan halaman daftar digunakan sebagai halaman registrasi bagi pengguna yang
 ![image-34.png](media/image-34.png)
 
 <a id="_Toc232724904"></a>Gambar 3. 9 Rancangan Halaman Daftar
+
+1.  Rancangan Halaman Lupa Password
+
+Rancangan halaman lupa password digunakan oleh pengguna untuk memulihkan kata sandi akun mereka yang hilang atau terlupa. Desain halaman ini memiliki struktur yang minimalis dan terbagi menjadi dua panel, sejalan dengan antarmuka login dan daftar. Halaman ini memuat kolom input alamat email yang terdaftar pada sistem, petunjuk singkat pemulihan, tombol aksi kirim tautan reset kata sandi, serta tombol kembali ke halaman login.
+
+1.  Rancangan Halaman Reset Password
+
+Rancangan halaman reset password ditampilkan setelah pengguna mengeklik tautan pemulihan kata sandi yang dikirimkan ke kotak masuk email mereka. Halaman ini menyajikan formulir yang terkunci untuk alamat email terkait guna menjamin validitas kepemilikan akun, kolom isian password baru, kolom konfirmasi password baru, serta tombol aksi untuk memproses pembaruan kata sandi ke database.
 
 1.  Rancangan Halaman Utama Tanpa Login
 
