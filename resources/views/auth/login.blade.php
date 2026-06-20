@@ -26,8 +26,12 @@
                     placeholder="nama@email.com">
             </div>
             <div x-data="{ show: false }">
-                <label for="password"
-                    class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-0.5">Password</label>
+                <div class="flex items-center justify-between mb-1.5 ml-0.5 mr-0.5">
+                    <label for="password"
+                        class="block text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
+                    <a href="{{ route('password.request') }}"
+                        class="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors">Lupa Password?</a>
+                </div>
                 <div class="relative">
                     <input :type="show ? 'text' : 'password'" id="password" name="password" required
                         class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all duration-200"
