@@ -1,4 +1,7 @@
-<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end" x-data="{ open: @entangle('isOpen'), showScrollBottom: false }" id="gegares-chatbot">
+<div class="fixed z-50 flex flex-col items-end" 
+     x-data="{ open: @entangle('isOpen'), showScrollBottom: false }" 
+     :class="open ? 'inset-0 sm:inset-auto sm:bottom-6 sm:right-6' : 'bottom-6 right-6'"
+     id="gegares-chatbot">
     {{-- Backdrop Overlay on Mobile --}}
     <div x-show="open" 
          x-transition:enter="transition ease-out duration-300"
