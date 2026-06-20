@@ -1,6 +1,14 @@
 <div class="fixed z-50 flex flex-col items-end" 
      x-data="{ open: @entangle('isOpen'), showScrollBottom: false }" 
+     x-init="
+         $watch('open', value => {
+             document.cookie = 'gegares_chat_open=' + (value ? '1' : '0') + '; path=/; max-age=31536000; SameSite=Lax';
+         });
+     "
+     @click="if ($event.target.closest('a')) { open = false; document.cookie = 'gegares_chat_open=0; path=/; max-age=31536000; SameSite=Lax'; }"
      :class="open ? 'inset-0 sm:inset-auto sm:bottom-6 sm:right-6' : 'bottom-6 right-6'"
+     :style="open ? '' : 'bottom: 1.5rem; right: 1.5rem;'"
+     style="bottom: 1.5rem; right: 1.5rem;"
      id="gegares-chatbot">
     {{-- Backdrop Overlay on Mobile --}}
     <div x-show="open" 

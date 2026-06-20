@@ -180,6 +180,8 @@ class ChatbotPaidOrderNotificationTest extends TestCase
         Livewire::test(Chatbot::class)
             ->set('isOpen', true)
             ->call('checkoutDirectly')
+            ->assertSee('Silakan pilih kurir pengiriman')
+            ->call('placeDirectOrder', 'jne', 'reg', 9000)
             ->assertSee('Hore! Pesanan Kakak dengan nomor order')
             ->assertSee('Bayar Sekarang (Pakasir)')
             ->assertSee('Lihat Detail Pesanan');
@@ -304,4 +306,157 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             ->call('processAi', 'saya sudah bayar')
             ->assertSee('Terima kasih Kak! Pembayaran Anda sudah kami terima.');
     }
+
+    public function test_it_auto_opens_when_query_parameter_chatbot_open_is_present()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        Livewire::withQueryParams(['chatbot_open' => '1'])
+            ->test(Chatbot::class)
+            ->assertSet('isOpen', true);
+
+        $this->assertTrue(session('gegares_chat_open'));
+    }
+
+    public function test_it_announces_unpaid_order_when_query_parameter_chatbot_open_is_present()
+    {
+        $user = User::factory()->create(['phone' => '081234567890']);
+        $address = Address::create([
+            'user_id' => $user->id,
+            'label' => 'Rumah',
+            'recipient_name' => 'Test User',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Tebet Raya No. 1',
+            'city' => 'Jakarta Selatan',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '12810',
+            'is_primary' => true,
+        ]);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => 'GGR-TEST-UNPAID-1',
+            'address_id' => $address->id,
+            'subtotal' => 20000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 29000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => 'jne',
+            'shipping_service' => 'reg',
+            'pakasir_link' => 'https://app.pakasir.com/pay/gegares/29000',
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('orders.payment', $order) . '?chatbot_open=1');
+
+        $response->assertSee('belum selesai atau belum kami terima');
+        $response->assertSee('Bayar Sekarang (Pakasir)');
+        $response->assertSee('Lihat Detail Pesanan');
+
+        $this->assertTrue(session('gegares_chat_open'));
+        $this->assertContains($order->id, session('gegares_acknowledged_unpaid_orders', []));
+    }
+
+    public function test_it_auto_opens_and_announces_status_on_payment_page_without_query_param()
+    {
+        $user = User::factory()->create(['phone' => '081234567890']);
+        $address = Address::create([
+            'user_id' => $user->id,
+            'label' => 'Rumah',
+            'recipient_name' => 'Test User',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Tebet Raya No. 1',
+            'city' => 'Jakarta Selatan',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '12810',
+            'is_primary' => true,
+        ]);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => 'GGR-TEST-UNPAID-2',
+            'address_id' => $address->id,
+            'subtotal' => 20000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 29000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => 'jne',
+            'shipping_service' => 'reg',
+            'pakasir_link' => 'https://app.pakasir.com/pay/gegares/29000',
+            'notes' => 'Dipesan otomatis via AI Chatbot',
+        ]);
+
+        $this->actingAs($user);
+
+        // Access the payment page without '?chatbot_open=1'
+        $response = $this->get(route('orders.payment', $order));
+
+        $response->assertSee('belum selesai atau belum kami terima');
+        $this->assertTrue(session('gegares_chat_open'));
+    }
+
+    public function test_it_does_not_auto_open_on_payment_page_for_normal_order()
+    {
+        $user = User::factory()->create(['phone' => '081234567890']);
+        $address = Address::create([
+            'user_id' => $user->id,
+            'label' => 'Rumah',
+            'recipient_name' => 'Test User',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Tebet Raya No. 1',
+            'city' => 'Jakarta Selatan',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '12810',
+            'is_primary' => true,
+        ]);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => 'GGR-TEST-NORMAL-1',
+            'address_id' => $address->id,
+            'subtotal' => 20000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 29000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => 'jne',
+            'shipping_service' => 'reg',
+            'pakasir_link' => 'https://app.pakasir.com/pay/gegares/29000',
+            'notes' => 'Customer notes here',
+        ]);
+
+        $this->actingAs($user);
+
+        // Access the payment page without '?chatbot_open=1'
+        $response = $this->get(route('orders.payment', $order));
+
+        $response->assertDontSee('belum selesai atau belum kami terima');
+        $this->assertFalse(session('gegares_chat_open', false));
+    }
+
+    public function test_it_reads_open_status_from_cookie()
+    {
+        $user = User::factory()->create(['phone' => '081234567890']);
+        $this->actingAs($user);
+
+        // Case 1: Cookie is '1' (open)
+        Livewire::withCookies(['gegares_chat_open' => '1'])
+            ->test(Chatbot::class)
+            ->assertSet('isOpen', true);
+
+        // Case 2: Cookie is '0' (closed)
+        Livewire::withCookies(['gegares_chat_open' => '0'])
+            ->test(Chatbot::class)
+            ->assertSet('isOpen', false);
+    }
 }
+
+

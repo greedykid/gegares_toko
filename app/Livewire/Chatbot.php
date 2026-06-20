@@ -51,7 +51,37 @@ class Chatbot extends Component
             $this->resetChatHistory();
         }
 
-        $this->isOpen = session('gegares_chat_open', false);
+        if (request()->hasCookie('gegares_chat_open')) {
+            $this->isOpen = request()->cookie('gegares_chat_open') === '1';
+        } else {
+            $this->isOpen = session('gegares_chat_open', false);
+        }
+
+        $isOnPaymentPage = request()->routeIs('orders.payment');
+        $isChatbotOrder = false;
+
+        if ($isOnPaymentPage) {
+            $routeOrder = request()->route('order');
+            $order = null;
+
+            if ($routeOrder instanceof Order) {
+                $order = $routeOrder;
+            } elseif (is_numeric($routeOrder) || is_string($routeOrder)) {
+                $order = Order::find($routeOrder);
+            }
+
+            if ($order && str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot')) {
+                $isChatbotOrder = true;
+            }
+        }
+
+        if (request()->query('chatbot_open') == '1' || ($isOnPaymentPage && $isChatbotOrder)) {
+            $this->isOpen = true;
+            $this->checkRedirectedOrder();
+        }
+
+        session(['gegares_chat_open' => $this->isOpen]);
+
         if ($this->isOpen) {
             $this->checkRecentPaidOrders();
         }
@@ -136,6 +166,103 @@ class Chatbot extends Component
         }
     }
 
+    public function checkRedirectedOrder()
+    {
+        if (!Auth::check()) {
+            return;
+        }
+
+        $routeOrder = request()->route('order');
+        $order = null;
+
+        if ($routeOrder instanceof Order) {
+            $order = $routeOrder->fresh();
+        } elseif (is_numeric($routeOrder) || is_string($routeOrder)) {
+            $order = Order::find($routeOrder);
+        }
+
+        if (!$order || $order->user_id !== Auth::id()) {
+            return;
+        }
+
+        // Only announce for chatbot orders, unless chatbot_open query param is explicitly 1
+        $isChatbotOrder = str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot');
+        if (!$isChatbotOrder && request()->query('chatbot_open') !== '1') {
+            return;
+        }
+
+        if ($order->payment_status === 'paid') {
+            $acknowledged = session('gegares_acknowledged_paid_orders', []);
+            if (!in_array($order->id, $acknowledged)) {
+                $acknowledged[] = $order->id;
+                session(['gegares_acknowledged_paid_orders' => $acknowledged]);
+
+                $content = "Yey! Pembayaran untuk pesanan dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** telah berhasil kami terima. Terima kasih banyak ya Kak! Pesanan Kakak akan segera kami proses dan kirim.";
+
+                $this->chatHistory[] = [
+                    'role' => 'assistant',
+                    'content' => $content,
+                    'time' => now()->format('H:i'),
+                    'buttons' => [
+                        [
+                            'label' => 'Lihat Detail Pesanan',
+                            'url' => route('orders.show', $order->id),
+                            'style' => 'primary',
+                        ],
+                        [
+                            'label' => 'Lihat Riwayat Pesanan',
+                            'url' => route('orders.index'),
+                            'style' => 'secondary',
+                        ]
+                    ],
+                    'suggestions' => [
+                        'Lacak pengiriman',
+                        'Jam operasional & lokasi toko',
+                        'Hubungi CS via WhatsApp'
+                    ]
+                ];
+                $this->persist();
+                $this->dispatch('bot-replied');
+            }
+        } else {
+            $acknowledgedUnpaid = session('gegares_acknowledged_unpaid_orders', []);
+            if (!in_array($order->id, $acknowledgedUnpaid)) {
+                $acknowledgedUnpaid[] = $order->id;
+                session(['gegares_acknowledged_unpaid_orders' => $acknowledgedUnpaid]);
+
+                $content = "Halo Kak! Pembayaran untuk pesanan dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** belum selesai atau belum kami terima.\n\nSilakan selesaikan pembayaran Kakak dengan mengeklik tombol **Bayar Sekarang** di bawah ini agar pesanan Kakak dapat segera kami proses.";
+                
+                $buttons = [];
+                if ($order->pakasir_link) {
+                    $buttons[] = [
+                        'label' => 'Bayar Sekarang (Pakasir)',
+                        'url' => $order->pakasir_link,
+                        'style' => 'primary',
+                    ];
+                }
+                $buttons[] = [
+                    'label' => 'Lihat Detail Pesanan',
+                    'url' => route('orders.show', $order->id),
+                    'style' => 'secondary',
+                ];
+
+                $this->chatHistory[] = [
+                    'role' => 'assistant',
+                    'content' => $content,
+                    'time' => now()->format('H:i'),
+                    'buttons' => $buttons,
+                    'suggestions' => [
+                        'Cek status pesanan saya',
+                        'Cara bayar pesanan',
+                        'Hubungi CS via WhatsApp'
+                    ]
+                ];
+                $this->persist();
+                $this->dispatch('bot-replied');
+            }
+        }
+    }
+
     public function checkoutDirectly()
     {
         if (!Auth::check()) {
@@ -177,10 +304,9 @@ class Chatbot extends Component
             return;
         }
 
-        // Calculate shipping rates
-        $shippingCourier = 'jne';
-        $shippingService = 'reg';
-        $shippingCost = 9000; // fallback standard shipping cost
+        // Get shipping rates from Biteship
+        $buttons = [];
+        $hasRates = false;
 
         if ($address->area_id) {
             $biteshipService = app(\App\Services\BiteshipService::class);
@@ -194,19 +320,97 @@ class Chatbot extends Component
                 );
                 
                 if (!empty($rates)) {
-                    $shippingCourier = $rates[0]['courier_code'] ?? 'jne';
-                    $shippingService = $rates[0]['courier_service_code'] ?? 'reg';
-                    $shippingCost = $rates[0]['price'] ?? 9000;
+                    $hasRates = true;
+                    // Limit to top 4 options
+                    $limitedRates = array_slice($rates, 0, 4);
+                    foreach ($limitedRates as $rate) {
+                        $courierName = strtoupper($rate['courier_code']);
+                        $serviceName = $rate['courier_service_name'] ?? 'Regular';
+                        $priceFormatted = "Rp " . number_format($rate['price'], 0, ',', '.');
+                        $duration = isset($rate['duration']) ? " ({$rate['duration']})" : "";
+                        
+                        $buttons[] = [
+                            'label' => "{$courierName} {$serviceName} - {$priceFormatted}{$duration}",
+                            'action' => "placeDirectOrder('{$rate['courier_code']}', '{$rate['courier_service_code']}', {$rate['price']})",
+                            'style' => 'primary',
+                        ];
+                    }
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Chatbot direct checkout shipping estimation failed: ' . $e->getMessage());
             }
         }
 
+        // Fallback option if Biteship fails or empty
+        if (!$hasRates) {
+            $buttons[] = [
+                'label' => 'JNE Reguler - Rp 9.000',
+                'action' => "placeDirectOrder('jne', 'reg', 9000)",
+                'style' => 'primary',
+            ];
+        }
+
+        // Add a secondary button to do full checkout
+        $buttons[] = [
+            'label' => 'Atur Pengiriman di Halaman Checkout',
+            'url' => route('checkout.index'),
+            'style' => 'secondary',
+        ];
+
+        // Ask user to select courier
+        $this->chatHistory[] = [
+            'role' => 'assistant',
+            'content' => "Silakan pilih kurir pengiriman yang Kakak inginkan untuk alamat **{$address->recipient_name} ({$address->city})**:",
+            'time' => now()->format('H:i'),
+            'buttons' => $buttons,
+        ];
+
+        $this->persist();
+        $this->dispatch('bot-replied');
+    }
+
+    public function placeDirectOrder(string $courier, string $service, int $cost)
+    {
+        if ($this->checkBanStatus()) return;
+        if (!Auth::check()) {
+            return $this->redirectRoute('login');
+        }
+
+        // Remove the courier selection message from history to keep it clean
+        if (!empty($this->chatHistory)) {
+            $lastIndex = count($this->chatHistory) - 1;
+            if (isset($this->chatHistory[$lastIndex]['content']) 
+                && str_contains($this->chatHistory[$lastIndex]['content'], 'Silakan pilih kurir pengiriman')) {
+                array_pop($this->chatHistory);
+            }
+        }
+
+        $cartService = app(\App\Services\CartService::class);
+        $cartItems = $cartService->getItems();
+
+        if (empty($cartItems)) {
+            $this->addBotMessage("Keranjang belanja Kakak masih kosong. Silakan tambahkan produk terlebih dahulu.");
+            return;
+        }
+
+        $errors = $cartService->validateStock();
+        if (!empty($errors)) {
+            $this->addBotMessage("Waduh Kak, ada kendala stok: " . implode(' ', $errors));
+            return;
+        }
+
+        $user = Auth::user();
+        $address = $user->addresses()->orderByDesc('is_primary')->first();
+
+        if (!$address) {
+            $this->addBotMessage("Waduh Kak, Kakak belum menambahkan alamat pengiriman.");
+            return;
+        }
+
         $subtotal = $cartService->getSubtotal();
         $coupon = $cartService->getCoupon();
         $discountAmount = $cartService->getDiscountAmount();
-        $total = $subtotal + $shippingCost - $discountAmount;
+        $total = $subtotal + $cost - $discountAmount;
 
         $order = Order::create([
             'user_id' => $user->id,
@@ -215,13 +419,13 @@ class Chatbot extends Component
             'coupon_id' => $coupon['id'] ?? null,
             'discount_amount' => $discountAmount,
             'subtotal' => $subtotal,
-            'shipping_cost' => $shippingCost,
+            'shipping_cost' => $cost,
             'total' => $total,
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'payment_method' => 'pakasir',
-            'shipping_courier' => $shippingCourier,
-            'shipping_service' => $shippingService,
+            'shipping_courier' => $courier,
+            'shipping_service' => $service,
             'notes' => 'Dipesan otomatis via AI Chatbot',
         ]);
 
@@ -261,7 +465,7 @@ class Chatbot extends Component
         // Append success message with payment link
         $this->chatHistory[] = [
             'role' => 'assistant',
-            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp " . number_format($shippingCost, 0, ',', '.') . ") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
+            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp " . number_format($cost, 0, ',', '.') . ") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
             'time' => now()->format('H:i'),
             'buttons' => [
                 [

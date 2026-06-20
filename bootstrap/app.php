@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'webhook/biteship',
             'webhook/pakasir',
         ]);
+
+        $middleware->encryptCookies(except: [
+            'gegares_chat_open',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
