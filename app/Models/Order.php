@@ -60,7 +60,7 @@ class Order extends Model
                                 $order->update([
                                     'status' => 'processing',
                                     'biteship_order_id' => $result['id'] ?? $order->biteship_order_id,
-                                    'courier_tracking_id' => $result['courier_tracking_id'] ?? $order->courier_tracking_id,
+                                    'courier_tracking_id' => $result['courier']['tracking_id'] ?? $result['courier_tracking_id'] ?? $order->courier_tracking_id,
                                     'tracking_number' => $result['courier']['waybill_id'] ?? $order->tracking_number,
                                 ]);
                             });
@@ -79,8 +79,8 @@ class Order extends Model
 
     public function getTrackingUrlAttribute(): string
     {
-        // Use Biteship Order ID if available, otherwise fallback to Courier Tracking ID or Tracking Number
-        $id = $this->biteship_order_id ?? $this->courier_tracking_id ?? $this->tracking_number;
+        // Prioritize Courier Tracking ID (e.g. 8wzOjhwBw8pbfdl0y8QrObNZ) over courier Waybill ID (WYB...)
+        $id = $this->courier_tracking_id ?? $this->tracking_number;
         if (!$id) return '';
 
         $baseUrl = 'https://track.biteship.com/' . $id;
@@ -89,8 +89,8 @@ class Order extends Model
         $apiKey = config('biteship.api_key');
         $isSandbox = str_starts_with($apiKey ?? '', 'biteship_test.');
         
-        // Apply flag to Biteship IDs (ttce, WYB, or 24-character hexadecimal ID)
-        $isBiteshipId = str_starts_with($id, 'ttce') || str_starts_with($id, 'WYB') || preg_match('/^[a-f0-9]{24}$/i', $id);
+        // Apply flag to Biteship IDs (ttce, WYB, or 24-character alphanumeric tracking ID)
+        $isBiteshipId = str_starts_with($id, 'ttce') || str_starts_with($id, 'WYB') || preg_match('/^[a-zA-Z0-9]{24}$/', $id);
 
         if ($isSandbox && $isBiteshipId) {
             return $baseUrl . '?environment=development';

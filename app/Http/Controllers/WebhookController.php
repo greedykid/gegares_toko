@@ -92,7 +92,10 @@ class WebhookController extends Controller
             $idUpdates['tracking_number'] = $rawTrackingId;
         }
         
-        $payloadTrackingId = $request->input('courier_tracking_id') ?? $request->input('data.courier_tracking_id');
+        $payloadTrackingId = $request->input('courier_tracking_id') 
+            ?? $request->input('data.courier_tracking_id')
+            ?? $request->input('courier.tracking_id')
+            ?? $request->input('data.courier.tracking_id');
         if ($payloadTrackingId && $order->courier_tracking_id !== $payloadTrackingId) {
             $idUpdates['courier_tracking_id'] = $payloadTrackingId;
         }

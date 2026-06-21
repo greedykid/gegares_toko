@@ -300,7 +300,7 @@ class BiteshipService
                 if (isset($data['id'])) {
                     $order->update([
                         'biteship_order_id' => $data['id'],
-                        'courier_tracking_id' => $data['courier_tracking_id'] ?? null
+                        'courier_tracking_id' => $data['courier']['tracking_id'] ?? $data['courier_tracking_id'] ?? null
                     ]);
                 }
                 

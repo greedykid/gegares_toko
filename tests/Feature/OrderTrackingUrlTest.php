@@ -7,11 +7,11 @@ use Tests\TestCase;
 
 class OrderTrackingUrlTest extends TestCase
 {
-    public function test_tracking_url_prioritizes_biteship_order_id(): void
+    public function test_tracking_url_prioritizes_courier_tracking_id(): void
     {
         $order = new Order([
             'biteship_order_id' => '69d581a4b95f2a1100000001',
-            'courier_tracking_id' => 'ttce-track-123',
+            'courier_tracking_id' => '8wzOjhwBw8pbfdl0y8QrObNZ',
             'tracking_number' => 'WYB-track-123',
         ]);
 
@@ -19,37 +19,22 @@ class OrderTrackingUrlTest extends TestCase
         config(['biteship.api_key' => 'biteship_live_123456789']);
 
         $this->assertEquals(
-            'https://track.biteship.com/69d581a4b95f2a1100000001',
+            'https://track.biteship.com/8wzOjhwBw8pbfdl0y8QrObNZ',
             $order->tracking_url
         );
     }
 
-    public function test_tracking_url_appends_sandbox_flag_when_api_key_is_sandbox_and_id_is_biteship(): void
+    public function test_tracking_url_appends_sandbox_flag_when_api_key_is_sandbox_and_id_is_courier_tracking(): void
     {
         $order = new Order([
-            'biteship_order_id' => '69d581a4b95f2a1100000001',
+            'courier_tracking_id' => '8wzOjhwBw8pbfdl0y8QrObNZ',
         ]);
 
         // When Biteship API Key is sandbox
         config(['biteship.api_key' => 'biteship_test.123456789']);
 
         $this->assertEquals(
-            'https://track.biteship.com/69d581a4b95f2a1100000001?environment=development',
-            $order->tracking_url
-        );
-    }
-
-    public function test_tracking_url_falls_back_to_courier_tracking_id(): void
-    {
-        $order = new Order([
-            'courier_tracking_id' => 'ttce-track-123',
-            'tracking_number' => 'WYB-track-123',
-        ]);
-
-        config(['biteship.api_key' => 'biteship_live_123456789']);
-
-        $this->assertEquals(
-            'https://track.biteship.com/ttce-track-123',
+            'https://track.biteship.com/8wzOjhwBw8pbfdl0y8QrObNZ?environment=development',
             $order->tracking_url
         );
     }
@@ -57,6 +42,7 @@ class OrderTrackingUrlTest extends TestCase
     public function test_tracking_url_falls_back_to_tracking_number(): void
     {
         $order = new Order([
+            'biteship_order_id' => '69d581a4b95f2a1100000001',
             'tracking_number' => 'WYB-track-123',
         ]);
 
@@ -66,6 +52,18 @@ class OrderTrackingUrlTest extends TestCase
             'https://track.biteship.com/WYB-track-123',
             $order->tracking_url
         );
+    }
+
+    public function test_tracking_url_does_not_use_biteship_order_id(): void
+    {
+        $order = new Order([
+            'biteship_order_id' => '69d581a4b95f2a1100000001',
+        ]);
+
+        config(['biteship.api_key' => 'biteship_live_123456789']);
+
+        // Since both courier_tracking_id and tracking_number are null, it should return empty
+        $this->assertEquals('', $order->tracking_url);
     }
 
     public function test_tracking_url_appends_sandbox_flag_for_legacy_biteship_ids(): void
