@@ -79,8 +79,8 @@ class Order extends Model
 
     public function getTrackingUrlAttribute(): string
     {
-        // Use Courier Tracking ID (ttce...) if available, otherwise fallback to Tracking Number (WYB...)
-        $id = $this->courier_tracking_id ?? $this->tracking_number;
+        // Use Biteship Order ID if available, otherwise fallback to Courier Tracking ID or Tracking Number
+        $id = $this->biteship_order_id ?? $this->courier_tracking_id ?? $this->tracking_number;
         if (!$id) return '';
 
         $baseUrl = 'https://track.biteship.com/' . $id;
@@ -89,8 +89,8 @@ class Order extends Model
         $apiKey = config('biteship.api_key');
         $isSandbox = str_starts_with($apiKey ?? '', 'biteship_test.');
         
-        // Only apply flag to Biteship IDs (ttce or WYB)
-        $isBiteshipId = str_starts_with($id, 'ttce') || str_starts_with($id, 'WYB');
+        // Apply flag to Biteship IDs (ttce, WYB, or 24-character hexadecimal ID)
+        $isBiteshipId = str_starts_with($id, 'ttce') || str_starts_with($id, 'WYB') || preg_match('/^[a-f0-9]{24}$/i', $id);
 
         if ($isSandbox && $isBiteshipId) {
             return $baseUrl . '?environment=development';
