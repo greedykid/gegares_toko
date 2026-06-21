@@ -4,11 +4,12 @@
 
 @php
     $store = \App\Models\StoreSetting::first();
-    $email = $store->contact_email ?? 'hello@gegares.com';
+    $email = $store->contact_email ?? 'hello@gecares.com';
     $phone = $store->contact_phone ?? '+62 812-3456-7890';
     
-    // Format numeric phone to international WA format if needed (remove leading 0)
-    $waPhone = preg_replace('/[^0-9]/', '', $phone);
+    // Prioritize contact_whatsapp from database settings
+    $rawWhatsapp = $store->contact_whatsapp ?? $phone;
+    $waPhone = preg_replace('/[^0-9]/', '', $rawWhatsapp);
     if (str_starts_with($waPhone, '0')) {
         $waPhone = '62' . substr($waPhone, 1);
     }
@@ -16,6 +17,16 @@
     $addressHTML = 'Jl. Jajanan Pasar No. 12<br>Jakarta Selatan, Indonesia 12345';
     if ($store && $store->address_line) {
         $addressHTML = e($store->address_line) . '<br>' . e($store->city) . ', ' . e($store->province) . ' ' . e($store->postal_code);
+    }
+    
+    $hoursHTML = "Setiap Hari: 06:00 - 17:00 WIB<br><span class=\"text-xs text-primary-500 dark:text-primary-400\">Pemesanan WhatsApp: 24 Jam</span>";
+    if ($store && $store->contact_hours) {
+        $hoursHTML = nl2br(e($store->contact_hours));
+        $hoursHTML = str_replace(
+            ['Pemesanan WhatsApp: 24 Jam', 'Pemesanan WhatsApp: 24 jam'],
+            ['<span class="text-xs text-primary-500 dark:text-primary-400">Pemesanan WhatsApp: 24 Jam</span>', '<span class="text-xs text-primary-500 dark:text-primary-400">Pemesanan WhatsApp: 24 Jam</span>'],
+            $hoursHTML
+        );
     }
 @endphp
 
@@ -173,8 +184,7 @@
                 <div class="space-y-1">
                     <h3 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Jam Operasional</h3>
                     <p class="text-sm font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
-                        Setiap Hari: 06:00 - 17:00 WIB<br>
-                        <span class="text-xs text-primary-500 dark:text-primary-400">Pemesanan WhatsApp: 24 Jam</span>
+                        {!! $hoursHTML !!}
                     </p>
                 </div>
             </div>

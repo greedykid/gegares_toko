@@ -1,24 +1,38 @@
 @if ($paginator->hasPages())
     <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}">
         {{-- Mobile View --}}
-        <div class="flex gap-2 items-center justify-between sm:hidden">
+        <div class="flex gap-3 items-center justify-between sm:hidden px-1">
             @if ($paginator->onFirstPage())
-                <span class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-400 dark:text-slate-600 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 cursor-not-allowed rounded-xl shadow-sm">
-                    {!! __('pagination.previous') !!}
+                <span class="inline-flex items-center justify-center w-11 h-11 text-slate-400 dark:text-slate-600 bg-white/40 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 cursor-not-allowed rounded-xl opacity-60">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 border-2 border-slate-200 dark:border-slate-700 hover:border-primary-500 hover:text-primary-600 rounded-xl shadow-sm transition-all active:scale-95">
-                    {!! __('pagination.previous') !!}
+                <a href="{{ $paginator->previousPageUrl() }}" class="inline-flex items-center justify-center w-11 h-11 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 hover:border-primary-500 dark:hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-xl shadow-xs transition-all active:scale-95">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
                 </a>
             @endif
 
+            <div class="flex items-center justify-center py-2 px-4 bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-xl shadow-xs text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <span class="font-extrabold text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/60 px-2 py-0.5 rounded-lg border border-slate-100 dark:border-slate-800">{{ $paginator->currentPage() }}</span>
+                <span class="mx-1.5 text-slate-300 dark:text-slate-700 font-bold">/</span>
+                <span class="font-semibold text-slate-500 dark:text-slate-400">{{ $paginator->lastPage() }}</span>
+            </div>
+
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 border-2 border-slate-200 dark:border-slate-700 hover:border-primary-500 hover:text-primary-600 rounded-xl shadow-sm transition-all active:scale-95">
-                    {!! __('pagination.next') !!}
+                <a href="{{ $paginator->nextPageUrl() }}" class="inline-flex items-center justify-center w-11 h-11 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 hover:border-primary-500 dark:hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-xl shadow-xs transition-all active:scale-95">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
                 </a>
             @else
-                <span class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-400 dark:text-slate-600 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 cursor-not-allowed rounded-xl shadow-sm">
-                    {!! __('pagination.next') !!}
+                <span class="inline-flex items-center justify-center w-11 h-11 text-slate-400 dark:text-slate-600 bg-white/40 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 cursor-not-allowed rounded-xl opacity-60">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
                 </span>
             @endif
         </div>

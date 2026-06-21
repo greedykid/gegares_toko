@@ -1,6 +1,29 @@
 @extends('layouts.app')
 @section('title', 'Beranda')
 @section('content')
+@php
+    $settings = \App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting();
+    
+    $heroBadge = $settings->hero_badge ?? 'Jajanan Pasar Tradisional';
+    $heroTitle = $settings->hero_title ?? 'Rasa <span class="text-primary-600 dark:text-primary-400">Autentik</span>,<br>Langsung ke <span class="text-accent-600 dark:text-accent-400">Rumah</span>';
+    $heroSubtitle = $settings->hero_subtitle ?? 'Nikmati kelezatan jajanan pasar pilihan yang dibuat segar setiap hari selagi hangat. Dari klepon manis hingga risoles yang gurih renyah.';
+    
+    $ctaTitle = $settings->cta_title ?? 'Pesan Sekarang, Nikmati Hari Ini';
+    $ctaSubtitle = $settings->cta_subtitle ?? 'Dibuat fresh, dikirim cepat. Nikmati jajanan pasar favorit Anda tanpa keluar rumah.';
+    
+    $whatsappPhone = preg_replace('/[^0-9]/', '', $settings->contact_whatsapp ?? '6281234567890');
+    if (str_starts_with($whatsappPhone, '0')) {
+        $whatsappPhone = '62' . substr($whatsappPhone, 1);
+    }
+    
+    $faqItems = $settings->faq_items ?? [
+        ['q' => 'Berapa lama waktu pengiriman?', 'a' => 'Kami menggunakan layanan Instan dan Sameday dari Biteship (Gojek/Grab) untuk memastikan jajanan pasar tetap segar saat sampai di tangan Anda. Estimasi sampai adalah 1-4 jam setelah kurir menjemput paket.'],
+        ['q' => 'Apakah produk dibuat setiap hari?', 'a' => 'Tentu saja! Seluruh produk Gegares dibuat segar (freshly baked/made) setiap pagi hari sebelum pengiriman dimulai untuk menjamin kualitas dan rasa autentik.'],
+        ['q' => 'Bagaimana cara melacak pesanan saya?', 'a' => 'Setelah pesanan Anda diproses oleh admin, Anda akan menerima nomor resi pelacakan. Anda dapat memantau posisi kurir secara real-time langsung melalui halaman "Pesanan Saya" di akun Anda.'],
+        ['q' => 'Apakah bisa memesan untuk acara besar (katering)?', 'a' => 'Bisa! Kami melayani pemesanan untuk acara kantor, arisan, atau pesta. Untuk jumlah besar, kami menyarankan pemesanan minimal H-2 melalui WhatsApp agar kami dapat menyiapkan bahan baku terbaik.'],
+        ['q' => 'Metode pembayaran apa saja yang tersedia?', 'a' => 'Kami mendukung berbagai metode pembayaran instan melalui Pakasir, termasuk QRIS, E-Wallet (GoPay, OVO, dll), dan Transfer Bank (Virtual Account).']
+    ];
+@endphp
 
 {{-- ─── HERO SECTION ─── --}}
 <section class="relative overflow-hidden bg-linear-to-br from-primary-50 via-white to-accent-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500"
@@ -22,13 +45,12 @@
             
             {{-- Left: Text Content --}}
             <div class="max-w-xl z-10">
-                <p class="text-xs sm:text-sm font-black text-primary-600 dark:text-primary-400 tracking-[0.2em] uppercase mb-4">Jajanan Pasar Tradisional</p>
+                <p class="text-xs sm:text-sm font-black text-primary-600 dark:text-primary-400 tracking-[0.2em] uppercase mb-4">{{ $heroBadge }}</p>
                 <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 dark:text-slate-100 leading-[1.1] tracking-tight transition-colors">
-                    Rasa <span class="text-primary-600 dark:text-primary-400">Autentik</span>,
-                    <br>Langsung ke <span class="text-accent-600 dark:text-accent-400">Rumah</span>
+                    {!! $heroTitle !!}
                 </h1>
                 <p class="mt-8 text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg transition-colors">
-                    Nikmati kelezatan jajanan pasar pilihan yang dibuat segar setiap hari selagi hangat. Dari klepon manis hingga risoles yang gurih renyah.
+                    {{ $heroSubtitle }}
                 </p>
                 <div class="mt-10 flex flex-wrap gap-4">
                     <a href="{{ route('products.index') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-primary-700 text-white font-bold rounded-2xl hover:bg-primary-800 hover:shadow-2xl hover:shadow-primary-200 dark:hover:shadow-primary-900/20 hover:-translate-y-1 transition-all duration-300 active:scale-95">
@@ -167,7 +189,7 @@
             <p class="text-sm font-semibold text-primary-600 dark:text-primary-400 tracking-wide uppercase">Bantuan</p>
             <h2 class="mt-2 text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight transition-colors">Pertanyaan yang Sering Diajukan</h2>
             <p class="mt-4 text-slate-500 dark:text-slate-400 text-sm leading-relaxed text-balance transition-colors">Punya pertanyaan lain? Jangan ragu untuk menghubungi tim dukungan kami melalui WhatsApp.</p>
-            <a href="https://wa.me/6281234567890" target="_blank" class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
+            <a href="https://wa.me/{{ $whatsappPhone }}" target="_blank" class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
                 Tanya via WhatsApp
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
             </a>
@@ -175,28 +197,7 @@
         
         <div class="lg:col-span-2 space-y-4 reveal reveal-left" x-data="{ activeFaq: null }">
             @php
-                $faqs = [
-                    [
-                        'q' => 'Berapa lama waktu pengiriman?',
-                        'a' => 'Kami menggunakan layanan Instan dan Sameday dari Biteship (Gojek/Grab) untuk memastikan jajanan pasar tetap segar saat sampai di tangan Anda. Estimasi sampai adalah 1-4 jam setelah kurir menjemput paket.'
-                    ],
-                    [
-                        'q' => 'Apakah produk dibuat setiap hari?',
-                        'a' => 'Tentu saja! Seluruh produk Gegares dibuat segar (*freshly baked/made*) setiap pagi hari sebelum pengiriman dimulai untuk menjamin kualitas dan rasa autentik.'
-                    ],
-                    [
-                        'q' => 'Bagaimana cara melacak pesanan saya?',
-                        'a' => 'Setelah pesanan Anda diproses oleh admin, Anda akan menerima nomor resi pelacakan. Anda dapat memantau posisi kurir secara real-time langsung melalui halaman "Pesanan Saya" di akun Anda.'
-                    ],
-                    [
-                        'q' => 'Apakah bisa memesan untuk acara besar (katering)?',
-                        'a' => 'Bisa! Kami melayani pemesanan untuk acara kantor, arisan, atau pesta. Untuk jumlah besar, kami menyarankan pemesanan minimal H-2 melalui WhatsApp agar kami dapat menyiapkan bahan baku terbaik.'
-                    ],
-                    [
-                        'q' => 'Metode pembayaran apa saja yang tersedia?',
-                        'a' => 'Kami mendukung berbagai metode pembayaran instan melalui Pakasir, termasuk QRIS, E-Wallet (GoPay, OVO, dll), dan Transfer Bank (Virtual Account).'
-                    ]
-                ];
+                $faqs = $faqItems;
             @endphp
 
             @foreach($faqs as $index => $faq)
@@ -232,8 +233,8 @@
     <div class="relative overflow-hidden bg-linear-to-r from-primary-600 to-primary-700 rounded-3xl p-8 lg:p-14">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl"></div>
         <div class="relative max-w-lg">
-            <h2 class="text-2xl lg:text-3xl font-bold text-white">Pesan Sekarang, Nikmati Hari Ini</h2>
-            <p class="mt-3 text-primary-100 text-sm lg:text-base leading-relaxed">Dibuat fresh, dikirim cepat. Nikmati jajanan pasar favorit Anda tanpa keluar rumah.</p>
+            <h2 class="text-2xl lg:text-3xl font-bold text-white">{{ $ctaTitle }}</h2>
+            <p class="mt-3 text-primary-100 text-sm lg:text-base leading-relaxed">{{ $ctaSubtitle }}</p>
             <a href="{{ route('products.index') }}" class="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:bg-primary-50 transition-all duration-200">
                 Mulai Belanja
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>

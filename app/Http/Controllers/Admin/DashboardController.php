@@ -69,4 +69,9 @@ class DashboardController extends Controller
     {
         return view('admin.settings.store');
     }
+
+    public function contentSettings()
+    {
+        return view('admin.settings.content');
+    }
 }

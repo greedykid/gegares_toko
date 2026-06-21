@@ -3,6 +3,21 @@
 @section('title', 'Tentang Kami')
 
 @section('content')
+@php
+    $settings = \App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting();
+    
+    $aboutTitle = $settings->about_title ?? 'Tentang <span class="text-primary-600 dark:text-primary-400">Gegares</span>';
+    $aboutSubtitle = $settings->about_subtitle ?? 'Menghadirkan kelezatan jajanan pasar tradisional dengan kualitas premium dan resep autentik rumahan.';
+    $aboutStoryTitle = $settings->about_story_title ?? 'Cita Rasa Warisan';
+    $aboutStoryContent = $settings->about_story_content ?? "Gegares adalah usaha kuliner rumahan yang didedikasikan untuk melestarikan dan menyajikan jajanan pasar tradisional khas Indonesia dengan standar kualitas terbaik.\n\nKami memproduksi aneka kue basah dan gorengan legendaris seperti pastel renyah, onde-onde wijen gurih, soes mini lembut, molen pisang manis, risol ayam padat, hingga dadar gulung wangi pandan. Seluruh produk kami dibuat secara mandiri setiap dini hari untuk memastikan kesegaran maksimal saat dikirimkan ke para pedagang mitra di pasar tradisional.\n\nSelain menyuplai pedagang lokal melalui sistem titip jual (consignment), kami juga melayani pemesanan skala besar untuk berbagai kebutuhan acara seperti rapat kantor, arisan, pengajian, ulang tahun, hingga paket snack box eksklusif yang dapat dipesan secara mudah dan cepat.";
+    $aboutVision = $settings->about_vision ?? 'Menjadi produsen jajanan tradisional pilihan utama keluarga yang mampu melestarikan cita rasa Nusantara dengan kualitas premium, higienis, dan dapat diakses dengan mudah oleh semua kalangan.';
+    $aboutMission = $settings->about_mission ?? [
+        'Menggunakan bahan baku segar berkualitas tinggi tanpa pengawet buatan.',
+        'Menjaga konsistensi resep tradisional warisan keluarga.',
+        'Mendukung ekosistem ekonomi pedagang pasar kecil lokal melalui skema titip jual yang adil.'
+    ];
+    $aboutGallery = $settings->about_gallery ?? [];
+@endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 space-y-16">
 
         {{-- Hero Section --}}
@@ -11,27 +26,19 @@
                 Tentang Kami
             </span>
             <h1 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight uppercase">
-                Tentang <span class="text-primary-600 dark:text-primary-400">Gegares</span>
+                {!! $aboutTitle !!}
             </h1>
             <p class="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-                Menghadirkan kelezatan jajanan pasar tradisional dengan kualitas premium dan resep autentik rumahan.
+                {{ $aboutSubtitle }}
             </p>
         </div>
 
         {{-- Story Section --}}
         <div class="max-w-4xl mx-auto bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 sm:p-10 space-y-6">
-            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">Cita Rasa Warisan</h2>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">{{ $aboutStoryTitle }}</h2>
             <div class="h-1 w-12 bg-primary-500 rounded-full"></div>
-            <div class="text-sm sm:text-base text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed font-semibold">
-                <p class="text-slate-850 dark:text-slate-200 border-l-4 border-primary-500 pl-4 italic font-medium">
-                    Gegares adalah usaha kuliner rumahan yang didedikasikan untuk melestarikan dan menyajikan jajanan pasar tradisional khas Indonesia dengan standar kualitas terbaik.
-                </p>
-                <p>
-                    Kami memproduksi aneka kue basah dan gorengan legendaris seperti pastel renyah, onde-onde wijen gurih, soes mini lembut, molen pisang manis, risol ayam padat, hingga dadar gulung wangi pandan. Seluruh produk kami dibuat secara mandiri setiap dini hari untuk memastikan kesegaran maksimal saat dikirimkan ke para pedagang mitra di pasar tradisional.
-                </p>
-                <p>
-                    Selain menyuplai pedagang lokal melalui sistem titip jual (<i>consignment</i>), kami juga melayani pemesanan skala besar untuk berbagai kebutuhan acara seperti rapat kantor, arisan, pengajian, ulang tahun, hingga paket <i>snack box</i> eksklusif yang dapat dipesan secara mudah dan cepat.
-                </p>
+            <div class="text-sm sm:text-base text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed font-semibold whitespace-pre-line">
+                {!! nl2br(e($aboutStoryContent)) !!}
             </div>
         </div>
 
@@ -40,16 +47,16 @@
             <div class="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 space-y-4">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">Visi Kami</h3>
                 <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-                    Menjadi produsen jajanan tradisional pilihan utama keluarga yang mampu melestarikan cita rasa Nusantara dengan kualitas premium, higienis, dan dapat diakses dengan mudah oleh semua kalangan.
+                    {{ $aboutVision }}
                 </p>
             </div>
 
             <div class="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 space-y-4">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">Misi Kami</h3>
                 <ul class="text-sm text-slate-500 dark:text-slate-400 space-y-2 list-disc pl-5 leading-relaxed font-semibold">
-                    <li>Menggunakan bahan baku segar berkualitas tinggi tanpa pengawet buatan.</li>
-                    <li>Menjaga konsistensi resep tradisional warisan keluarga.</li>
-                    <li>Mendukung ekosistem ekonomi pedagang pasar kecil lokal melalui skema titip jual yang adil.</li>
+                    @foreach($aboutMission as $missionItem)
+                        <li>{{ $missionItem }}</li>
+                    @endforeach
                 </ul>
             </div>
         </div>
@@ -100,5 +107,28 @@
             </div>
         </div>
 
+        {{-- Gallery Section for Process Images --}}
+        @if(!empty($aboutGallery))
+            <div class="space-y-10 max-w-5xl mx-auto pt-10 border-t border-slate-100 dark:border-slate-850">
+                <div class="text-center max-w-xl mx-auto space-y-2">
+                    <span class="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-accent-50 dark:bg-accent-950/40 text-[10px] font-black uppercase tracking-[0.2em] text-accent-600 dark:text-accent-400 border border-accent-100/40 dark:border-accent-900/30">
+                        Galeri Kegiatan
+                    </span>
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Proses Produksi Kami</h2>
+                    <p class="text-sm font-semibold text-slate-400 dark:text-slate-500">Melihat langsung bagaimana jajanan pasar legendaris kami dibuat secara higienis setiap dini hari.</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    @foreach($aboutGallery as $index => $path)
+                        <div class="group relative aspect-square rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800/80 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-slate-50 dark:bg-slate-950">
+                            <img src="{{ asset('storage/' . $path) }}" alt="Proses Produksi {{ $index + 1 }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                <span class="text-xs font-bold text-white tracking-wide">Proses Produksi {{ $index + 1 }}</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 @endsection

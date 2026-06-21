@@ -57,6 +57,13 @@ class UserController extends Controller
             'role' => 'required|in:admin,user',
         ]);
 
+        if ($user->role === 'admin' && $data['role'] === 'user') {
+            $adminCount = User::where('role', 'admin')->count();
+            if ($adminCount <= 1) {
+                return back()->with('error', 'Tidak dapat mengubah peran karena ini adalah satu-satunya akun administrator yang tersisa.');
+            }
+        }
+
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
@@ -70,6 +77,13 @@ class UserController extends Controller
     {
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak bisa menghapus akun sendiri.');
+        }
+
+        if ($user->role === 'admin') {
+            $adminCount = User::where('role', 'admin')->count();
+            if ($adminCount <= 1) {
+                return back()->with('error', 'Tidak dapat menghapus administrator terakhir di sistem.');
+            }
         }
 
         $user->delete();

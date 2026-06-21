@@ -84,6 +84,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
     Route::resource('/products', AdminProductController::class)->except(['create', 'edit']);
     
     Route::get('/settings/store', [DashboardController::class, 'storeSettings'])->name('settings.store');
+    Route::get('/settings/content', [DashboardController::class, 'contentSettings'])->name('settings.content');
 
     Route::post('/orders/{order}/process-shipping', [AdminOrderController::class, 'processShipping'])->name('orders.process-shipping');
     Route::get('/orders/{order}/tracking', [AdminOrderController::class, 'getTracking'])->name('orders.tracking');

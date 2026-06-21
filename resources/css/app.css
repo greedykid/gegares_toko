@@ -12,35 +12,109 @@
     --font-display: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* Enterprise Primary (Base #072C2C at 700) */
-    --color-primary-50: #e6efef;
-    --color-primary-100: #ccdcdc;
-    --color-primary-200: #99b9b9;
-    --color-primary-300: #669696;
-    --color-primary-400: #337373;
-    --color-primary-500: #0a5050;
-    --color-primary-600: #084040;
-    --color-primary-700: #072c2c;
-    --color-primary-800: #052020;
-    --color-primary-900: #031010;
-    --color-primary-950: #010808;
+    /* Base Palettes provided by user */
+    --color-olive-bark-50: #fef8e7;
+    --color-olive-bark-100: #fdf0ce;
+    --color-olive-bark-200: #fae29e;
+    --color-olive-bark-300: #f8d36d;
+    --color-olive-bark-400: #f6c43c;
+    --color-olive-bark-500: #f4b60b;
+    --color-olive-bark-600: #c39109;
+    --color-olive-bark-700: #926d07;
+    --color-olive-bark-800: #614905;
+    --color-olive-bark-900: #312402;
+    --color-olive-bark-950: #221902;
 
-    /* Enterprise Secondary/Accent (Base #FF5F03 at 500) */
-    --color-accent-50: #fff5ee;
-    --color-accent-100: #ffe6d7;
-    --color-accent-200: #ffcdb0;
-    --color-accent-300: #ffb389;
-    --color-accent-400: #ff8d51;
-    --color-accent-500: #ff5f03;
-    --color-accent-600: #e65603;
-    --color-accent-700: #c04803;
-    --color-accent-800: #993a02;
-    --color-accent-900: #7d2f02;
-    --color-accent-950: #471b01;
+    --color-soft-linen-50: #f4f4f0;
+    --color-soft-linen-100: #eae9e1;
+    --color-soft-linen-200: #d4d3c4;
+    --color-soft-linen-300: #bfbda6;
+    --color-soft-linen-400: #a9a789;
+    --color-soft-linen-500: #94916b;
+    --color-soft-linen-600: #767456;
+    --color-soft-linen-700: #595740;
+    --color-soft-linen-800: #3b3a2b;
+    --color-soft-linen-900: #1e1d15;
+    --color-soft-linen-950: #15140f;
+
+    --color-hunter-green-50: #edf8ed;
+    --color-hunter-green-100: #daf1db;
+    --color-hunter-green-200: #b5e3b7;
+    --color-hunter-green-300: #90d592;
+    --color-hunter-green-400: #6bc76e;
+    --color-hunter-green-500: #46b94a;
+    --color-hunter-green-600: #38943b;
+    --color-hunter-green-700: #2a6f2c;
+    --color-hunter-green-800: #1c4a1e;
+    --color-hunter-green-900: #0e250f;
+    --color-hunter-green-950: #0a1a0a;
+
+    --color-black-50: #ffe5ff;
+    --color-black-100: #ffccff;
+    --color-black-200: #ff99ff;
+    --color-black-300: #ff66ff;
+    --color-black-400: #ff33ff;
+    --color-black-500: #ff00ff;
+    --color-black-600: #cc00cc;
+    --color-black-700: #990099;
+    --color-black-800: #660066;
+    --color-black-900: #330033;
+    --color-black-950: #240024;
+
+    --color-saffron-50: #fdf8e7;
+    --color-saffron-100: #fcf1cf;
+    --color-saffron-200: #f9e29f;
+    --color-saffron-300: #f6d46f;
+    --color-saffron-400: #f3c63f;
+    --color-saffron-500: #f0b80f;
+    --color-saffron-600: #c0930c;
+    --color-saffron-700: #906e09;
+    --color-saffron-800: #604906;
+    --color-saffron-900: #302503;
+    --color-saffron-950: #221a02;
+
+    /* Primary Colors mapped to Hunter Green */
+    --color-primary-50: var(--color-hunter-green-50);
+    --color-primary-100: var(--color-hunter-green-100);
+    --color-primary-200: var(--color-hunter-green-200);
+    --color-primary-300: var(--color-hunter-green-300);
+    --color-primary-400: var(--color-hunter-green-400);
+    --color-primary-500: var(--color-hunter-green-500);
+    --color-primary-600: var(--color-hunter-green-600);
+    --color-primary-700: var(--color-hunter-green-700);
+    --color-primary-800: var(--color-hunter-green-800);
+    --color-primary-900: var(--color-hunter-green-900);
+    --color-primary-950: var(--color-hunter-green-950);
+
+    /* Secondary/Accent Colors mapped to Saffron */
+    --color-accent-50: var(--color-saffron-50);
+    --color-accent-100: var(--color-saffron-100);
+    --color-accent-200: var(--color-saffron-200);
+    --color-accent-300: var(--color-saffron-300);
+    --color-accent-400: var(--color-saffron-400);
+    --color-accent-500: var(--color-saffron-500);
+    --color-accent-600: var(--color-saffron-600);
+    --color-accent-700: var(--color-saffron-700);
+    --color-accent-800: var(--color-saffron-800);
+    --color-accent-900: var(--color-saffron-900);
+    --color-accent-950: var(--color-saffron-950);
+
+    /* Map Tailwind's Slate namespace to the new Warm Gray/Beige Soft Linen palette */
+    --color-slate-50: var(--color-soft-linen-50);
+    --color-slate-100: var(--color-soft-linen-100);
+    --color-slate-200: var(--color-soft-linen-200);
+    --color-slate-300: var(--color-soft-linen-300);
+    --color-slate-400: var(--color-soft-linen-400);
+    --color-slate-500: var(--color-soft-linen-500);
+    --color-slate-600: var(--color-soft-linen-600);
+    --color-slate-700: var(--color-soft-linen-700);
+    --color-slate-800: var(--color-soft-linen-800);
+    --color-slate-900: var(--color-soft-linen-900);
+    --color-slate-950: var(--color-soft-linen-950);
 
     /* Enterprise Surface */
-    --color-surface: #edeade;
-    --color-surface-dark: #111827;
+    --color-surface: var(--color-soft-linen-50);
+    --color-surface-dark: var(--color-soft-linen-950);
 }
 
 html {
@@ -54,10 +128,10 @@ html {
 /* ─── Global Custom Scrollbar ─── */
 html {
     scrollbar-width: thin;
-    scrollbar-color: #94a3b8 transparent;
+    scrollbar-color: var(--color-slate-400) transparent;
 }
 html.dark {
-    scrollbar-color: #64748b #1e293b;
+    scrollbar-color: var(--color-slate-600) var(--color-slate-950);
 }
 
 ::-webkit-scrollbar {
@@ -65,19 +139,24 @@ html.dark {
     height: 8px;
 }
 ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    background: transparent;
 }
 .dark ::-webkit-scrollbar-track {
-    background: #0f172a;
+    background: var(--color-slate-950);
 }
 ::-webkit-scrollbar-thumb {
-    @apply bg-slate-400 rounded-full;
+    background-color: var(--color-slate-400);
+    border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-    @apply bg-slate-500 rounded-full;
+    background-color: var(--color-slate-600);
+    border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-500;
+    background-color: var(--color-primary-500);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-primary-400);
 }
 
 /* ─── Base Styles ─── */
@@ -146,13 +225,13 @@ html.dark {
     border-radius: 9999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #0a5050; /* primary-500 */
+    background-color: var(--color-primary-500); /* primary-500 */
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #475569; /* slate-600 */
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #337373; /* primary-400 */
+    background-color: var(--color-primary-400); /* primary-400 */
 }
 
 /* ─── Chatbot Prose Typography ─── */
@@ -263,3 +342,12 @@ html.dark {
 .delay-300 { transition-delay: 300ms; }
 .delay-400 { transition-delay: 400ms; }
 .delay-500 { transition-delay: 500ms; }
+
+/* ─── Scrollbar Hiding Utility ─── */
+.scrollbar-none::-webkit-scrollbar {
+    display: none !important;
+}
+.scrollbar-none {
+    -ms-overflow-style: none !important; /* IE and Edge */
+    scrollbar-width: none !important; /* Firefox */
+}

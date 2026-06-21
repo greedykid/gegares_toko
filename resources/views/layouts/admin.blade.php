@@ -69,7 +69,8 @@
                 ['route' => 'admin.users.index', 'label' => 'Pengguna', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v-.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>'],
             ],
             'Konfigurasi Toko' => [
-                ['route' => 'admin.settings.store', 'label' => 'Pengaturan Toko', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />'],
+                ['route' => 'admin.settings.store', 'label' => 'Lokasi Toko', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />'],
+                ['route' => 'admin.settings.content', 'label' => 'Pengaturan Toko', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827a1.125 1.125 0 0 1 .26 1.43l-1.297 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.645-.869l.214-1.28Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />'],
             ],
         ];
     @endphp
@@ -108,7 +109,8 @@
                         <div class="space-y-1">
                             <h3
                                 class="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
-                                {{ $groupLabel }}</h3>
+                                {{ $groupLabel }}
+                            </h3>
                             <div class="space-y-1">
                                 @foreach($items as $item)
                                     <a href="{{ route($item['route']) }}"
@@ -144,7 +146,7 @@
             :class="sidebarOpen ? 'w-64' : 'w-20'">
             {{-- Logo --}}
             <div class="flex items-center px-6 h-16 border-b border-slate-100 dark:border-slate-800"
-                 :class="sidebarOpen ? 'justify-start' : 'justify-center'">
+                :class="sidebarOpen ? 'justify-start' : 'justify-center'">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
                     <span class="text-xl font-extrabold text-primary-700 dark:text-primary-400" x-show="sidebarOpen"
                         x-transition>gegares</span>
@@ -201,7 +203,8 @@
             {{-- Top Navbar --}}
             <header
                 class="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200/60 dark:border-slate-800/60 h-16 flex items-center px-6 transition-colors duration-300">
-                <button @click="window.innerWidth >= 1024 ? (sidebarOpen = !sidebarOpen) : (sidebarMobile = !sidebarMobile)"
+                <button
+                    @click="window.innerWidth >= 1024 ? (sidebarOpen = !sidebarOpen) : (sidebarMobile = !sidebarMobile)"
                     class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 mr-3 transition-colors duration-200">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -239,7 +242,8 @@
                             class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
                             <div
                                 class="w-8 h-8 rounded-lg bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
                             <span
                                 class="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:inline">{{ auth()->user()->name }}</span>
                         </button>
@@ -285,16 +289,19 @@
     @livewireScripts
 
     {{-- Session Toasts Data --}}
-    @if(session('success')) <div id="toast-success" data-message="{{ session('success') }}" class="hidden"></div> @endif
-    @if(session('error')) <div id="toast-error" data-message="{{ session('error') }}" class="hidden"></div> @endif
-    @if(session('warning')) <div id="toast-warning" data-message="{{ session('warning') }}" class="hidden"></div> @endif
+    @if(session('success'))
+    <div id="toast-success" data-message="{{ session('success') }}" class="hidden"></div> @endif
+    @if(session('error'))
+    <div id="toast-error" data-message="{{ session('error') }}" class="hidden"></div> @endif
+    @if(session('warning'))
+    <div id="toast-warning" data-message="{{ session('warning') }}" class="hidden"></div> @endif
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             ['success', 'error', 'warning'].forEach(type => {
                 const el = document.getElementById(`toast-${type}`);
                 if (el) {
-                    window.dispatchEvent(new CustomEvent('toast', { 
+                    window.dispatchEvent(new CustomEvent('toast', {
                         detail: { type: type === 'warning' ? 'info' : (type === 'error' ? 'error' : 'success'), message: el.dataset.message }
                     }));
                 }
