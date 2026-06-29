@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('longitude', 10, 7)->nullable();
             $table->boolean('is_primary')->default(false);
             $table->string('biteship_location_id')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
