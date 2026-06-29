@@ -735,8 +735,8 @@ FORMAT RESPONS:
         // ── Build structured system prompt ──
         $systemPrompt = $this->buildSystemPrompt();
 
-        // ── Build conversation memory (last 8 turns) ──
-        $conversationMemory = $this->buildConversationMemory(8);
+        // ── Build conversation memory (last 12 turns for richer context) ──
+        $conversationMemory = $this->buildConversationMemory(12);
 
         // ── Call AI with multi-turn context ──
         $response = $service->chat(
@@ -773,13 +773,19 @@ FORMAT RESPONS:
         $bestSellers = $this->getBestSellers();
         $productWhitelist = $this->getProductWhitelist();
         $couponInfo = $this->getCouponsContext();
+        $cartContext = $this->getCartContext();
+        $timeContext = $this->getTimeContext();
 
         $userName = Auth::check() ? Auth::user()->name : 'Pengunjung';
 
         return "# IDENTITAS
 Kamu adalah **Asisten Gegares**, chatbot resmi toko jajanan pasar online Gegares.
-Kamu ramah, sopan, dan ahli di bidang jajanan tradisional Indonesia.
+Kamu ramah, sopan, ahli di bidang jajanan tradisional Indonesia, dan jago membantu pelanggan menyelesaikan pesanan.
 User yang sedang bicara denganmu bernama: **{$userName}**.
+
+# KONTEKS WAKTU SAAT INI
+{$timeContext}
+Gunakan konteks waktu ini untuk menyapa secara natural (misal 'Selamat pagi') dan memberi rekomendasi yang relevan (misal sarapan di pagi hari, camilan sore, atau wedang hangat saat malam). Jangan berlebihan — sapaan waktu cukup sesekali, bukan di setiap pesan.
 
 # ⛔ ATURAN ANTI-HALUSINASI (WAJIB DIPATUHI)
 Kamu HANYA BOLEH menyebutkan produk yang ada di daftar berikut. DILARANG KERAS mengarang, menambahkan, atau menyebutkan produk yang TIDAK ADA di daftar ini:
@@ -822,8 +828,18 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
    ---BUY---NamaProduk|Jumlah
    NamaProduk harus PERSIS sesuai dengan daftar produk di katalog. Jumlah harus berupa angka bulat positif (default 1 jika user tidak menentukan jumlah).
    Contoh: ---BUY---Klepon|4
-   
+
+   Jika user memesan BEBERAPA produk sekaligus (contoh: 'pesankan 2 Klepon dan 3 Risoles Mayo'), tulis SATU tag ---BUY--- untuk SETIAP produk di baris terpisah:
+   ---BUY---Klepon|2
+   ---BUY---Risoles Mayo|3
+
    ⚠️ DILARANG KERAS menyertakan tag ---BUY--- jika user mengonfirmasi bahwa mereka sudah membayar atau jika pesanan yang dimaksud sudah berstatus Paid (Lunas) di data pesanan. Jika user mengatakan 'saya sudah bayar' atau sejenisnya, cukup konfirmasikan status pembayaran mereka dari data pesanan yang diberikan (jika terdeteksi Paid) dan jangan menambahkan kembali produk tersebut ke keranjang belanja.
+10. **REKOMENDASI KONTEKSTUAL & CERDAS**: Saat merekomendasikan, pertimbangkan kebutuhan user secara cerdas:
+   - Jika user menyebut BUDGET (contoh: 'di bawah 20 ribu'), HANYA rekomendasikan produk yang harganya sesuai budget tersebut dari katalog.
+   - Jika user menyebut ACARA (arisan, kantor, ulang tahun), rekomendasikan produk yang cocok untuk porsi banyak/berbagi.
+   - Jika user menyebut SELERA (manis, gurih, pedas, segar), pilih produk yang sesuai berdasarkan deskripsi di katalog.
+   - Prioritaskan produk yang TERSEDIA (hindari merekomendasikan yang HABIS, kecuali user spesifik menanyakannya).
+   - Jika ada kupon/promo aktif yang relevan dengan rekomendasi, sebutkan secara singkat agar user terdorong membeli.
 
 # PRODUK TERLARIS (BEST SELLERS)
 {$bestSellers}
@@ -839,6 +855,10 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
 
 # DATA PESANAN USER (⚠️ HANYA GUNAKAN JIKA USER BERTANYA TENTANG PESANAN MEREKA)
 {$orderContext}
+
+# ISI KERANJANG BELANJA USER SAAT INI
+{$cartContext}
+Instruksi: Jika user bertanya 'apa isi keranjang saya', 'sudah pesan apa saja', atau ingin checkout/bayar, gunakan data keranjang di atas. Jika user ingin membayar/checkout dan keranjang TIDAK kosong, JANGAN tambahkan produk baru — cukup arahkan mereka untuk menyelesaikan pembayaran (gunakan tombol checkout yang tersedia). Jika user menambah produk yang sudah ada di keranjang, ingatkan jumlah totalnya.
 
 # KUPON DISKON & PROMO (⚠️ AKTIF)
 {$couponInfo}
@@ -878,6 +898,63 @@ saran1|saran2|saran3";
             $context .= "- Kode: **{$coupon->code}** | Diskon: {$valueStr}{$minPurchaseStr}{$expiryStr}\n";
         }
         
+        return $context;
+    }
+
+    protected function getTimeContext(): string
+    {
+        $now = now()->timezone('Asia/Jakarta');
+        $hour = (int) $now->format('H');
+
+        $period = match (true) {
+            $hour >= 4 && $hour < 11 => 'pagi',
+            $hour >= 11 && $hour < 15 => 'siang',
+            $hour >= 15 && $hour < 18 => 'sore',
+            default => 'malam',
+        };
+
+        $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $dayName = $days[(int) $now->format('w')];
+
+        // Store hours: 07:00 - 21:00 WIB
+        $isOpen = $hour >= 7 && $hour < 21;
+        $openStatus = $isOpen
+            ? 'Toko sedang BUKA (jam operasional 07:00-21:00 WIB).'
+            : 'Toko sedang TUTUP (jam operasional 07:00-21:00 WIB). Pesanan tetap bisa dibuat dan akan diproses saat jam buka.';
+
+        return "Hari ini {$dayName}, {$now->format('d M Y')}, pukul {$now->format('H:i')} WIB (waktu {$period}). {$openStatus}";
+    }
+
+    protected function getCartContext(): string
+    {
+        if (!Auth::check()) {
+            return "User belum login, keranjang belum bisa diakses.";
+        }
+
+        $cartService = app(\App\Services\CartService::class);
+        $items = $cartService->getItems();
+
+        if (empty($items)) {
+            return "Keranjang belanja user saat ini KOSONG.";
+        }
+
+        $context = "Isi keranjang user saat ini:\n";
+        foreach ($items as $item) {
+            $name = $item['name'] ?? 'Produk';
+            $variant = !empty($item['variant_name']) ? " ({$item['variant_name']})" : '';
+            $qty = $item['quantity'] ?? 1;
+            $price = number_format((float) ($item['price'] ?? 0), 0, ',', '.');
+            $context .= "- {$name}{$variant}: {$qty} porsi @ Rp {$price}\n";
+        }
+
+        $subtotal = number_format($cartService->getSubtotal(), 0, ',', '.');
+        $context .= "Subtotal keranjang: Rp {$subtotal} (belum termasuk ongkir).";
+
+        $coupon = $cartService->getCoupon();
+        if ($coupon) {
+            $context .= "\nKupon terpasang: {$coupon['code']}.";
+        }
+
         return $context;
     }
 
@@ -1074,63 +1151,88 @@ CARA PESAN:
             }
         }
 
-        // ── 0.5. Extract buy instructions from AI response ──
-        $buyInstructions = null;
+        // ── 0.5. Extract buy instructions from AI response (supports multiple products) ──
+        $buyRequests = [];
         if (str_contains($aiText, '---BUY---')) {
-            $parts = explode('---BUY---', $aiText, 2);
-            $aiText = trim($parts[0]);
-            if (isset($parts[1])) {
-                $buyInstructions = trim($parts[1]);
+            // Collect every "---BUY---Name|Qty" occurrence.
+            if (preg_match_all('/---BUY---([^\n|]+)\|\s*(\d+)/', $aiText, $buyMatches, PREG_SET_ORDER)) {
+                foreach ($buyMatches as $m) {
+                    $buyRequests[] = [
+                        'name' => trim($m[1]),
+                        'qty' => max(1, (int) $m[2]),
+                    ];
+                }
             }
+            // Strip all buy tags (and any trailing text after the first one) from the visible reply.
+            $aiText = trim(preg_replace('/---BUY---.*$/s', '', $aiText));
         }
 
         $foundButtons = [];
-        if ($buyInstructions) {
-            $buyParts = explode('|', $buyInstructions, 2);
-            $productName = trim($buyParts[0] ?? '');
-            $quantity = max(1, (int)trim($buyParts[1] ?? '1'));
+        if (!empty($buyRequests)) {
+            if (!Auth::check()) {
+                $aiText = "Maaf Kak, untuk memproses pemesanan, silakan login ke akun Kakak terlebih dahulu agar kami dapat menyiapkan keranjang belanja Anda.";
+                $foundButtons[] = [
+                    'label' => 'Login Sekarang',
+                    'url' => route('login'),
+                    'style' => 'primary',
+                ];
+            } else {
+                $cartService = app(\App\Services\CartService::class);
+                $added = [];      // ['name' => ..., 'qty' => ...]
+                $failed = [];     // human-readable failure reasons
 
-            if ($productName) {
-                $product = Product::where('name', $productName)->first();
-                if ($product) {
-                    if (!Auth::check()) {
-                        $aiText = "Maaf Kak, untuk memproses pemesanan, silakan login ke akun Kakak terlebih dahulu agar kami dapat menyiapkan keranjang belanja Anda.";
-                        $foundButtons[] = [
-                            'label' => 'Login Sekarang',
-                            'url' => route('login'),
-                            'style' => 'primary',
-                        ];
-                    } else {
-                        if ($product->stock <= 0) {
-                            $aiText = "Maaf Kak, produk **{$productName}** saat ini sedang habis.";
-                        } else {
-                            $cartService = app(\App\Services\CartService::class);
-                            $result = $cartService->add($product->id, $quantity);
+                foreach ($buyRequests as $req) {
+                    $product = Product::where('name', $req['name'])->first();
 
-                            if ($result['success'] ?? false) {
-                                // Dispatch events to update the UI
-                                $this->dispatch('cart-updated');
-                                $this->dispatch('wishlist-updated');
-                                $this->dispatch('toast', type: 'success', message: "{$productName} ditambahkan ke keranjang");
-
-                                $aiText = "Saya sudah berhasil memasukkan **{$quantity} porsi {$product->name}** ke keranjang belanja Kakak. Silakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
-                                $foundButtons[] = [
-                                    'label' => 'Bayar Langsung via Chatbot',
-                                    'action' => 'checkoutDirectly',
-                                    'style' => 'primary',
-                                ];
-                                $foundButtons[] = [
-                                    'label' => 'Buka Halaman Checkout',
-                                    'url' => route('checkout.index'),
-                                    'style' => 'secondary',
-                                ];
-                            } else {
-                                $aiText = "Maaf Kak, gagal menambahkan **{$productName}** ke keranjang: " . ($result['message'] ?? 'Stok tidak mencukupi.');
-                            }
-                        }
+                    if (!$product) {
+                        $failed[] = "**{$req['name']}** tidak ditemukan di katalog";
+                        continue;
                     }
+                    if ($product->stock <= 0) {
+                        $failed[] = "**{$product->name}** sedang habis";
+                        continue;
+                    }
+
+                    $result = $cartService->add($product->id, $req['qty']);
+                    if ($result['success'] ?? false) {
+                        $added[] = ['name' => $product->name, 'qty' => $req['qty']];
+                    } else {
+                        $failed[] = "**{$product->name}** (" . ($result['message'] ?? 'stok tidak mencukupi') . ")";
+                    }
+                }
+
+                if (!empty($added)) {
+                    // Refresh UI state once after all items are added.
+                    $this->dispatch('cart-updated');
+                    $this->dispatch('wishlist-updated');
+                    $this->dispatch('toast', type: 'success', message: 'Produk ditambahkan ke keranjang');
+
+                    if (count($added) === 1) {
+                        // Keep the familiar single-product confirmation copy.
+                        $one = $added[0];
+                        $aiText = "Saya sudah berhasil memasukkan **{$one['qty']} porsi {$one['name']}** ke keranjang belanja Kakak. Silakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
+                    } else {
+                        $lines = array_map(fn($a) => "• {$a['qty']} porsi {$a['name']}", $added);
+                        $aiText = "Siap Kak! Saya sudah memasukkan produk berikut ke keranjang belanja Kakak:\n" . implode("\n", $lines) . "\n\nSilakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
+                    }
+
+                    if (!empty($failed)) {
+                        $aiText .= "\n\nNamun ada yang tidak bisa ditambahkan: " . implode(', ', $failed) . ".";
+                    }
+
+                    $foundButtons[] = [
+                        'label' => 'Bayar Langsung via Chatbot',
+                        'action' => 'checkoutDirectly',
+                        'style' => 'primary',
+                    ];
+                    $foundButtons[] = [
+                        'label' => 'Buka Halaman Checkout',
+                        'url' => route('checkout.index'),
+                        'style' => 'secondary',
+                    ];
                 } else {
-                    $aiText = "Maaf Kak, saya tidak menemukan produk bernama **{$productName}** di katalog kami.";
+                    // Nothing could be added.
+                    $aiText = "Maaf Kak, pesanan belum bisa diproses: " . implode(', ', $failed) . ".";
                 }
             }
         }

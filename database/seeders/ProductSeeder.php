@@ -239,6 +239,178 @@ class ProductSeeder extends Seeder
                 'stock' => 20,
                 'is_featured' => false,
             ],
+
+            // ── Tambahan: Kue Basah ──
+            [
+                'category' => 'kue-basah',
+                'name' => 'Kue Cubit',
+                'description' => 'Kue mungil bertekstur lembut dengan topping meises cokelat yang manis. Disukai anak-anak maupun dewasa.',
+                'price' => 13000,
+                'stock' => 38,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'kue-basah',
+                'name' => 'Kue Pukis',
+                'description' => 'Kue berbentuk perahu yang empuk dan harum santan, dipanggang hingga kecokelatan dengan aroma vanila.',
+                'price' => 14000,
+                'stock' => 42,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'kue-basah',
+                'name' => 'Carabikang',
+                'description' => 'Kue beras mekar tiga warna khas Jawa dengan tekstur kenyal dan manis legit yang menggugah selera.',
+                'price' => 15000,
+                'stock' => 28,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'kue-basah',
+                'name' => 'Kue Talam Ubi',
+                'description' => 'Kue dua lapis dari ubi ungu manis dan santan gurih di atasnya. Lembut dengan warna cantik alami.',
+                'price' => 16000,
+                'stock' => 26,
+                'is_featured' => true,
+            ],
+            [
+                'category' => 'kue-basah',
+                'name' => 'Wajik Ketan',
+                'description' => 'Ketan pulen yang dimasak dengan gula merah dan santan hingga legit pekat. Manis khas jajanan hajatan.',
+                'price' => 17000,
+                'stock' => 24,
+                'is_featured' => false,
+            ],
+
+            // ── Tambahan: Kue Kering ──
+            [
+                'category' => 'kue-kering',
+                'name' => 'Lidah Kucing',
+                'description' => 'Kue kering tipis renyah berbentuk lidah dengan rasa mentega yang gurih manis dan lumer.',
+                'price' => 38000,
+                'stock' => 22,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'kue-kering',
+                'name' => 'Kue Sagu Keju',
+                'description' => 'Kue kering dari tepung sagu yang lumer di mulut dengan rasa keju gurih dan aroma daun pandan.',
+                'price' => 42000,
+                'stock' => 18,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'kue-kering',
+                'name' => 'Kue Kacang',
+                'description' => 'Kue kering klasik dari kacang tanah sangrai yang gurih, renyah, dan meleleh saat digigit.',
+                'price' => 36000,
+                'stock' => 30,
+                'is_featured' => false,
+            ],
+
+            // ── Tambahan: Gorengan ──
+            [
+                'category' => 'gorengan',
+                'name' => 'Cireng Bumbu Rujak',
+                'description' => 'Cireng kenyal renyah khas Sunda disajikan dengan sambal rujak pedas manis yang nagih.',
+                'price' => 13000,
+                'stock' => 48,
+                'is_featured' => true,
+            ],
+            [
+                'category' => 'gorengan',
+                'name' => 'Tempe Mendoan',
+                'description' => 'Tempe tipis berbalut adonan tepung berbumbu, digoreng setengah matang hingga lembut gurih.',
+                'price' => 11000,
+                'stock' => 50,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'gorengan',
+                'name' => 'Pisang Goreng Crispy',
+                'description' => 'Pisang kepok matang dibalut tepung renyah ekstra crispy. Manis alami dengan tekstur garing.',
+                'price' => 12000,
+                'stock' => 44,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'gorengan',
+                'name' => 'Cakwe Original',
+                'description' => 'Cakwe empuk berongga yang gurih, cocok dicocol saus asam manis atau dinikmati dengan bubur.',
+                'price' => 14000,
+                'stock' => 32,
+                'is_featured' => false,
+            ],
+
+            // ── Tambahan: Jajanan Kukus ──
+            [
+                'category' => 'jajanan-kukus',
+                'name' => 'Kue Mangkok',
+                'description' => 'Kue beras mekar berbentuk mangkok dengan warna-warni lembut, manis dan kenyal di setiap gigitan.',
+                'price' => 12000,
+                'stock' => 36,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'jajanan-kukus',
+                'name' => 'Bolu Kukus Mekar',
+                'description' => 'Bolu kukus klasik yang mekar sempurna dengan tekstur lembut dan rasa manis cokelat-vanila.',
+                'price' => 14000,
+                'stock' => 40,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'jajanan-kukus',
+                'name' => 'Arem-Arem',
+                'description' => 'Nasi gurih bersantan berisi tumis ayam dan sayur, dibungkus daun pisang dan dikukus hingga padat.',
+                'price' => 17000,
+                'stock' => 30,
+                'is_featured' => false,
+            ],
+
+            // ── Tambahan: Minuman Tradisional ──
+            [
+                'category' => 'minuman-tradisional',
+                'name' => 'Wedang Jahe Susu',
+                'description' => 'Jahe segar yang dimasak dengan gula aren dan susu hangat. Menghangatkan badan dan menenangkan.',
+                'price' => 14000,
+                'stock' => 35,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'minuman-tradisional',
+                'name' => 'Es Cendol Durian',
+                'description' => 'Cendol kenyal dengan santan gurih, gula merah, dan topping durian asli yang harum legit.',
+                'price' => 18000,
+                'stock' => 28,
+                'is_featured' => true,
+            ],
+            [
+                'category' => 'minuman-tradisional',
+                'name' => 'Bajigur',
+                'description' => 'Minuman hangat khas Sunda dari santan, gula aren, dan jahe dengan potongan kolang-kaling.',
+                'price' => 13000,
+                'stock' => 32,
+                'is_featured' => false,
+            ],
+
+            // ── Tambahan: Bubur Tradisional ──
+            [
+                'category' => 'bubur-tradisional',
+                'name' => 'Bubur Ketan Hitam',
+                'description' => 'Ketan hitam yang dimasak pulen dengan gula merah, disiram santan kental gurih yang creamy.',
+                'price' => 16000,
+                'stock' => 24,
+                'is_featured' => false,
+            ],
+            [
+                'category' => 'bubur-tradisional',
+                'name' => 'Bubur Kacang Hijau',
+                'description' => 'Kacang hijau empuk dimasak dengan jahe, gula merah, dan santan. Hangat, manis, dan mengenyangkan.',
+                'price' => 15000,
+                'stock' => 30,
+                'is_featured' => false,
+            ],
         ];
 
         foreach ($products as $p) {

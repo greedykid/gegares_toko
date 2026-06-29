@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Tests\TestCase;
 
@@ -153,6 +154,20 @@ class PakasirPaymentTest extends TestCase
             'product_price' => $product->price,
             'quantity' => 2,
             'subtotal' => 20000.00,
+        ]);
+
+        // The webhook no longer trusts the payload: it re-confirms the transaction
+        // straight from Pakasir's API. Fake that API call returning a completed txn.
+        config(['pakasir.api_key' => 'test-api-key']);
+        Http::fake([
+            'app.pakasir.com/api/transactiondetail*' => Http::response([
+                'transaction' => [
+                    'status' => 'completed',
+                    'amount' => 29000,
+                    'payment_method' => 'qris',
+                    'completed_at' => '2026-06-15 12:00:00',
+                ],
+            ], 200),
         ]);
 
         // Send post request to webhook/pakasir

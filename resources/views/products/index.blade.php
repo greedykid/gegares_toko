@@ -11,14 +11,20 @@
         <div class="flex flex-col lg:flex-row gap-8">
             {{-- Sidebar Filter --}}
             <!-- Backdrop Overlay for Mobile -->
-            <div x-show="filterOpen" x-cloak x-transition:enter="transition ease-out duration-300"
+            <div x-show="filterOpen" x-cloak x-transition:enter="transition-opacity ease-out duration-[350ms]"
                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+                x-transition:leave="transition-opacity ease-in duration-[280ms]" x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0" @click="filterOpen = false"
                 class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden" style="display: none;"></div>
 
-            <aside x-cloak x-show="filterOpen" :class="filterOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'"
-                class="fixed inset-y-0 right-0 z-50 w-80 max-w-full bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto transition-transform duration-300 lg:static lg:w-64 lg:h-auto lg:shadow-none lg:p-0 lg:bg-transparent lg:dark:bg-transparent lg:border-none lg:overflow-visible lg:transition-none lg:!block">
+            <aside x-cloak x-show="filterOpen"
+                x-transition:enter="transition-transform transform ease-[cubic-bezier(0.32,0.72,0,1)] duration-[350ms] will-change-transform"
+                x-transition:enter-start="translate-x-full"
+                x-transition:enter-end="translate-x-0"
+                x-transition:leave="transition-transform transform ease-[cubic-bezier(0.4,0,1,1)] duration-[280ms] will-change-transform"
+                x-transition:leave-start="translate-x-0"
+                x-transition:leave-end="translate-x-full"
+                class="fixed inset-y-0 right-0 z-50 w-80 max-w-full bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto lg:static lg:w-64 lg:h-auto lg:shadow-none lg:p-0 lg:bg-transparent lg:dark:bg-transparent lg:border-none lg:overflow-visible lg:translate-x-0 lg:!block">
                 <form id="filter-form" method="GET" action="{{ route('products.index') }}"
                     class="space-y-6 lg:bg-white lg:dark:bg-slate-900 lg:border lg:border-slate-100 lg:dark:border-slate-800 lg:shadow-sm lg:rounded-2xl lg:p-6 transition-colors duration-300 lg:sticky lg:top-24">
 
