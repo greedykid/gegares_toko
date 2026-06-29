@@ -53,6 +53,16 @@
                 @if(strlen($search) >= 2)
                     @if(count($results) > 0 || count($categoryResults) > 0)
                         <div class="p-4 sm:p-5 space-y-6">
+                            {{-- Typo-tolerant hint --}}
+                            @if($isFuzzy)
+                                <div class="flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-900/40">
+                                    <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/></svg>
+                                    <p class="text-xs font-bold text-amber-700 dark:text-amber-400 leading-relaxed">
+                                        Tidak ada hasil persis untuk <span class="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40">"{{ $search }}"</span>. Menampilkan jajanan dengan nama yang mirip:
+                                    </p>
+                                </div>
+                            @endif
+
                             {{-- Categories Section --}}
                             @if(count($categoryResults) > 0)
                                 <div>
