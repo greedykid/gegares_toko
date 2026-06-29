@@ -24,6 +24,30 @@ return new class extends Migration
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('biteship_location_id')->nullable();
+
+            // Hero
+            $table->string('hero_badge')->nullable();
+            $table->string('hero_title')->nullable();
+            $table->text('hero_subtitle')->nullable();
+
+            // FAQ & CTA
+            $table->json('faq_items')->nullable();
+            $table->string('cta_title')->nullable();
+            $table->text('cta_subtitle')->nullable();
+
+            // About
+            $table->string('about_title')->nullable();
+            $table->text('about_subtitle')->nullable();
+            $table->string('about_story_title')->nullable();
+            $table->text('about_story_content')->nullable();
+            $table->text('about_vision')->nullable();
+            $table->json('about_mission')->nullable();
+            $table->json('about_gallery')->nullable();
+
+            // Contact
+            $table->string('contact_whatsapp')->nullable();
+            $table->text('contact_hours')->nullable();
+
             $table->timestamps();
         });
     }

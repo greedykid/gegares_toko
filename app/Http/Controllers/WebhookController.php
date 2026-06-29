@@ -26,6 +26,17 @@ class WebhookController extends Controller
 
     public function biteship(Request $request)
     {
+        // SECURITY: authenticate the caller with a shared secret when configured.
+        // Without this, anyone who knows the URL could forge order status updates.
+        $expectedToken = config('biteship.webhook_token');
+        if ($expectedToken) {
+            $providedToken = $request->header('X-Webhook-Token') ?? $request->query('token');
+            if (!is_string($providedToken) || !hash_equals($expectedToken, $providedToken)) {
+                Log::warning('Biteship webhook rejected: invalid or missing webhook token.');
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+        }
+
         Log::info('Biteship webhook received:', $request->all());
 
         // Biteship webhook payload could contain fields directly, or nested inside a 'data' block.

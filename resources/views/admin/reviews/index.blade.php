@@ -77,11 +77,18 @@
         </div>
         <div class="lg:col-span-2">
             <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Periode</label>
-            <div class="grid grid-cols-2 gap-2">
-                <input type="date" name="from_date" value="{{ request('from_date') }}" 
-                       class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
-                <input type="date" name="to_date" value="{{ request('to_date') }}" 
-                       class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-600">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                    </svg>
+                </div>
+                <input type="text" id="date_range_picker"
+                       placeholder="Pilih rentang tanggal..."
+                       readonly
+                       class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
+                <input type="hidden" name="from_date" id="from_date" value="{{ request('from_date') }}">
+                <input type="hidden" name="to_date" id="to_date" value="{{ request('to_date') }}">
             </div>
         </div>
         <div>
@@ -389,3 +396,172 @@
 </template>
 </div>
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Custom styling for flatpickr calendar */
+    .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        border-radius: 1rem !important;
+        font-family: 'Quicksand', sans-serif !important;
+    }
+    .dark .flatpickr-calendar {
+        background: #0f172a !important; /* bg-slate-900 */
+        border: 1px solid #1e293b !important; /* border-slate-800 */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+    }
+    .flatpickr-months .flatpickr-month {
+        color: #0f172a !important;
+        background: transparent !important;
+    }
+    .dark .flatpickr-months .flatpickr-month {
+        color: #f1f5f9 !important;
+        background: transparent !important;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        font-weight: 700 !important;
+        color: inherit !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0.375rem !important;
+        padding: 2px 6px !important;
+        cursor: pointer !important;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+    .dark .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+    .flatpickr-monthDropdown-months option {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+    .dark .flatpickr-monthDropdown-months option {
+        background-color: #0f172a !important;
+        color: #cbd5e1 !important;
+    }
+    .flatpickr-current-month input.cur-year {
+        font-weight: 700 !important;
+        color: inherit !important;
+        background: transparent !important;
+        border-radius: 0.375rem !important;
+        padding: 2px 6px !important;
+    }
+    .flatpickr-current-month input.cur-year:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+    .dark .flatpickr-current-month input.cur-year:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        color: #475569 !important;
+        fill: currentColor !important;
+    }
+    .dark .flatpickr-months .flatpickr-prev-month, .dark .flatpickr-months .flatpickr-next-month {
+        color: #cbd5e1 !important;
+        fill: currentColor !important;
+    }
+    .flatpickr-weekday {
+        font-weight: 700 !important;
+        color: #94a3b8 !important;
+    }
+    .flatpickr-day {
+        color: #334155 !important;
+        border-radius: 0.5rem !important;
+        font-weight: 600 !important;
+    }
+    .dark .flatpickr-day {
+        color: #cbd5e1 !important;
+    }
+    .flatpickr-day:hover {
+        background: #f1f5f9 !important;
+    }
+    .dark .flatpickr-day:hover {
+        background: #1e293b !important;
+    }
+    .flatpickr-day.today {
+        border-color: #0a5050 !important;
+        color: #0a5050 !important;
+    }
+    .dark .flatpickr-day.today {
+        border-color: #337373 !important;
+        color: #337373 !important;
+    }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+        background: #0a5050 !important;
+        border-color: #0a5050 !important;
+        color: #ffffff !important;
+    }
+    .dark .flatpickr-day.selected, .dark .flatpickr-day.startRange, .dark .flatpickr-day.endRange {
+        background: #0a5050 !important;
+        border-color: #0a5050 !important;
+        color: #ffffff !important;
+    }
+    .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover {
+        background: #084040 !important;
+        border-color: #084040 !important;
+    }
+    .flatpickr-day.inRange {
+        background: rgba(10, 80, 80, 0.1) !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    .dark .flatpickr-day.inRange {
+        background: rgba(10, 80, 80, 0.2) !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    .flatpickr-day.flatpickr-disabled, .flatpickr-day.notAllowed {
+        color: #cbd5e1 !important;
+    }
+    .dark .flatpickr-day.flatpickr-disabled, .dark .flatpickr-day.notAllowed {
+        color: #475569 !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/flatpickr/dist/flatpickr.min.js"></script>
+<script src="https://unpkg.com/flatpickr/dist/l10n/id.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fromDateEl = document.getElementById('from_date');
+        const toDateEl = document.getElementById('to_date');
+        const dateRangeInput = document.getElementById('date_range_picker');
+
+        // Initial date values
+        let defaultDates = [];
+        if (fromDateEl.value) {
+            defaultDates.push(fromDateEl.value);
+        }
+        if (toDateEl.value) {
+            defaultDates.push(toDateEl.value);
+        }
+
+        flatpickr(dateRangeInput, {
+            mode: 'range',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'j M Y',
+            locale: 'id',
+            defaultDate: defaultDates,
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    fromDateEl.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                    toDateEl.value = instance.formatDate(selectedDates[1], 'Y-m-d');
+                } else if (selectedDates.length === 1) {
+                    fromDateEl.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                    toDateEl.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                } else {
+                    fromDateEl.value = '';
+                    toDateEl.value = '';
+                }
+            }
+        });
+    });
+</script>
+@endpush

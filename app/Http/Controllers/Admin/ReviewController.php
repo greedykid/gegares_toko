@@ -10,6 +10,14 @@ class ReviewController extends Controller
 {
     public function index(Request $request)
     {
+        // Set default date range (last month → today) for consistency with the Orders page.
+        if (!$request->has('from_date')) {
+            $request->merge(['from_date' => now()->subMonth()->format('Y-m-d')]);
+        }
+        if (!$request->has('to_date')) {
+            $request->merge(['to_date' => now()->format('Y-m-d')]);
+        }
+
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc');
 
