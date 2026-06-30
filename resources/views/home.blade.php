@@ -26,51 +26,43 @@
 @endphp
 
 {{-- ─── HERO SECTION ─── --}}
-<section class="relative overflow-hidden bg-linear-to-br from-primary-50 via-white to-accent-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500"
-         x-data="{ 
+<section class="relative bg-white dark:bg-slate-950 transition-colors duration-500"
+         x-data="{
             activeSlide: 0,
             slidesCount: {{ $featuredProducts->count() }},
             next() { this.activeSlide = (this.activeSlide + 1) % this.slidesCount }
          }"
          x-init="setInterval(() => next(), 5000)">
-    
-    {{-- Decorative Background --}}
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-200/20 dark:bg-primary-900/10 rounded-full blur-3xl transition-colors"></div>
-        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-accent-200/20 dark:bg-accent-900/10 rounded-full blur-3xl transition-colors"></div>
-    </div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
+
             {{-- Left: Text Content --}}
-            <div class="max-w-xl z-10">
-                <p class="text-xs sm:text-sm font-black text-primary-600 dark:text-primary-400 tracking-[0.2em] uppercase mb-4">{{ $heroBadge }}</p>
-                <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 dark:text-slate-100 leading-[1.1] tracking-tight transition-colors">
+            <div class="max-w-xl">
+                <p class="text-xs sm:text-sm font-semibold text-primary-600 dark:text-primary-400 tracking-[0.15em] uppercase mb-5">{{ $heroBadge }}</p>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-slate-100 leading-[1.15] tracking-tight transition-colors">
                     {!! $heroTitle !!}
                 </h1>
-                <p class="mt-8 text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg transition-colors">
+                <p class="mt-6 text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg transition-colors">
                     {{ $heroSubtitle }}
                 </p>
-                <div class="mt-10 flex flex-wrap gap-4">
-                    <a href="{{ route('products.index') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-primary-700 text-white font-bold rounded-2xl hover:bg-primary-800 hover:shadow-2xl hover:shadow-primary-200 dark:hover:shadow-primary-900/20 hover:-translate-y-1 transition-all duration-300 active:scale-95">
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <a href="{{ route('products.index') }}" class="inline-flex items-center gap-2 px-7 py-3.5 bg-primary-700 text-white font-semibold rounded-xl hover:bg-primary-800 transition-colors duration-200">
                         Jelajahi Menu
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
                     </a>
-                    <a href="{{ route('about') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-500 hover:text-primary-700 dark:hover:text-primary-400 transition-all duration-300">
+                    <a href="{{ route('about') }}" class="inline-flex items-center gap-2 px-7 py-3.5 text-slate-600 dark:text-slate-300 font-semibold rounded-xl hover:text-primary-700 dark:hover:text-primary-400 transition-colors duration-200">
                         Tentang Kami
                     </a>
                 </div>
             </div>
 
             {{-- Right: Slideshow --}}
-            <div class="relative order-first lg:order-last">
-                <div class="relative aspect-square sm:aspect-video lg:aspect-square max-w-lg mx-auto">
-                    {{-- Decorative Ring --}}
-                    <div class="absolute inset-0 rounded-full border-2 border-dashed border-primary-100 dark:border-primary-900/30 animate-spin-slow"></div>
-                    
+            <div class="relative">
+                <div class="relative aspect-square sm:aspect-video lg:aspect-square max-w-md mx-auto">
                     {{-- Carousel Frame --}}
-                    <div class="absolute inset-4 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary-200/50 dark:shadow-black/50 border-4 border-white dark:border-slate-800">
+                    <div class="absolute inset-0 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                         {{-- Slides --}}
                         @foreach($featuredProducts as $index => $product)
                             @php
@@ -132,7 +124,8 @@
 </section>
 
 {{-- ─── CATEGORY SECTION ─── --}}
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+<section class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
     <div class="text-center mb-12 reveal reveal-up">
         <p class="text-sm font-semibold text-primary-600 dark:text-primary-400 tracking-wide uppercase">Kategori</p>
         <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100 transition-colors">Pilih Jajanan Favorit</h2>
@@ -157,10 +150,11 @@
             </a>
         @endforeach
     </div>
+  </div>
 </section>
 
 {{-- ─── FEATURED PRODUCTS ─── --}}
-<section class="bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-slate-900 transition-colors duration-300 overflow-x-hidden">
+<section class="bg-white dark:bg-slate-950 transition-colors duration-300 overflow-x-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div class="flex items-end justify-between mb-12 reveal reveal-right">
             <div>
@@ -183,7 +177,8 @@
 </section>
 
 {{-- ─── FAQ SECTION ─── --}}
-<section id="faq" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 overflow-x-hidden">
+<section id="faq" class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 overflow-x-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div class="lg:col-span-1 reveal reveal-right">
             <p class="text-sm font-semibold text-primary-600 dark:text-primary-400 tracking-wide uppercase">Bantuan</p>
@@ -201,8 +196,8 @@
             @endphp
 
             @foreach($faqs as $index => $faq)
-                <div class="border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300"
-                     :class="{ 'border-primary-200 dark:border-primary-800 shadow-lg shadow-primary-50 dark:shadow-primary-900/10': activeFaq === {{ $index }} }">
+                <div class="border border-slate-100 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 overflow-hidden transition-all duration-300"
+                     :class="{ 'border-primary-200 dark:border-primary-700 shadow-lg shadow-primary-50 dark:shadow-primary-900/10': activeFaq === {{ $index }} }">
                     <button @click="activeFaq = (activeFaq === {{ $index }} ? null : {{ $index }})" 
                             class="w-full px-6 py-5 flex items-center justify-between text-left transition-colors">
                         <span class="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight transition-colors" 
@@ -218,7 +213,7 @@
                     <div x-show="activeFaq === {{ $index }}" 
                          x-collapse
                          x-cloak>
-                        <div class="px-6 pb-6 text-sm text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-50 dark:border-slate-800 pt-4 transition-colors">
+                        <div class="px-6 pb-6 text-sm text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-50 dark:border-slate-700 pt-4 transition-colors">
                             {{ $faq['a'] }}
                         </div>
                     </div>
@@ -226,10 +221,12 @@
             @endforeach
         </div>
     </div>
+  </div>
 </section>
 
 {{-- ─── CTA SECTION ─── --}}
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 reveal reveal-up">
+<section class="bg-white dark:bg-slate-950 transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 reveal reveal-up">
     <div class="relative overflow-hidden bg-linear-to-r from-primary-600 to-primary-700 rounded-3xl p-8 lg:p-14">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl"></div>
         <div class="relative max-w-lg">
@@ -241,6 +238,7 @@
             </a>
         </div>
     </div>
+  </div>
 </section>
 
 @endsection

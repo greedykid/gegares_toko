@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Services\CartService;
 use App\Services\PakasirService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
@@ -62,38 +63,45 @@ class CheckoutController extends Controller
         
         $total = $subtotal + $shippingCost - $discountAmount;
 
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'order_number' => Order::generateOrderNumber(),
-            'address_id' => $addressId,
-            'coupon_id' => $coupon['id'] ?? null,
-            'discount_amount' => $discountAmount,
-            'subtotal' => $subtotal,
-            'shipping_cost' => $shippingCost,
-            'total' => $total,
-            'status' => 'pending',
-            'payment_status' => 'unpaid',
-            'payment_method' => $request->payment_method,
-            'shipping_courier' => $request->shipping_courier,
-            'shipping_service' => $request->shipping_service,
-            'notes' => $request->notes,
-        ]);
-
-        if ($coupon) {
-            \App\Models\Coupon::where('id', $coupon['id'])->increment('used_count');
-        }
-
-        foreach ($cartItems as $item) {
-            $order->items()->create([
-                'product_id' => $item['product_id'],
-                'product_variant_id' => $item['variant_id'] ?? null,
-                'product_name' => $item['name'],
-                'variant_name' => $item['variant_name'] ?? null,
-                'product_price' => $item['price'],
-                'quantity' => $item['quantity'],
-                'subtotal' => $item['price'] * $item['quantity'],
+        // Create the order and its items atomically so a failure midway cannot
+        // leave a half-written order (e.g. order without items, or a coupon
+        // counted twice).
+        $order = DB::transaction(function () use ($request, $addressId, $coupon, $discountAmount, $subtotal, $shippingCost, $total, $cartItems) {
+            $order = Order::create([
+                'user_id' => auth()->id(),
+                'order_number' => Order::generateOrderNumber(),
+                'address_id' => $addressId,
+                'coupon_id' => $coupon['id'] ?? null,
+                'discount_amount' => $discountAmount,
+                'subtotal' => $subtotal,
+                'shipping_cost' => $shippingCost,
+                'total' => $total,
+                'status' => 'pending',
+                'payment_status' => 'unpaid',
+                'payment_method' => $request->payment_method,
+                'shipping_courier' => $request->shipping_courier,
+                'shipping_service' => $request->shipping_service,
+                'notes' => $request->notes,
             ]);
-        }
+
+            if ($coupon) {
+                \App\Models\Coupon::where('id', $coupon['id'])->increment('used_count');
+            }
+
+            foreach ($cartItems as $item) {
+                $order->items()->create([
+                    'product_id' => $item['product_id'],
+                    'product_variant_id' => $item['variant_id'] ?? null,
+                    'product_name' => $item['name'],
+                    'variant_name' => $item['variant_name'] ?? null,
+                    'product_price' => $item['price'],
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $item['price'] * $item['quantity'],
+                ]);
+            }
+
+            return $order;
+        });
 
         $paymentUrl = $pakasirService->createPaymentUrl($order);
 
