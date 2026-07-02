@@ -33,6 +33,9 @@ class ManageStoreContent extends Component
     public $about_vision;
     public $about_mission = [];
     public $about_gallery = [];
+    public $about_gallery_badge;
+    public $about_gallery_title;
+    public $about_gallery_subtitle;
     public $new_gallery_images = [];
 
     // Contact Fields
@@ -78,6 +81,9 @@ class ManageStoreContent extends Component
         $this->about_vision = $setting->about_vision ?? 'Menjadi produsen jajanan tradisional pilihan utama keluarga yang mampu melestarikan cita rasa Nusantara dengan kualitas premium, higienis, dan dapat diakses dengan mudah oleh semua kalangan.';
         $this->about_mission = $setting->about_mission ?? $defaultMission;
         $this->about_gallery = $setting->about_gallery ?? [];
+        $this->about_gallery_badge = $setting->about_gallery_badge ?? 'Galeri Kegiatan';
+        $this->about_gallery_title = $setting->about_gallery_title ?? 'Proses Produksi Kami';
+        $this->about_gallery_subtitle = $setting->about_gallery_subtitle ?? 'Melihat langsung bagaimana jajanan pasar legendaris kami dibuat secara higienis setiap dini hari.';
 
         $this->contact_whatsapp = $setting->contact_whatsapp ?? '6281234567890';
         $this->contact_hours = $setting->contact_hours ?? "Setiap Hari: 06:00 - 17:00 WIB\nPemesanan WhatsApp: 24 Jam";
@@ -145,6 +151,9 @@ class ManageStoreContent extends Component
             'about_story_content' => 'required|string',
             'about_vision' => 'required|string',
             'about_mission.*' => 'required|string',
+            'about_gallery_badge' => 'required|string|max:255',
+            'about_gallery_title' => 'required|string|max:255',
+            'about_gallery_subtitle' => 'required|string',
             'contact_whatsapp' => 'required|string|max:20',
             'contact_hours' => 'required|string',
             'contact_phone' => 'required|string|max:20',
@@ -183,6 +192,9 @@ class ManageStoreContent extends Component
         $setting->about_vision = $this->about_vision;
         $setting->about_mission = $this->about_mission;
         $setting->about_gallery = $this->about_gallery;
+        $setting->about_gallery_badge = $this->about_gallery_badge;
+        $setting->about_gallery_title = $this->about_gallery_title;
+        $setting->about_gallery_subtitle = $this->about_gallery_subtitle;
         $setting->contact_whatsapp = $this->contact_whatsapp;
         $setting->contact_hours = $this->contact_hours;
         $setting->contact_phone = $this->contact_phone;

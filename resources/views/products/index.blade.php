@@ -305,9 +305,9 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                         @foreach($products as $product)
-                            @include('components.product-card', ['product' => $product])
+                            @include('components.product-card-grid', ['product' => $product])
                         @endforeach
                     </div>
                     <div class="mt-8">

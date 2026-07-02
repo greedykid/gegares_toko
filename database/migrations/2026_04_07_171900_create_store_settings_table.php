@@ -43,6 +43,9 @@ return new class extends Migration
             $table->text('about_vision')->nullable();
             $table->json('about_mission')->nullable();
             $table->json('about_gallery')->nullable();
+            $table->string('about_gallery_badge')->nullable();
+            $table->string('about_gallery_title')->nullable();
+            $table->text('about_gallery_subtitle')->nullable();
 
             // Contact
             $table->string('contact_whatsapp')->nullable();

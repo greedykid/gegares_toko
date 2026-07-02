@@ -30,9 +30,19 @@
          x-data="{
             activeSlide: 0,
             slidesCount: {{ $featuredProducts->count() }},
-            next() { this.activeSlide = (this.activeSlide + 1) % this.slidesCount }
+            timer: null,
+            touchStartX: 0,
+            next() { this.activeSlide = (this.activeSlide + 1) % this.slidesCount },
+            prev() { this.activeSlide = (this.activeSlide - 1 + this.slidesCount) % this.slidesCount },
+            startAuto() { if (this.slidesCount > 1) this.timer = setInterval(() => this.next(), 5000) },
+            resetAuto() { clearInterval(this.timer); this.startAuto() },
+            onTouchStart(e) { this.touchStartX = e.changedTouches[0].screenX },
+            onTouchEnd(e) {
+                const dx = e.changedTouches[0].screenX - this.touchStartX;
+                if (Math.abs(dx) > 40) { dx < 0 ? this.next() : this.prev(); this.resetAuto(); }
+            }
          }"
-         x-init="setInterval(() => next(), 5000)">
+         x-init="startAuto()">
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
@@ -60,9 +70,10 @@
 
             {{-- Right: Slideshow --}}
             <div class="relative">
-                <div class="relative aspect-square sm:aspect-video lg:aspect-square max-w-md mx-auto">
+                <div class="group/hero relative aspect-square sm:aspect-video lg:aspect-square max-w-md mx-auto">
                     {{-- Carousel Frame --}}
-                    <div class="absolute inset-0 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="absolute inset-0 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 touch-pan-y select-none"
+                         @touchstart.passive="onTouchStart($event)" @touchend.passive="onTouchEnd($event)">
                         {{-- Slides --}}
                         @foreach($featuredProducts as $index => $product)
                             @php
@@ -95,10 +106,10 @@
                                     @endif
                                     
                                     {{-- Slide Caption --}}
-                                    <div class="absolute bottom-6 left-6 right-6 p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                                    <div class="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/75 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
                                         <div class="flex items-center justify-between gap-4">
                                             <span class="text-sm font-bold text-white tracking-tight">{{ $product->name }}</span>
-                                            <span class="text-[10px] font-black uppercase text-white/80 tracking-widest bg-primary-600 px-2 py-1 rounded">Lihat</span>
+                                            <span class="text-[10px] font-black uppercase text-white tracking-widest bg-primary-600 px-2 py-1 rounded">Lihat</span>
                                         </div>
                                     </div>
                                 </a>
@@ -106,10 +117,22 @@
                         @endforeach
                     </div>
 
+                    {{-- Prev / Next Buttons --}}
+                    <button x-show="slidesCount > 1" @click="prev(); resetAuto()" type="button"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-md hover:bg-white dark:hover:bg-slate-800 hover:scale-105 active:scale-95 opacity-100 lg:opacity-0 lg:group-hover/hero:opacity-100 transition-all duration-300"
+                            aria-label="Slide sebelumnya">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <button x-show="slidesCount > 1" @click="next(); resetAuto()" type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-md hover:bg-white dark:hover:bg-slate-800 hover:scale-105 active:scale-95 opacity-100 lg:opacity-0 lg:group-hover/hero:opacity-100 transition-all duration-300"
+                            aria-label="Slide berikutnya">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+
                     {{-- Navigation Dots --}}
                     <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                         @foreach($featuredProducts as $index => $product)
-                            <button @click="activeSlide = {{ $index }}" 
+                            <button @click="activeSlide = {{ $index }}; resetAuto()"
                                     class="w-6 h-6 flex items-center justify-center rounded-full focus:outline-none"
                                     aria-label="Pilih slide {{ $index + 1 }}">
                                 <span class="h-1.5 rounded-full transition-all duration-300"
@@ -166,10 +189,10 @@
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
             </a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             @foreach($featuredProducts as $index => $product)
                 <div class="reveal reveal-up delay-{{ ($index % 4 + 1) * 100 }}">
-                    @include('components.product-card', ['product' => $product])
+                    @include('components.product-card-grid', ['product' => $product])
                 </div>
             @endforeach
         </div>

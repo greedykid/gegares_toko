@@ -38,6 +38,9 @@ class StoreSetting extends Model
         'about_vision',
         'about_mission',
         'about_gallery',
+        'about_gallery_badge',
+        'about_gallery_title',
+        'about_gallery_subtitle',
 
         // Contact Content
         'contact_whatsapp',

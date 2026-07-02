@@ -366,6 +366,30 @@
                             <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Galeri Proses Produksi</span>
                         </div>
 
+                        {{-- Gallery Heading Texts --}}
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5 ml-1">Badge Galeri</label>
+                                    <input type="text" wire:model.defer="about_gallery_badge" placeholder="Galeri Kegiatan"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-bold text-sm">
+                                    @error('about_gallery_badge') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5 ml-1">Judul Galeri</label>
+                                    <input type="text" wire:model.defer="about_gallery_title" placeholder="Proses Produksi Kami"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-bold text-sm">
+                                    @error('about_gallery_title') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5 ml-1">Deskripsi Galeri</label>
+                                <textarea wire:model.defer="about_gallery_subtitle" rows="2" placeholder="Melihat langsung bagaimana jajanan pasar legendaris kami dibuat..."
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-semibold text-sm leading-relaxed"></textarea>
+                                @error('about_gallery_subtitle') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
                         {{-- Existing Gallery Images --}}
                         @if (!empty($about_gallery))
                             <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
