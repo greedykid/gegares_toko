@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\Log;
 
 class GeminiService
 {
-    protected string $apiKey;
+    protected ?string $apiKey;
     protected string $baseUrl;
     protected string $model;
 
     public function __construct()
     {
-        $this->apiKey = config('services.ai.key', env('AI_API_KEY'));
-        $this->baseUrl = config('services.ai.base_url', env('AI_BASE_URL', 'https://lite.koboillm.com/v1'));
-        $this->model = config('services.ai.model', env('AI_MODEL', 'gemini-3-flash-preview'));
+        // Read from config (not env() directly) so values survive config caching.
+        $this->apiKey = config('services.ai.key');
+        $this->baseUrl = config('services.ai.base_url', 'https://lite.koboillm.com/v1');
+        $this->model = config('services.ai.model', 'gemini-3-flash-preview');
     }
 
     /**
@@ -34,6 +35,11 @@ class GeminiService
         float $temperature = 0.7,
         int $maxTokens = 1024
     ): ?string {
+        if (empty($this->apiKey)) {
+            Log::error('AI Chat Error: AI_API_KEY is not configured (check .env and run config:cache).');
+            return 'Maaf, layanan asisten AI sedang tidak tersedia untuk sementara. Silakan coba lagi nanti ya, Kak!';
+        }
+
         try {
             $messages = [];
 
@@ -93,6 +99,11 @@ class GeminiService
      */
     public function analyzeImage(string $base64Image, string $prompt = "Identifikasi makanan di gambar ini. Apakah ini salah satu dari jajanan tradisional Indonesia? Jika ya, sebutkan namanya saja."): ?string
     {
+        if (empty($this->apiKey)) {
+            Log::error('AI Image Analysis Error: AI_API_KEY is not configured (check .env and run config:cache).');
+            return null;
+        }
+
         try {
             $response = Http::withToken($this->apiKey)
                 ->timeout(30)
