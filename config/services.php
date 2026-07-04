@@ -46,4 +46,13 @@ return [
         'secret' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    // AI chatbot (Gemini via OpenAI-compatible endpoint). Reading these through
+    // config() — instead of env() directly in the service — makes them survive
+    // `php artisan config:cache` in production.
+    'ai' => [
+        'key' => env('AI_API_KEY'),
+        'base_url' => env('AI_BASE_URL', 'https://lite.koboillm.com/v1'),
+        'model' => env('AI_MODEL', 'gemini-3-flash-preview'),
+    ],
+
 ];
