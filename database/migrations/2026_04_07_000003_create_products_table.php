@@ -22,6 +22,9 @@ return new class extends Migration
             $table->integer('rating_count')->default(0);
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes for featured/listing queries
+            $table->index('is_featured');
         });
     }
 

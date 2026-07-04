@@ -36,6 +36,14 @@
                     </svg>
                     <span>Kontak</span>
                 </button>
+                <button wire:click="setTab('footer')" type="button"
+                    class="shrink-0 lg:w-full flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2.5 lg:py-3 rounded-xl text-xs lg:text-sm font-bold uppercase tracking-wider transition-all cursor-pointer {{ $activeTab === 'footer' ? 'bg-primary-500 text-white shadow-md shadow-primary-500/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white' }}">
+                    <svg class="w-4.5 h-4.5 lg:w-5 lg:h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                    </svg>
+                    <span>Footer</span>
+                </button>
                 <div class="w-2 shrink-0 lg:hidden"></div>
             </div>
         </div>
@@ -518,6 +526,65 @@
                                     class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- 5. TAB: FOOTER --}}
+            @if ($activeTab === 'footer')
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide">Pengaturan Footer</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Mengatur logo metode pembayaran yang tampil di bagian bawah footer situs.</p>
+                    </div>
+
+                    {{-- Payment Method Logos Card (Footer) --}}
+                    <div class="bg-slate-50/40 dark:bg-slate-950/20 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 sm:p-6 space-y-4">
+                        <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800/60">
+                            <span class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-100/40 dark:border-emerald-900/30">
+                                <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                                </svg>
+                            </span>
+                            <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Logo Metode Pembayaran (Footer)</span>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-400 dark:text-slate-500">Logo yang tampil di bagian bawah footer situs (misal: BCA, GoPay, QRIS). Disarankan format PNG transparan. Kosongkan untuk memakai logo bawaan.</p>
+
+                        {{-- Existing Logos --}}
+                        @if (!empty($payment_logos))
+                            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4">
+                                @foreach ($payment_logos as $index => $path)
+                                    <div class="relative group aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-900 flex items-center justify-center p-3">
+                                        <img src="{{ asset('storage/' . $path) }}" class="max-w-full max-h-full object-contain" onerror="this.style.display='none'">
+                                        <div class="absolute inset-0 bg-black/30 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button type="button" wire:click="removePaymentLogo({{ $index }})"
+                                                class="absolute top-2 right-2 lg:relative lg:top-auto lg:right-auto p-2 rounded-xl bg-red-600/90 hover:bg-red-700 text-white transition-all transform hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+                                                title="Hapus Logo">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 italic">Belum ada logo diupload — footer memakai logo bawaan (BCA, GoPay, QRIS).</p>
+                        @endif
+
+                        {{-- Upload Area --}}
+                        <div class="relative w-full border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 bg-slate-50/20 dark:bg-slate-900/10 flex flex-col items-center justify-center text-center transition-colors">
+                            <input type="file" wire:model="new_payment_logos" multiple accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <svg class="w-8 h-8 text-slate-400 dark:text-slate-600 mb-2.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <span class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">Pilih atau Seret Logo Pembayaran</span>
+                            <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1">PNG/JPG, maksimal 1MB per file</span>
+
+                            <div wire:loading wire:target="new_payment_logos" class="mt-3 text-[11px] font-bold text-primary-600 dark:text-primary-400">Mengunggah...</div>
+                        </div>
+                        @error('new_payment_logos.*') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                 </div>
             @endif

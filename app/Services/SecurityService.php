@@ -2,11 +2,33 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
+
 class SecurityService
 {
     /**
+     * Render Markdown to safe HTML for display.
+     *
+     * Unlike the previous regex-based stripping, this escapes ALL raw HTML at
+     * the parser level (CommonMark `html_input => escape`) and refuses unsafe
+     * link protocols (e.g. javascript:). Markdown formatting such as **bold**,
+     * lists, and normal links still works — only embedded HTML/scripts are
+     * neutralised, which is far more robust than pattern matching.
+     */
+    public static function renderMarkdown(string $content): string
+    {
+        return Str::markdown($content, [
+            'html_input' => 'escape',
+            'allow_unsafe_links' => false,
+        ]);
+    }
+
+    /**
      * Sanitize a string to prevent XSS while allowing safe Markdown rendering.
      * We strip dangerous tags but keep the text for the Markdown parser.
+     *
+     * @deprecated Prefer renderMarkdown() which escapes HTML at the parser
+     * level. Kept as defense-in-depth for user input before storage.
      */
     public static function sanitizeMarkdown(string $content): string
     {

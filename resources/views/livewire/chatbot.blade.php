@@ -185,7 +185,7 @@
                                 </div>
                             @else
                                 <div class="text-sm leading-relaxed prose prose-sm dark:prose-invert">
-                                    {!! \Illuminate\Support\Str::markdown(\App\Services\SecurityService::sanitizeMarkdown($chat['content'])) !!}
+                                    {!! \App\Services\SecurityService::renderMarkdown($chat['content']) !!}
                                 </div>
 
                                 {{-- Product Cards --}}

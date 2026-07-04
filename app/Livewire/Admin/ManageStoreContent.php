@@ -44,6 +44,10 @@ class ManageStoreContent extends Component
     public $contact_phone;
     public $contact_email;
 
+    // Footer payment logos
+    public $payment_logos = [];
+    public $new_payment_logos = [];
+
     public function mount()
     {
         $setting = StoreSetting::first();
@@ -89,6 +93,8 @@ class ManageStoreContent extends Component
         $this->contact_hours = $setting->contact_hours ?? "Setiap Hari: 06:00 - 17:00 WIB\nPemesanan WhatsApp: 24 Jam";
         $this->contact_phone = $setting->contact_phone ?? '+62 812-3456-7890';
         $this->contact_email = $setting->contact_email ?? 'hello@gegares.com';
+
+        $this->payment_logos = $setting->payment_logos ?? [];
     }
 
     public function setTab($tab)
@@ -134,6 +140,18 @@ class ManageStoreContent extends Component
         }
     }
 
+    public function removePaymentLogo($index)
+    {
+        if (isset($this->payment_logos[$index])) {
+            $path = $this->payment_logos[$index];
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            }
+            unset($this->payment_logos[$index]);
+            $this->payment_logos = array_values($this->payment_logos);
+        }
+    }
+
     public function save()
     {
         // Validation rules
@@ -159,12 +177,15 @@ class ManageStoreContent extends Component
             'contact_phone' => 'required|string|max:20',
             'contact_email' => 'required|email|max:255',
             'new_gallery_images.*' => 'nullable|image|max:2048', // 2MB Max
+            'new_payment_logos.*' => 'nullable|image|max:1024', // 1MB Max
         ], [
             'faq_items.*.q.required' => 'Pertanyaan tidak boleh kosong.',
             'faq_items.*.a.required' => 'Jawaban tidak boleh kosong.',
             'about_mission.*.required' => 'Butir misi tidak boleh kosong.',
             'new_gallery_images.*.image' => 'File harus berupa gambar.',
             'new_gallery_images.*.max' => 'Ukuran gambar maksimal adalah 2MB.',
+            'new_payment_logos.*.image' => 'File harus berupa gambar.',
+            'new_payment_logos.*.max' => 'Ukuran logo maksimal adalah 1MB.',
         ]);
 
         // Process new gallery images
@@ -175,6 +196,15 @@ class ManageStoreContent extends Component
             }
             // Clear upload temp state
             $this->new_gallery_images = [];
+        }
+
+        // Process new payment method logos
+        if (!empty($this->new_payment_logos)) {
+            foreach ($this->new_payment_logos as $logo) {
+                $path = $logo->store('settings/payment_logos', 'public');
+                $this->payment_logos[] = $path;
+            }
+            $this->new_payment_logos = [];
         }
 
         // Persist setting record
@@ -199,6 +229,7 @@ class ManageStoreContent extends Component
         $setting->contact_hours = $this->contact_hours;
         $setting->contact_phone = $this->contact_phone;
         $setting->contact_email = $this->contact_email;
+        $setting->payment_logos = $this->payment_logos;
         $setting->save();
 
         $this->dispatch('toast', message: 'Pengaturan konten berhasil disimpan.', type: 'success');
