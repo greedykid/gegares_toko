@@ -546,10 +546,18 @@
             {{-- Bottom Footer --}}
             <div class="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors">
                 <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 transition-colors">&copy; {{ date('Y') }} Gegares. Semua hak cipta dilindungi.</p>
+                @php
+                    $paymentLogos = \App\Models\StoreSetting::first()?->payment_logos ?? [];
+                @endphp
                 <div class="flex items-center gap-6">
-                    <img src="{{ asset('images/bca.png') }}" alt="BCA" width="401" height="126" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:brightness-200 dark:contrast-150">
-                    <img src="{{ asset('images/gopay.png') }}" alt="Gopay" width="1280" height="326" class="h-3 w-auto hover:scale-110 transition-all duration-300 dark:invert">
-                    <img src="{{ asset('images/qris.png') }}" alt="QRIS" width="1280" height="486" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:invert">
+                    @forelse($paymentLogos as $logo)
+                        <img src="{{ asset('storage/' . $logo) }}" alt="Metode Pembayaran" class="h-5 w-auto max-w-24 object-contain hover:scale-110 transition-all duration-300" onerror="this.style.display='none'">
+                    @empty
+                        {{-- Default logos when none configured in store settings --}}
+                        <img src="{{ asset('images/bca.png') }}" alt="BCA" width="401" height="126" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:brightness-200 dark:contrast-150">
+                        <img src="{{ asset('images/gopay.png') }}" alt="Gopay" width="1280" height="326" class="h-3 w-auto hover:scale-110 transition-all duration-300 dark:invert">
+                        <img src="{{ asset('images/qris.png') }}" alt="QRIS" width="1280" height="486" class="h-4 w-auto hover:scale-110 transition-all duration-300 dark:invert">
+                    @endforelse
                 </div>
             </div>
         </div>

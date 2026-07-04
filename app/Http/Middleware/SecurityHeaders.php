@@ -18,7 +18,8 @@ class SecurityHeaders
 
         // Security headers
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-        $response->headers->set('X-XSS-Protection', '1; mode=block');
+        // Note: X-XSS-Protection is deprecated and ignored by modern browsers;
+        // the Content-Security-Policy below is the effective XSS defense.
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');

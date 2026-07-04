@@ -45,11 +45,15 @@ class StoreSetting extends Model
         // Contact Content
         'contact_whatsapp',
         'contact_hours',
+
+        // Footer
+        'payment_logos',
     ];
 
     protected $casts = [
         'faq_items' => 'array',
         'about_mission' => 'array',
         'about_gallery' => 'array',
+        'payment_logos' => 'array',
     ];
 }

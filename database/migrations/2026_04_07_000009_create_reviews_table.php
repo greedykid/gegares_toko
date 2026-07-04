@@ -19,6 +19,10 @@ return new class extends Migration
             $table->boolean('is_approved')->default(false);
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes for admin moderation filtering & sorting
+            $table->index('is_approved');
+            $table->index('created_at');
         });
     }
 
