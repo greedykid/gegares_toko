@@ -2,7 +2,7 @@
     @toggle-cart.window="isOpen = !isOpen"
     x-effect="
         document.querySelector('main') && (isOpen ? document.querySelector('main').classList.add('cart-open-blur') : document.querySelector('main').classList.remove('cart-open-blur'));
-        document.body && (isOpen ? document.body.classList.add('overflow-hidden') : document.body.classList.remove('overflow-hidden'));
+        document.documentElement && (isOpen ? document.documentElement.classList.add('overflow-hidden') : document.documentElement.classList.remove('overflow-hidden'));
     "
     x-cloak
     class="relative z-50">
