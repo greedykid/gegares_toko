@@ -8,30 +8,40 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\OrderItem;
 use App\Models\Review;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $totalSales = Order::where('payment_status', 'paid')->sum('total');
-        $totalUsers = User::where('role', 'user')->count();
-        $totalOrders = Order::count();
-        $pendingOrders = Order::whereIn('status', ['pending', 'awaiting_payment'])->count();
-        $lowStockProducts = Product::lowStock()->with('category')->get();
+        $summary = Cache::remember('admin:dashboard:summary', now()->addMinutes(5), function () {
+            return [
+                'totalSales' => Order::where('payment_status', 'paid')->sum('total'),
+                'totalUsers' => User::where('role', 'user')->count(),
+                'totalOrders' => Order::count(),
+                'pendingOrders' => Order::whereIn('status', ['pending', 'awaiting_payment'])->count(),
+            ];
+        });
+
+        $lowStockProducts = Cache::remember('admin:dashboard:low_stock_products', now()->addMinutes(5), function () {
+            return Product::lowStock()->with('category')->get();
+        });
+
         $recentOrders = Order::with('user')->latest()->take(5)->get();
         $recentReviews = Review::with(['user', 'product'])->latest()->take(5)->get();
 
         // Revenue Chart Data (Last 30 Days)
         $days = 30;
-        $revenueData = Order::where('payment_status', 'paid')
-            ->where('created_at', '>=', now()->subDays($days))
-            ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->pluck('revenue', 'date')
-            ->toArray();
+        $revenueData = Cache::remember('admin:dashboard:revenue_30_days', now()->addMinutes(5), function () use ($days) {
+            return Order::where('payment_status', 'paid')
+                ->where('created_at', '>=', now()->subDays($days))
+                ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get()
+                ->pluck('revenue', 'date')
+                ->toArray();
+        });
 
         $chartLabels = [];
         $chartData = [];
@@ -43,26 +53,27 @@ class DashboardController extends Controller
         }
 
         // Best Sellers (Top 5)
-        $bestSellers = OrderItem::query()
-            ->whereHas('order', function($q) {
-                $q->where('payment_status', 'paid');
-            })
-            ->selectRaw('product_name, SUM(quantity) as total_qty')
-            ->groupBy('product_id', 'product_name')
-            ->orderByDesc('total_qty')
-            ->take(5)
-            ->get();
+        $bestSellers = Cache::remember('admin:dashboard:best_sellers', now()->addMinutes(5), function () {
+            return OrderItem::query()
+                ->whereHas('order', function($q) {
+                    $q->where('payment_status', 'paid');
+                })
+                ->selectRaw('product_name, SUM(quantity) as total_qty')
+                ->groupBy('product_id', 'product_name')
+                ->orderByDesc('total_qty')
+                ->take(5)
+                ->get();
+        });
 
         $bestSellerLabels = $bestSellers->pluck('product_name')->toArray();
         $bestSellerData = $bestSellers->pluck('total_qty')->map(fn($val) => (int) $val)->toArray();
 
         return view('admin.dashboard', compact(
-            'totalSales', 'totalUsers', 'totalOrders',
-            'pendingOrders', 'lowStockProducts', 'recentOrders',
+            'summary', 'lowStockProducts', 'recentOrders',
             'chartLabels', 'chartData',
             'bestSellerLabels', 'bestSellerData',
             'recentReviews'
-        ));
+        ))->with($summary);
     }
 
     public function storeSettings()
