@@ -54,12 +54,13 @@ class ReviewController extends Controller
             $query->where('is_approved', $request->is_approved === '1');
         }
 
+        // Range on raw timestamp (index-friendly) instead of whereDate().
         if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
+            $query->where('created_at', '>=', $request->from_date . ' 00:00:00');
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
+            $query->where('created_at', '<=', $request->to_date . ' 23:59:59');
         }
 
         if ($sort === 'created_at') {
@@ -68,11 +69,20 @@ class ReviewController extends Controller
             $query->orderBy($sort, $direction);
         }
 
-        // 3. Global Statistics (Unfiltered)
-        $totalReviews = Review::count();
-        $pendingReviews = Review::where('is_approved', false)->count();
-        $avgRating = Review::avg('rating') ?? 0;
-        $photoReviews = Review::whereNotNull('image')->count();
+        // 3. Global Statistics (Unfiltered) — cached briefly since they scan the
+        // whole table and are shown as an at-a-glance overview.
+        $stats = \Illuminate\Support\Facades\Cache::remember('admin.reviews.stats', 60, function () {
+            return [
+                'total' => Review::count(),
+                'pending' => Review::where('is_approved', false)->count(),
+                'avg' => Review::avg('rating') ?? 0,
+                'photo' => Review::whereNotNull('image')->count(),
+            ];
+        });
+        $totalReviews = $stats['total'];
+        $pendingReviews = $stats['pending'];
+        $avgRating = $stats['avg'];
+        $photoReviews = $stats['photo'];
 
         $reviews = $query->paginate(15)->withQueryString();
 

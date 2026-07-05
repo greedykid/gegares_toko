@@ -13,6 +13,14 @@ class Product extends Model
 {
     use SoftDeletes, HasFactory;
 
+    protected static function booted(): void
+    {
+        // Invalidate storefront/chatbot/search caches when a product changes.
+        $flush = fn () => \App\Support\StorefrontCache::forget(\App\Support\StorefrontCache::CATALOG_KEYS);
+        static::saved($flush);
+        static::deleted($flush);
+        static::restored($flush);
+    }
 
     public function variants(): HasMany
     {

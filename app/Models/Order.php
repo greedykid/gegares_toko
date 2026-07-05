@@ -33,6 +33,11 @@ class Order extends Model
 
     protected static function booted()
     {
+        // Invalidate dashboard metrics & best-seller caches on any order change.
+        $flushCache = fn () => \App\Support\StorefrontCache::forget(\App\Support\StorefrontCache::ORDER_KEYS);
+        static::saved($flushCache);
+        static::deleted($flushCache);
+
         static::updated(function ($order) {
             // Check if status transitioned to 'paid'
             if ($order->wasChanged('status') && $order->status === 'paid') {
