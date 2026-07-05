@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $settings = \App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting();
+    $settings = new \Illuminate\Support\Fluent(\Illuminate\Support\Facades\Cache::remember('store_settings', 86400, fn() => (\App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting())->toArray()));
     
     $aboutTitle = $settings->about_title ?? 'Tentang <span class="text-primary-600 dark:text-primary-400">Gegares</span>';
     $aboutSubtitle = $settings->about_subtitle ?? 'Menghadirkan kelezatan jajanan pasar tradisional dengan kualitas premium dan resep autentik rumahan.';

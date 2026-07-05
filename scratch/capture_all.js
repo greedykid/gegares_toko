@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 
-const screenshotsDir = 'C:\\Users\\Rizki Arbiansyah\\.gemini\\antigravity-ide\\brain\\8805930e-eb69-4100-a1ad-b6728d305b68\\scratch\\screenshots';
+const screenshotsDir = 'C:\\Users\\Rizki Arbiansyah\\.gemini\\antigravity-ide\\brain\\3a9b7d31-b3c4-40bb-b2ae-c8d7823539f6\\scratch\\screenshots';
 
 if (!fs.existsSync(screenshotsDir)) {
     fs.mkdirSync(screenshotsDir, { recursive: true });
