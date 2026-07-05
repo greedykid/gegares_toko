@@ -51,6 +51,9 @@ return new class extends Migration
             $table->string('contact_whatsapp')->nullable();
             $table->text('contact_hours')->nullable();
 
+            // Footer payment method logos (array of image paths)
+            $table->json('payment_logos')->nullable();
+
             $table->timestamps();
         });
     }

@@ -37,12 +37,11 @@ class ReviewController extends Controller
         // 2. Filtering Logic
         if ($request->filled('search')) {
             $q = $request->search;
-            $query->where(function($query) use ($q) {
-                $query->whereHas('product', function($query) use ($q) {
-                    $query->where('name', 'LIKE', "%$q%");
-                })->orWhereHas('user', function($query) use ($q) {
-                    $query->where('name', 'LIKE', "%$q%");
-                });
+            $productIds = \App\Models\Product::where('name', 'LIKE', "%$q%")->pluck('id');
+            $userIds = \App\Models\User::where('name', 'LIKE', "%$q%")->pluck('id');
+            $query->where(function($query) use ($productIds, $userIds) {
+                $query->whereIn('product_id', $productIds)
+                      ->orWhereIn('user_id', $userIds);
             });
         }
 
@@ -54,12 +53,13 @@ class ReviewController extends Controller
             $query->where('is_approved', $request->is_approved === '1');
         }
 
+        // Range on raw timestamp (index-friendly) instead of whereDate().
         if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
+            $query->where('created_at', '>=', $request->from_date . ' 00:00:00');
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
+            $query->where('created_at', '<=', $request->to_date . ' 23:59:59');
         }
 
         if ($sort === 'created_at') {
@@ -68,11 +68,27 @@ class ReviewController extends Controller
             $query->orderBy($sort, $direction);
         }
 
-        // 3. Global Statistics (Unfiltered)
-        $totalReviews = Review::count();
-        $pendingReviews = Review::where('is_approved', false)->count();
-        $avgRating = Review::avg('rating') ?? 0;
-        $photoReviews = Review::whereNotNull('image')->count();
+        // 3. Global Statistics (Unfiltered) — cached briefly since they scan the
+        // whole table and are shown as an at-a-glance overview.
+        $stats = \Illuminate\Support\Facades\Cache::remember('admin.reviews.stats', 60, function () {
+            $raw = Review::selectRaw("
+                count(*) as total,
+                sum(case when is_approved = 0 then 1 else 0 end) as pending,
+                avg(rating) as avg_rating,
+                sum(case when image is not null then 1 else 0 end) as photo
+            ")->first();
+
+            return [
+                'total' => $raw->total ?? 0,
+                'pending' => $raw->pending ?? 0,
+                'avg' => $raw->avg_rating ?? 0,
+                'photo' => $raw->photo ?? 0,
+            ];
+        });
+        $totalReviews = $stats['total'];
+        $pendingReviews = $stats['pending'];
+        $avgRating = $stats['avg'];
+        $photoReviews = $stats['photo'];
 
         $reviews = $query->paginate(15)->withQueryString();
 

@@ -37,6 +37,11 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes for admin filtering, sorting, and dashboard aggregation
+            $table->index(['status', 'created_at']);
+            $table->index('payment_status');
+            $table->index('created_at');
         });
     }
 

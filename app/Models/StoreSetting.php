@@ -45,11 +45,21 @@ class StoreSetting extends Model
         // Contact Content
         'contact_whatsapp',
         'contact_hours',
+
+        // Footer
+        'payment_logos',
     ];
 
     protected $casts = [
         'faq_items' => 'array',
         'about_mission' => 'array',
         'about_gallery' => 'array',
+        'payment_logos' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget('store_settings'));
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget('store_settings'));
+    }
 }

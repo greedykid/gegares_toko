@@ -34,10 +34,16 @@ class CategoryController extends Controller
         }
 
         $categories = $query->paginate(15)->withQueryString();
-        $totalCategories = Category::count();
+        $categoryStats = Category::selectRaw("
+            count(*) as total,
+            sum(case when is_active = 1 then 1 else 0 end) as active_count,
+            sum(case when is_active = 0 then 1 else 0 end) as inactive_count
+        ")->first();
+
+        $totalCategories = $categoryStats->total ?? 0;
         $totalProductsInCategories = \App\Models\Product::count();
-        $activeCategories = Category::active()->count();
-        $inactiveCategories = Category::where('is_active', false)->count();
+        $activeCategories = $categoryStats->active_count ?? 0;
+        $inactiveCategories = $categoryStats->inactive_count ?? 0;
 
         return view('admin.categories.index', compact(
             'categories', 

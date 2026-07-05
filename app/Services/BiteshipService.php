@@ -24,6 +24,14 @@ class BiteshipService
 
     public function searchArea(string $query): array
     {
+        // Area lookups are static reference data; cache successful results so
+        // typing in the address autocomplete doesn't hit the API every keystroke.
+        $cacheKey = 'biteship_area_' . md5(mb_strtolower(trim($query)));
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
         try {
             $response = Http::withToken($this->apiKey)
                 ->timeout($this->timeout)
@@ -35,12 +43,16 @@ class BiteshipService
 
             if ($response->successful()) {
                 $areas = $response->json('areas', []);
-                
+
                 // Filter only for DKI Jakarta
-                return collect($areas)->filter(function ($area) {
+                $result = collect($areas)->filter(function ($area) {
                     $province = $area['administrative_division_level_1_name'] ?? '';
                     return stripos($province, 'DKI Jakarta') !== false;
                 })->values()->toArray();
+
+                // Only cache successful lookups (never cache API failures).
+                Cache::put($cacheKey, $result, now()->addDay());
+                return $result;
             }
 
             Log::warning('Biteship searchArea failed: ' . $response->body());
@@ -110,13 +122,23 @@ class BiteshipService
 
     public function trackShipment(string $trackingId, string $courierId): ?array
     {
+        // Short-lived cache so repeated tracking polls (user + admin) don't hit
+        // the API every few seconds; webhooks still update status in real time.
+        $cacheKey = 'biteship_track_' . $trackingId . '_' . strtolower($courierId);
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
         try {
             $response = Http::withToken($this->apiKey)
                 ->timeout($this->timeout)
                 ->get("{$this->baseUrl}/trackings/{$trackingId}/couriers/{$courierId}");
 
             if ($response->successful()) {
-                return $response->json();
+                $data = $response->json();
+                Cache::put($cacheKey, $data, 60);
+                return $data;
             }
 
             return null;

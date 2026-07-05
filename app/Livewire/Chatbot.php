@@ -1037,52 +1037,62 @@ CARA PESAN:
      */
     protected function getProductWhitelist(): string
     {
-        $products = Product::whereHas('category', fn($q) => $q->where('is_active', true))->pluck('name');
+        // Product names change rarely; cache the grounding whitelist so it is not
+        // rebuilt on every chat message.
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.whitelist', 300, function () {
+            $products = Product::whereHas('category', fn($q) => $q->where('is_active', true))->pluck('name');
 
-        if ($products->isEmpty()) {
-            return "(Katalog kosong)";
-        }
+            if ($products->isEmpty()) {
+                return "(Katalog kosong)";
+            }
 
-        $list = "";
-        foreach ($products as $i => $name) {
-            $list .= ($i + 1) . ". {$name}\n";
-        }
-        return $list;
+            $list = "";
+            foreach ($products as $i => $name) {
+                $list .= ($i + 1) . ". {$name}\n";
+            }
+            return $list;
+        });
     }
 
     protected function getProductCatalog(): string
     {
-        $products = Product::with(['category', 'reviews' => function($q) {
-            $q->where('is_approved', true);
-        }])->whereHas('category', function($q) {
-            $q->where('is_active', true);
-        })->get();
+        // The AI catalog payload is expensive to build (products + approved
+        // reviews). Cache briefly; add-to-cart still validates live stock, so a
+        // short staleness window here is safe.
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.catalog', 1800, function () {
+            $products = Product::with('category')
+                ->whereHas('category', function($q) {
+                    $q->where('is_active', true);
+                })
+                ->take(200)
+                ->get();
 
-        if ($products->isEmpty()) {
-            return "Katalog sedang kosong.";
-        }
+            if ($products->isEmpty()) {
+                return "Katalog sedang kosong.";
+            }
 
-        $catalog = "";
-        $grouped = $products->groupBy(fn($p) => $p->category->name ?? 'Lainnya');
+            $catalog = "";
+            $grouped = $products->groupBy(fn($p) => $p->category->name ?? 'Lainnya');
 
-        foreach ($grouped as $categoryName => $categoryProducts) {
-            $catalog .= "\n## Kategori: {$categoryName}\n";
-            foreach ($categoryProducts as $p) {
-                $ratingAvg = $p->reviews->avg('rating');
-                $ratingCount = $p->reviews->count();
-                $ratingStr = $ratingCount > 0 ? sprintf("⭐ %.1f (%d ulasan)", $ratingAvg, $ratingCount) : "Belum ada ulasan";
-                $stockStatus = $p->stock <= 0 ? '❌ HABIS' : ($p->stock < 5 ? "⚠️ Sisa {$p->stock}" : "✅ Tersedia ({$p->stock})");
-                $featured = $p->is_featured ? ' 🔥 FEATURED' : '';
-                $desc = mb_substr($p->description ?? '', 0, 200);
-                
-                $catalog .= "- **{$p->name}**: {$p->formatted_price} | Stok: {$stockStatus} | Rating: {$ratingStr}{$featured}\n";
-                if (!empty($desc)) {
-                    $catalog .= "  Deskripsi: {$desc}\n";
+            foreach ($grouped as $categoryName => $categoryProducts) {
+                $catalog .= "\n## Kategori: {$categoryName}\n";
+                foreach ($categoryProducts as $p) {
+                    $ratingAvg = $p->rating_avg;
+                    $ratingCount = $p->rating_count;
+                    $ratingStr = $ratingCount > 0 ? sprintf("⭐ %.1f (%d ulasan)", $ratingAvg, $ratingCount) : "Belum ada ulasan";
+                    $stockStatus = $p->stock <= 0 ? '❌ HABIS' : ($p->stock < 5 ? "⚠️ Sisa {$p->stock}" : "✅ Tersedia ({$p->stock})");
+                    $featured = $p->is_featured ? ' 🔥 FEATURED' : '';
+                    $desc = mb_substr($p->description ?? '', 0, 200);
+
+                    $catalog .= "- **{$p->name}**: {$p->formatted_price} | Stok: {$stockStatus} | Rating: {$ratingStr}{$featured}\n";
+                    if (!empty($desc)) {
+                        $catalog .= "  Deskripsi: {$desc}\n";
+                    }
                 }
             }
-        }
 
-        return $catalog;
+            return $catalog;
+        });
     }
 
     /**
@@ -1090,30 +1100,38 @@ CARA PESAN:
      */
     protected function getBestSellers(): string
     {
-        $bestSellers = OrderItem::query()
-            ->whereHas('order', function($q) {
-                $q->where('payment_status', 'paid');
-            })
-            ->selectRaw('product_name, product_id, SUM(quantity) as total_qty')
-            ->groupBy('product_id', 'product_name')
-            ->orderByDesc('total_qty')
-            ->take(5)
-            ->get();
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.bestsellers', 3600, function () {
+            $bestSellers = OrderItem::query()
+                ->whereHas('order', function($q) {
+                    $q->where('payment_status', 'paid');
+                })
+                ->selectRaw('product_name, product_id, SUM(quantity) as total_qty')
+                ->groupBy('product_id', 'product_name')
+                ->orderByDesc('total_qty')
+                ->take(5)
+                ->get();
 
-        if ($bestSellers->isEmpty()) {
-            return "Belum ada data penjualan.";
-        }
+            if ($bestSellers->isEmpty()) {
+                return "Belum ada data penjualan.";
+            }
 
-        $list = "";
-        $rank = 1;
-        foreach ($bestSellers as $item) {
-            $product = Product::find($item->product_id);
-            $price = $product ? $product->formatted_price : 'N/A';
-            $list .= "{$rank}. **{$item->product_name}** — Terjual {$item->total_qty} porsi ({$price})\n";
-            $rank++;
-        }
+            // Batch-load prices for all best-sellers in one query (avoids N+1) selecting only needed columns.
+            $prices = Product::whereIn('id', $bestSellers->pluck('product_id'))
+                ->select('id', 'name', 'price', 'slug')
+                ->get()
+                ->keyBy('id');
 
-        return $list;
+            $list = "";
+            $rank = 1;
+            foreach ($bestSellers as $item) {
+                $product = $prices->get($item->product_id);
+                $price = $product ? 'Rp ' . number_format((float)$product->price, 0, ',', '.') : 'N/A';
+                $list .= "{$rank}. **{$item->product_name}** — Terjual {$item->total_qty} porsi ({$price})\n";
+                $rank++;
+            }
+
+            return $list;
+        });
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -1243,20 +1261,37 @@ CARA PESAN:
         }
 
         // ── 1. Find products mentioned by AI ──
-        $products = Product::all();
-        $foundProducts = [];
- 
-        foreach ($products as $product) {
+        $cachedProducts = \Illuminate\Support\Facades\Cache::remember('products.for_matching', 300, function() {
+            return Product::select('id', 'name', 'price', 'stock', 'image', 'slug')->get()->toArray();
+        });
+
+        $matchedProducts = [];
+        foreach ($cachedProducts as $p) {
             // Only match if the AI strictly used the [[Product Name]] format
-            if (preg_match("/\[\[" . preg_quote($product->name, '/') . "\]\]/i", $aiText)) {
+            if (preg_match("/\[\[" . preg_quote($p['name'], '/') . "\]\]/i", $aiText)) {
+                $matchedProducts[] = $p;
+            }
+        }
+
+        $foundProducts = [];
+        if (!empty($matchedProducts)) {
+            $wishlistedIds = [];
+            if (Auth::check()) {
+                $wishlistedIds = \App\Models\Wishlist::where('user_id', Auth::id())
+                    ->whereIn('product_id', array_column($matchedProducts, 'id'))
+                    ->pluck('product_id')
+                    ->toArray();
+            }
+
+            foreach ($matchedProducts as $p) {
                 $foundProducts[] = [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->formatted_price,
-                    'stock' => $product->stock,
-                    'image' => $product->image ? asset('storage/' . $product->image) : null,
-                    'url' => route('products.show', $product->slug),
-                    'inWishlist' => Auth::check() ? \App\Models\Wishlist::where('user_id', Auth::id())->where('product_id', $product->id)->exists() : false,
+                    'id' => $p['id'],
+                    'name' => $p['name'],
+                    'price' => 'Rp ' . number_format((float)$p['price'], 0, ',', '.'),
+                    'stock' => $p['stock'],
+                    'image' => $p['image'] ? asset('storage/' . $p['image']) : null,
+                    'url' => route('products.show', $p['slug']),
+                    'inWishlist' => in_array($p['id'], $wishlistedIds),
                 ];
             }
         }

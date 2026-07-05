@@ -64,20 +64,21 @@ class ManageAddresses extends Component
     public function updatedAddressSearchQuery()
     {
         if (strlen($this->addressSearchQuery) > 3) {
-            $response = Http::withHeaders([
-                'User-Agent' => 'GegaresEcommerce/1.0 (contact@gegares.com)'
-            ])->get('https://nominatim.openstreetmap.org/search', [
-                'q' => $this->addressSearchQuery,
-                'format' => 'json',
-                'viewbox' => '106.685,-6.107,106.973,-6.370',
-                'bounded' => 1,
-                'limit' => 5,
-                'addressdetails' => 1
-            ]);
+            $cacheKey = 'address_search_' . md5($this->addressSearchQuery);
+            $this->addressSearchResults = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function() {
+                $response = Http::withHeaders([
+                    'User-Agent' => 'GegaresEcommerce/1.0 (contact@gegares.com)'
+                ])->get('https://nominatim.openstreetmap.org/search', [
+                    'q' => $this->addressSearchQuery,
+                    'format' => 'json',
+                    'viewbox' => '106.685,-6.107,106.973,-6.370',
+                    'bounded' => 1,
+                    'limit' => 5,
+                    'addressdetails' => 1
+                ]);
 
-            if ($response->successful()) {
-                $this->addressSearchResults = $response->json();
-            }
+                return $response->successful() ? $response->json() : [];
+            });
         } else {
             $this->addressSearchResults = [];
         }

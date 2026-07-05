@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
+use App\Notifications\QueuedResetPassword as ResetPasswordNotification;
 use Tests\TestCase;
 
 class ForgotPasswordTest extends TestCase

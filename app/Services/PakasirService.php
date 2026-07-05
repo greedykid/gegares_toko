@@ -128,7 +128,9 @@ class PakasirService
                 return $order;
             }
 
-            $transaction = $this->fetchCompletedTransaction($order);
+            // Non-blocking single attempt on the polling path (the client polls
+            // again shortly, and the webhook remains the authoritative path).
+            $transaction = $this->fetchCompletedTransaction($order, false);
 
             if ($transaction && (int) ($transaction['amount'] ?? 0) === (int) $order->total) {
                 $this->markOrderPaid($order, $transaction['payment_method'] ?? 'qris', $transaction['completed_at'] ?? null);
@@ -149,7 +151,7 @@ class PakasirService
      * @param Order $order
      * @return array|null The transaction array when status is 'completed', otherwise null.
      */
-    protected function fetchCompletedTransaction(Order $order): ?array
+    protected function fetchCompletedTransaction(Order $order, bool $withRetry = true): ?array
     {
         $apiKey = config('pakasir.api_key');
         if (!$apiKey) {
@@ -158,7 +160,9 @@ class PakasirService
 
         $slug = config('pakasir.project_slug', 'gegares');
         $orderId = $order->pakasir_order_id ?: $this->getPakasirOrderId($order->order_number);
-        $maxAttempts = 2;
+        // Webhook confirmation retries to absorb QRIS settlement lag; the polling
+        // sync uses a single non-blocking attempt to avoid freezing the UI.
+        $maxAttempts = $withRetry ? 2 : 1;
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             $response = Http::get('https://app.pakasir.com/api/transactiondetail', [

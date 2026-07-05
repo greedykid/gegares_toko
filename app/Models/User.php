@@ -27,6 +27,14 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Send the password reset notification via the queue (non-blocking).
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\QueuedResetPassword($token));
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

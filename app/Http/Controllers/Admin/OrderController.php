@@ -23,10 +23,17 @@ class OrderController extends Controller
         $query = $this->getOrderQuery($request);
 
         // 3. Statistics Calculation (Global Stats)
-        $totalOrders = Order::count();
-        $activeOrders = Order::whereIn('status', ['paid', 'processing', 'shipped'])->count();
-        $completedOrders = Order::where('status', 'completed')->count();
-        $totalRevenue = Order::where('status', 'completed')->sum('total');
+        $stats = Order::selectRaw("
+            count(*) as total,
+            sum(case when status in ('paid', 'processing', 'shipped') then 1 else 0 end) as active,
+            sum(case when status = 'completed' then 1 else 0 end) as completed,
+            sum(case when status = 'completed' then total else 0 end) as revenue
+        ")->first();
+
+        $totalOrders = $stats->total ?? 0;
+        $activeOrders = $stats->active ?? 0;
+        $completedOrders = $stats->completed ?? 0;
+        $totalRevenue = $stats->revenue ?? 0;
 
         $orders = $query->paginate(15)->withQueryString();
 
@@ -35,37 +42,39 @@ class OrderController extends Controller
 
     public function exportCsv(Request $request)
     {
-        $orders = $this->getOrderQuery($request)->get();
-        
         $filename = "laporan-pesanan-" . now()->format('Y-m-d-His') . ".csv";
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
 
-        $callback = function() use ($orders) {
+        $query = $this->getOrderQuery($request)->with(['user', 'items']);
+
+        $callback = function() use ($query) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['No. Pesanan', 'Tanggal', 'Pelanggan', 'Email', 'Items', 'Subtotal', 'Ongkir', 'Diskon', 'Total', 'Status', 'Pembayaran']);
 
-            foreach ($orders as $order) {
-                $items = $order->items->map(function($item) {
-                    return $item->product_name . ($item->variant_name ? " [{$item->variant_name}]" : "") . " (x{$item->quantity})";
-                })->implode('; ');
+            $query->chunk(100, function($orders) use ($file) {
+                foreach ($orders as $order) {
+                    $items = $order->items->map(function($item) {
+                        return $item->product_name . ($item->variant_name ? " [{$item->variant_name}]" : "") . " (x{$item->quantity})";
+                    })->implode('; ');
 
-                fputcsv($file, [
-                    $order->order_number,
-                    $order->created_at->format('d-m-Y H:i'),
-                    $order->user->name ?? '-',
-                    $order->user->email ?? '-',
-                    $items,
-                    (float)$order->subtotal,
-                    (float)$order->shipping_cost,
-                    (float)($order->discount_amount ?? 0),
-                    (float)$order->total,
-                    $order->status_label,
-                    $order->payment_status
-                ]);
-            }
+                    fputcsv($file, [
+                        $order->order_number,
+                        $order->created_at->format('d-m-Y H:i'),
+                        $order->user->name ?? '-',
+                        $order->user->email ?? '-',
+                        $items,
+                        (float)$order->subtotal,
+                        (float)$order->shipping_cost,
+                        (float)($order->discount_amount ?? 0),
+                        (float)$order->total,
+                        $order->status_label,
+                        $order->payment_status
+                    ]);
+                }
+            });
             fclose($file);
         };
 
@@ -74,11 +83,11 @@ class OrderController extends Controller
 
     public function report(Request $request)
     {
-        $orders = $this->getOrderQuery($request)->get();
+        $orders = $this->getOrderQuery($request)
+            ->with(['user', 'items.product', 'address'])
+            ->get();
+            
         $totalRevenue = $orders->where('status', 'completed')->sum('total');
-        
-        // Load relationships needed for the report
-        $orders->load(['user', 'items.product', 'address']);
 
         return view('admin.orders.report', compact('orders', 'totalRevenue'));
     }
@@ -99,15 +108,16 @@ class OrderController extends Controller
             $direction = 'desc';
         }
 
-        $query = Order::with(['user', 'address', 'items.product']);
+        // Items are only needed by CSV export / printable report (added there),
+        // not by the list view — so keep the base list query lean.
+        $query = Order::with(['user', 'address']);
 
         if ($request->filled('search')) {
             $q = $request->search;
-            $query->where(function($query) use ($q) {
+            $userIds = \App\Models\User::where('name', 'LIKE', "%$q%")->pluck('id');
+            $query->where(function($query) use ($q, $userIds) {
                 $query->where('order_number', 'LIKE', "%$q%")
-                      ->orWhereHas('user', function($query) use ($q) {
-                          $query->where('name', 'LIKE', "%$q%");
-                      });
+                      ->orWhereIn('user_id', $userIds);
             });
         }
 
@@ -119,12 +129,14 @@ class OrderController extends Controller
             $query->where('payment_status', $request->payment_status);
         }
 
+        // Use a range on the raw timestamp instead of whereDate() so the
+        // created_at index can be used (whereDate wraps the column in DATE()).
         if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
+            $query->where('created_at', '>=', $request->from_date . ' 00:00:00');
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
+            $query->where('created_at', '<=', $request->to_date . ' 23:59:59');
         }
 
         if ($sort === 'created_at') {

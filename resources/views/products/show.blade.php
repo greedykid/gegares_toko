@@ -414,9 +414,9 @@
     @if($relatedProducts->count())
         <section class="mt-16 lg:mt-20">
             <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-6">Produk Serupa</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-5">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
                 @foreach($relatedProducts as $rp)
-                    @include('components.product-card', ['product' => $rp])
+                    @include('components.product-card-grid', ['product' => $rp])
                 @endforeach
             </div>
         </section>

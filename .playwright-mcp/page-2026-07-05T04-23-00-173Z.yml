@@ -1,0 +1,334 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Gegares Logo gegares" [ref=e6] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000
+          - img "Gegares Logo" [ref=e8]
+          - generic [ref=e9]: gegares
+        - generic [ref=e10]:
+          - link "Beranda" [ref=e11] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000
+            - generic [ref=e12]: Beranda
+          - link "Produk" [ref=e14] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/products
+            - generic [ref=e15]: Produk
+          - link "Tentang" [ref=e16] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/about
+            - generic [ref=e17]: Tentang
+          - link "Kontak" [ref=e18] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/contact
+            - generic [ref=e19]: Kontak
+      - generic [ref=e20]:
+        - button "Ganti Tema" [ref=e21]:
+          - img [ref=e22]
+        - generic [ref=e24]:
+          - link "Masuk" [ref=e25] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/login
+          - link "Daftar" [ref=e26] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/register
+  - button "Tanya AI Chatbot" [ref=e28]:
+    - generic [ref=e31]:
+      - img [ref=e32]
+      - img [ref=e34]
+  - main [ref=e36]:
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - paragraph [ref=e41]: Jajanan Pasar Tradisional
+        - heading "Rasa Autentik, Langsung ke Rumah" [level=1] [ref=e42]:
+          - text: Rasa Autentik,
+          - text: Langsung ke Rumah
+        - paragraph [ref=e43]: Nikmati kelezatan jajanan pasar pilihan yang dibuat segar setiap hari selagi hangat. Dari klepon manis hingga risoles yang gurih renyah.
+        - generic [ref=e44]:
+          - link "Jelajahi Menu" [ref=e45] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/products
+            - text: Jelajahi Menu
+            - img [ref=e46]
+          - link "Tentang Kami" [ref=e48] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/about
+      - generic [ref=e50]:
+        - link "Es Cendol Durian Es Cendol Durian Lihat" [ref=e53] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products/es-cendol-durian
+          - generic [ref=e54]:
+            - img [ref=e55]
+            - generic [ref=e57]: Es Cendol Durian
+          - generic [ref=e59]:
+            - generic [ref=e60]: Es Cendol Durian
+            - generic [ref=e61]: Lihat
+        - button "Slide sebelumnya" [ref=e62]:
+          - img [ref=e63]
+        - button "Slide berikutnya" [ref=e65]:
+          - img [ref=e66]
+        - generic [ref=e68]:
+          - button "Pilih slide 1" [ref=e69]
+          - button "Pilih slide 2" [ref=e71]
+          - button "Pilih slide 3" [ref=e73]
+          - button "Pilih slide 4" [ref=e75]
+    - generic [ref=e78]:
+      - generic [ref=e79]:
+        - paragraph [ref=e80]: Kategori
+        - heading "Pilih Jajanan Favorit" [level=2] [ref=e81]
+      - generic [ref=e82]:
+        - link "Kue Basah 11 produk" [ref=e83] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products?category=kue-basah
+          - img [ref=e86]
+          - heading "Kue Basah" [level=3] [ref=e88]
+          - generic [ref=e89]: 11 produk
+        - link "Kue Kering 7 produk" [ref=e90] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products?category=kue-kering
+          - img [ref=e93]
+          - heading "Kue Kering" [level=3] [ref=e95]
+          - generic [ref=e96]: 7 produk
+        - link "Gorengan 10 produk" [ref=e97] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products?category=gorengan
+          - img [ref=e100]
+          - heading "Gorengan" [level=3] [ref=e102]
+          - generic [ref=e103]: 10 produk
+        - link "Jajanan Kukus 9 produk" [ref=e104] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products?category=jajanan-kukus
+          - img [ref=e107]
+          - heading "Jajanan Kukus" [level=3] [ref=e109]
+          - generic [ref=e110]: 9 produk
+        - link "Minuman Tradisional 5 produk" [ref=e111] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products?category=minuman-tradisional
+          - img [ref=e114]
+          - heading "Minuman Tradisional" [level=3] [ref=e116]
+          - generic [ref=e117]: 5 produk
+        - link "Bubur Tradisional 4 produk" [ref=e118] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products?category=bubur-tradisional
+          - img [ref=e121]
+          - heading "Bubur Tradisional" [level=3] [ref=e123]
+          - generic [ref=e124]: 4 produk
+    - generic [ref=e126]:
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - paragraph [ref=e129]: Produk Unggulan
+          - heading "Yang Paling Disukai" [level=2] [ref=e130]
+        - link "Lihat Semua" [ref=e131] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/products
+          - text: Lihat Semua
+          - img [ref=e132]
+      - generic [ref=e134]:
+        - generic [ref=e136]:
+          - link "Belum ada foto Favorit Minuman Tradisional" [ref=e137] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/products/es-cendol-durian
+            - generic [ref=e138]:
+              - img [ref=e139]
+              - generic [ref=e141]: Belum ada foto
+            - generic [ref=e144]:
+              - img [ref=e145]
+              - text: Favorit
+            - generic [ref=e147]: Minuman Tradisional
+          - button "Tambah ke Wishlist" [ref=e148]:
+            - img [ref=e149]
+          - generic [ref=e151]:
+            - link "Es Cendol Durian" [ref=e152] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/products/es-cendol-durian
+              - heading "Es Cendol Durian" [level=3] [ref=e153]
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - img [ref=e156]
+                - img [ref=e158]
+                - img [ref=e160]
+                - img [ref=e162]
+                - img [ref=e164]
+              - generic [ref=e166]: Belum ada ulasan
+            - generic [ref=e168]:
+              - generic [ref=e169]: Rp 18.000
+              - generic [ref=e170]: / porsi
+            - link "Beli Es Cendol Durian" [ref=e172] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/login
+              - img [ref=e173]
+              - generic [ref=e175]: Tambah ke Keranjang
+        - generic [ref=e177]:
+          - link "Belum ada foto Favorit Bubur Tradisional" [ref=e178] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/products/bubur-sumsum
+            - generic [ref=e179]:
+              - img [ref=e180]
+              - generic [ref=e182]: Belum ada foto
+            - generic [ref=e185]:
+              - img [ref=e186]
+              - text: Favorit
+            - generic [ref=e188]: Bubur Tradisional
+          - button "Tambah ke Wishlist" [ref=e189]:
+            - img [ref=e190]
+          - generic [ref=e192]:
+            - link "Bubur Sumsum" [ref=e193] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/products/bubur-sumsum
+              - heading "Bubur Sumsum" [level=3] [ref=e194]
+            - generic [ref=e195]:
+              - generic [ref=e196]:
+                - img [ref=e197]
+                - img [ref=e199]
+                - img [ref=e201]
+                - img [ref=e203]
+                - img [ref=e205]
+              - generic [ref=e207]: Belum ada ulasan
+            - generic [ref=e209]:
+              - generic [ref=e210]: Rp 15.000
+              - generic [ref=e211]: / porsi
+            - link "Beli Bubur Sumsum" [ref=e213] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/login
+              - img [ref=e214]
+              - generic [ref=e216]: Tambah ke Keranjang
+        - generic [ref=e218]:
+          - link "Belum ada foto Favorit Kue Basah" [ref=e219] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/products/klepon
+            - generic [ref=e220]:
+              - img [ref=e221]
+              - generic [ref=e223]: Belum ada foto
+            - generic [ref=e226]:
+              - img [ref=e227]
+              - text: Favorit
+            - generic [ref=e229]: Kue Basah
+          - button "Tambah ke Wishlist" [ref=e230]:
+            - img [ref=e231]
+          - generic [ref=e233]:
+            - link "Klepon" [ref=e234] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/products/klepon
+              - heading "Klepon" [level=3] [ref=e235]
+            - generic [ref=e236]:
+              - generic [ref=e237]:
+                - img [ref=e238]
+                - img [ref=e240]
+                - img [ref=e242]
+                - img [ref=e244]
+                - img [ref=e246]
+              - generic [ref=e248]: Belum ada ulasan
+            - generic [ref=e250]:
+              - generic [ref=e251]: Rp 15.000
+              - generic [ref=e252]: / porsi
+            - link "Beli Klepon" [ref=e254] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/login
+              - img [ref=e255]
+              - generic [ref=e257]: Tambah ke Keranjang
+        - generic [ref=e259]:
+          - link "Belum ada foto Favorit Kue Basah" [ref=e260] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/products/kue-lapis
+            - generic [ref=e261]:
+              - img [ref=e262]
+              - generic [ref=e264]: Belum ada foto
+            - generic [ref=e267]:
+              - img [ref=e268]
+              - text: Favorit
+            - generic [ref=e270]: Kue Basah
+          - button "Tambah ke Wishlist" [ref=e271]:
+            - img [ref=e272]
+          - generic [ref=e274]:
+            - link "Kue Lapis" [ref=e275] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/products/kue-lapis
+              - heading "Kue Lapis" [level=3] [ref=e276]
+            - generic [ref=e277]:
+              - generic [ref=e278]:
+                - img [ref=e279]
+                - img [ref=e281]
+                - img [ref=e283]
+                - img [ref=e285]
+                - img [ref=e287]
+              - generic [ref=e289]: Belum ada ulasan
+            - generic [ref=e291]:
+              - generic [ref=e292]: Rp 25.000
+              - generic [ref=e293]: / porsi
+            - link "Beli Kue Lapis" [ref=e295] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/login
+              - img [ref=e296]
+              - generic [ref=e298]: Tambah ke Keranjang
+    - generic [ref=e301]:
+      - generic [ref=e302]:
+        - paragraph [ref=e303]: Bantuan
+        - heading "Pertanyaan yang Sering Diajukan" [level=2] [ref=e304]
+        - paragraph [ref=e305]: Punya pertanyaan lain? Jangan ragu untuk menghubungi tim dukungan kami melalui WhatsApp.
+        - link "Tanya via WhatsApp" [ref=e306] [cursor=pointer]:
+          - /url: https://wa.me/6281234567890
+          - text: Tanya via WhatsApp
+          - img [ref=e307]
+      - generic [ref=e309]:
+        - button "Berapa lama waktu pengiriman?" [ref=e311]:
+          - generic [ref=e312]: Berapa lama waktu pengiriman?
+          - img [ref=e314]
+        - button "Apakah produk dibuat setiap hari?" [ref=e317]:
+          - generic [ref=e318]: Apakah produk dibuat setiap hari?
+          - img [ref=e320]
+        - button "Bagaimana cara melacak pesanan saya?" [ref=e323]:
+          - generic [ref=e324]: Bagaimana cara melacak pesanan saya?
+          - img [ref=e326]
+        - button "Apakah bisa memesan untuk acara besar (katering)?" [ref=e329]:
+          - generic [ref=e330]: Apakah bisa memesan untuk acara besar (katering)?
+          - img [ref=e332]
+        - button "Metode pembayaran apa saja yang tersedia?" [ref=e335]:
+          - generic [ref=e336]: Metode pembayaran apa saja yang tersedia?
+          - img [ref=e338]
+    - generic [ref=e344]:
+      - heading "Pesan Sekarang, Nikmati Hari Ini" [level=2] [ref=e345]
+      - paragraph [ref=e346]: Dibuat fresh, dikirim cepat. Nikmati jajanan pasar favorit Anda tanpa keluar rumah.
+      - link "Mulai Belanja" [ref=e347] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/products
+        - text: Mulai Belanja
+        - img [ref=e348]
+  - contentinfo [ref=e350]:
+    - generic [ref=e351]:
+      - generic [ref=e352]:
+        - generic [ref=e353]:
+          - link "Gegares Logo gegares" [ref=e354] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000
+            - img "Gegares Logo" [ref=e355]
+            - generic [ref=e356]: gegares
+          - paragraph [ref=e357]: Gegares menghadirkan kelezatan jajanan pasar tradisional dengan kualitas premium. Dibuat segar setiap hari untuk memastikan rasa autentik yang Anda cintai.
+          - generic [ref=e358]:
+            - link "WhatsApp" [ref=e359] [cursor=pointer]:
+              - /url: https://wa.me/6281234567890
+              - img [ref=e360]
+            - link "Instagram" [ref=e362] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e363]
+        - generic [ref=e365]:
+          - paragraph [ref=e366]: Navigasi
+          - list [ref=e367]:
+            - listitem [ref=e368]:
+              - link "Beranda" [ref=e369] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000
+            - listitem [ref=e370]:
+              - link "Produk Kami" [ref=e371] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/products
+            - listitem [ref=e372]:
+              - link "Tentang Gegares" [ref=e373] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/about
+            - listitem [ref=e374]:
+              - link "Hubungi Kami" [ref=e375] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/contact
+        - generic [ref=e376]:
+          - paragraph [ref=e377]: Belanja
+          - list [ref=e378]:
+            - listitem [ref=e379]:
+              - link "Wishlist Saya" [ref=e380] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/wishlist
+            - listitem [ref=e381]:
+              - link "Status Pesanan" [ref=e382] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/login
+            - listitem [ref=e383]:
+              - link "Produk Unggulan" [ref=e384] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/products?featured=1
+            - listitem [ref=e385]:
+              - link "Jajanan Terbaru" [ref=e386] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/products
+        - generic [ref=e387]:
+          - paragraph [ref=e388]: Bantuan
+          - list [ref=e389]:
+            - listitem [ref=e390]:
+              - link "FAQ" [ref=e391] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000#faq
+            - listitem [ref=e392]:
+              - link "Info Pengiriman" [ref=e393] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e394]:
+              - link "Kebijakan Privasi" [ref=e395] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e396]:
+              - link "Syarat & Ketentuan" [ref=e397] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e398]:
+        - paragraph [ref=e399]: © 2026 Gegares. Semua hak cipta dilindungi.
+        - generic [ref=e400]:
+          - img "BCA" [ref=e401]
+          - img "Gopay" [ref=e402]
+          - img "QRIS" [ref=e403]

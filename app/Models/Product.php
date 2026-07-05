@@ -13,6 +13,14 @@ class Product extends Model
 {
     use SoftDeletes, HasFactory;
 
+    protected static function booted(): void
+    {
+        // Invalidate storefront/chatbot/search caches when a product changes.
+        $flush = fn () => \App\Support\StorefrontCache::forget(\App\Support\StorefrontCache::CATALOG_KEYS);
+        static::saved($flush);
+        static::deleted($flush);
+        static::restored($flush);
+    }
 
     public function variants(): HasMany
     {
@@ -29,23 +37,9 @@ class Product extends Model
         return [
             'price' => 'decimal:2',
             'is_featured' => 'boolean',
+            'rating_avg' => 'float',
+            'rating_count' => 'integer',
         ];
-    }
-
-    /**
-     * Get the actual approved rating average dynamically.
-     */
-    public function getRatingAvgAttribute(): float
-    {
-        return (float) ($this->reviews()->where('is_approved', true)->avg('rating') ?? 0);
-    }
-
-    /**
-     * Get the actual approved rating count dynamically.
-     */
-    public function getRatingCountAttribute(): int
-    {
-        return (int) $this->reviews()->where('is_approved', true)->count();
     }
 
     public function category(): BelongsTo

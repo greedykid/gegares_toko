@@ -31,11 +31,17 @@ class OrderController extends Controller
         $orders = $query->paginate(10)->withQueryString();
 
         // Calculate stats
+        $counts = $user->orders()
+            ->select('status')
+            ->selectRaw('count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
         $stats = [
-            'total' => $user->orders()->count(),
-            'pending' => $user->orders()->whereIn('status', ['pending', 'awaiting_payment'])->count(),
-            'processing' => $user->orders()->whereIn('status', ['paid', 'processing', 'shipped'])->count(),
-            'completed' => $user->orders()->where('status', 'completed')->count(),
+            'total' => $counts->sum(),
+            'pending' => ($counts->get('pending', 0) + $counts->get('awaiting_payment', 0)),
+            'processing' => ($counts->get('paid', 0) + $counts->get('processing', 0) + $counts->get('shipped', 0)),
+            'completed' => $counts->get('completed', 0),
             'monthly_spent' => $user->orders()
                 ->whereNotIn('status', ['pending', 'awaiting_payment', 'cancelled'])
                 ->whereMonth('created_at', now()->month)
