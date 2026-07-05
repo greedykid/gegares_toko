@@ -59,7 +59,7 @@ class CategoryController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:10240',
             'is_active' => 'nullable',
         ]);
 
@@ -80,7 +80,7 @@ class CategoryController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:10240',
             'is_active' => 'nullable',
         ]);
 
