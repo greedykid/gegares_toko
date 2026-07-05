@@ -56,4 +56,10 @@ class StoreSetting extends Model
         'about_gallery' => 'array',
         'payment_logos' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget('store_settings'));
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget('store_settings'));
+    }
 }

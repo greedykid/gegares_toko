@@ -547,7 +547,7 @@
             <div class="border-t border-slate-100 dark:border-slate-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors">
                 <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 transition-colors">&copy; {{ date('Y') }} Gegares. Semua hak cipta dilindungi.</p>
                 @php
-                    $paymentLogos = \App\Models\StoreSetting::first()?->payment_logos ?? [];
+                    $paymentLogos = (new \Illuminate\Support\Fluent(\Illuminate\Support\Facades\Cache::remember('store_settings', 86400, fn() => (\App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting())->toArray())))->payment_logos ?? [];
                 @endphp
                 <div class="flex items-center gap-6">
                     @forelse($paymentLogos as $logo)

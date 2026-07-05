@@ -2,7 +2,7 @@
 @section('title', 'Beranda')
 @section('content')
 @php
-    $settings = \App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting();
+    $settings = new \Illuminate\Support\Fluent(\Illuminate\Support\Facades\Cache::remember('store_settings', 86400, fn() => (\App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting())->toArray()));
     
     $heroBadge = $settings->hero_badge ?? 'Jajanan Pasar Tradisional';
     $heroTitle = $settings->hero_title ?? 'Rasa <span class="text-primary-600 dark:text-primary-400">Autentik</span>,<br>Langsung ke <span class="text-accent-600 dark:text-accent-400">Rumah</span>';

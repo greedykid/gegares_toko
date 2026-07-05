@@ -1060,9 +1060,7 @@ CARA PESAN:
         // reviews). Cache briefly; add-to-cart still validates live stock, so a
         // short staleness window here is safe.
         return \Illuminate\Support\Facades\Cache::remember('chatbot.catalog', 120, function () {
-            $products = Product::with(['category', 'reviews' => function($q) {
-                $q->where('is_approved', true);
-            }])->whereHas('category', function($q) {
+            $products = Product::with('category')->whereHas('category', function($q) {
                 $q->where('is_active', true);
             })->get();
 
@@ -1076,8 +1074,8 @@ CARA PESAN:
             foreach ($grouped as $categoryName => $categoryProducts) {
                 $catalog .= "\n## Kategori: {$categoryName}\n";
                 foreach ($categoryProducts as $p) {
-                    $ratingAvg = $p->reviews->avg('rating');
-                    $ratingCount = $p->reviews->count();
+                    $ratingAvg = $p->rating_avg;
+                    $ratingCount = $p->rating_count;
                     $ratingStr = $ratingCount > 0 ? sprintf("⭐ %.1f (%d ulasan)", $ratingAvg, $ratingCount) : "Belum ada ulasan";
                     $stockStatus = $p->stock <= 0 ? '❌ HABIS' : ($p->stock < 5 ? "⚠️ Sisa {$p->stock}" : "✅ Tersedia ({$p->stock})");
                     $featured = $p->is_featured ? ' 🔥 FEATURED' : '';

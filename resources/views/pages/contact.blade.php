@@ -3,7 +3,7 @@
 @section('content')
 
 @php
-    $store = \App\Models\StoreSetting::first();
+    $store = new \Illuminate\Support\Fluent(\Illuminate\Support\Facades\Cache::remember('store_settings', 86400, fn() => (\App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting())->toArray()));
     $email = $store->contact_email ?? 'hello@gecares.com';
     $phone = $store->contact_phone ?? '+62 812-3456-7890';
     
