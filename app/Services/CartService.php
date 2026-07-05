@@ -168,8 +168,23 @@ class CartService
         $cart = $this->getItems();
         $errors = [];
 
+        if (empty($cart)) {
+            return [];
+        }
+
+        $productIds = array_values(array_unique(array_map(
+            static fn (array $item) => (int) ($item['product_id'] ?? 0),
+            $cart
+        )));
+
+        $products = Product::with('variants')
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
         foreach ($cart as $cartKey => $item) {
-            $product = Product::with('variants')->find($item['product_id']);
+            $productId = (int) ($item['product_id'] ?? 0);
+            $product = $products->get($productId);
 
             if (!$product) {
                 $errors[] = "Produk '{$item['name']}' sudah tidak tersedia.";
