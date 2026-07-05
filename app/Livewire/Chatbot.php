@@ -1059,10 +1059,13 @@ CARA PESAN:
         // The AI catalog payload is expensive to build (products + approved
         // reviews). Cache briefly; add-to-cart still validates live stock, so a
         // short staleness window here is safe.
-        return \Illuminate\Support\Facades\Cache::remember('chatbot.catalog', 120, function () {
-            $products = Product::with('category')->whereHas('category', function($q) {
-                $q->where('is_active', true);
-            })->get();
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.catalog', 1800, function () {
+            $products = Product::with('category')
+                ->whereHas('category', function($q) {
+                    $q->where('is_active', true);
+                })
+                ->take(200)
+                ->get();
 
             if ($products->isEmpty()) {
                 return "Katalog sedang kosong.";
@@ -1097,7 +1100,7 @@ CARA PESAN:
      */
     protected function getBestSellers(): string
     {
-        return \Illuminate\Support\Facades\Cache::remember('chatbot.bestsellers', 300, function () {
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.bestsellers', 3600, function () {
             $bestSellers = OrderItem::query()
                 ->whereHas('order', function($q) {
                     $q->where('payment_status', 'paid');
@@ -1112,14 +1115,17 @@ CARA PESAN:
                 return "Belum ada data penjualan.";
             }
 
-            // Batch-load prices for all best-sellers in one query (avoids N+1).
-            $prices = Product::whereIn('id', $bestSellers->pluck('product_id'))->get()->keyBy('id');
+            // Batch-load prices for all best-sellers in one query (avoids N+1) selecting only needed columns.
+            $prices = Product::whereIn('id', $bestSellers->pluck('product_id'))
+                ->select('id', 'name', 'price', 'slug')
+                ->get()
+                ->keyBy('id');
 
             $list = "";
             $rank = 1;
             foreach ($bestSellers as $item) {
                 $product = $prices->get($item->product_id);
-                $price = $product ? $product->formatted_price : 'N/A';
+                $price = $product ? 'Rp ' . number_format((float)$product->price, 0, ',', '.') : 'N/A';
                 $list .= "{$rank}. **{$item->product_name}** — Terjual {$item->total_qty} porsi ({$price})\n";
                 $rank++;
             }
@@ -1255,20 +1261,37 @@ CARA PESAN:
         }
 
         // ── 1. Find products mentioned by AI ──
-        $products = Product::all();
-        $foundProducts = [];
- 
-        foreach ($products as $product) {
+        $cachedProducts = \Illuminate\Support\Facades\Cache::remember('products.for_matching', 300, function() {
+            return Product::select('id', 'name', 'price', 'stock', 'image', 'slug')->get()->toArray();
+        });
+
+        $matchedProducts = [];
+        foreach ($cachedProducts as $p) {
             // Only match if the AI strictly used the [[Product Name]] format
-            if (preg_match("/\[\[" . preg_quote($product->name, '/') . "\]\]/i", $aiText)) {
+            if (preg_match("/\[\[" . preg_quote($p['name'], '/') . "\]\]/i", $aiText)) {
+                $matchedProducts[] = $p;
+            }
+        }
+
+        $foundProducts = [];
+        if (!empty($matchedProducts)) {
+            $wishlistedIds = [];
+            if (Auth::check()) {
+                $wishlistedIds = \App\Models\Wishlist::where('user_id', Auth::id())
+                    ->whereIn('product_id', array_column($matchedProducts, 'id'))
+                    ->pluck('product_id')
+                    ->toArray();
+            }
+
+            foreach ($matchedProducts as $p) {
                 $foundProducts[] = [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->formatted_price,
-                    'stock' => $product->stock,
-                    'image' => $product->image ? asset('storage/' . $product->image) : null,
-                    'url' => route('products.show', $product->slug),
-                    'inWishlist' => Auth::check() ? \App\Models\Wishlist::where('user_id', Auth::id())->where('product_id', $product->id)->exists() : false,
+                    'id' => $p['id'],
+                    'name' => $p['name'],
+                    'price' => 'Rp ' . number_format((float)$p['price'], 0, ',', '.'),
+                    'stock' => $p['stock'],
+                    'image' => $p['image'] ? asset('storage/' . $p['image']) : null,
+                    'url' => route('products.show', $p['slug']),
+                    'inWishlist' => in_array($p['id'], $wishlistedIds),
                 ];
             }
         }

@@ -20,11 +20,8 @@ class GlobalSearch extends Component
         $term = trim($this->search);
 
         if (mb_strlen($term) >= 2) {
-            // 1. Direct substring match (fast, exact path)
-            $results = Product::where(function ($q) use ($term) {
-                    $q->where('name', 'like', '%' . $term . '%')
-                      ->orWhere('description', 'like', '%' . $term . '%');
-                })
+            // 1. Direct substring match (fast, exact path) on name column only (indexed)
+            $results = Product::where('name', 'like', '%' . $term . '%')
                 ->take(5)
                 ->get();
 
@@ -75,7 +72,7 @@ class GlobalSearch extends Component
 
         // Cache the candidate pool briefly so typing doesn't re-fetch the whole
         // catalog on every keystroke that triggers a fuzzy fallback.
-        $candidates = \Illuminate\Support\Facades\Cache::remember('search.fuzzy.products', 60, fn () => Product::all());
+        $candidates = \Illuminate\Support\Facades\Cache::remember('search.fuzzy.products', 3600, fn () => Product::select('id', 'name', 'image', 'price', 'rating_avg', 'rating_count')->get());
 
         return $candidates
             ->when(!empty($excludeIds), fn ($c) => $c->whereNotIn('id', $excludeIds))
@@ -91,7 +88,7 @@ class GlobalSearch extends Component
 
     protected function fuzzyCategories(string $term): Collection
     {
-        $candidates = \Illuminate\Support\Facades\Cache::remember('search.fuzzy.categories', 60, fn () => Category::where('is_active', true)->get());
+        $candidates = \Illuminate\Support\Facades\Cache::remember('search.fuzzy.categories', 3600, fn () => Category::where('is_active', true)->get());
 
         return $candidates
             ->map(function ($category) use ($term) {
