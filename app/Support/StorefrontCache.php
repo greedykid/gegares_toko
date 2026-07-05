@@ -12,8 +12,8 @@ class StorefrontCache
 {
     /** Derived from products & categories (homepage, chatbot catalog, search). */
     public const CATALOG_KEYS = [
-        'home.categories',
-        'home.featured',
+        'home.categories.ids',
+        'home.featured.ids',
         'chatbot.catalog',
         'chatbot.whitelist',
         'chatbot.bestsellers',
