@@ -20,11 +20,17 @@ class DashboardController extends Controller
         // Heavy aggregate metrics are recomputed at most once per minute; the
         // dashboard is an overview so slightly stale numbers are acceptable.
         $metrics = Cache::remember('admin.dashboard.metrics', 60, function () use ($days) {
+            $orderStats = Order::selectRaw("
+                count(*) as total_orders,
+                sum(case when payment_status = 'paid' then total else 0 end) as total_sales,
+                sum(case when status in ('pending', 'awaiting_payment') then 1 else 0 end) as pending_orders
+            ")->first();
+
             return [
-                'totalSales' => Order::where('payment_status', 'paid')->sum('total'),
+                'totalSales' => $orderStats->total_sales ?? 0,
                 'totalUsers' => User::where('role', 'user')->count(),
-                'totalOrders' => Order::count(),
-                'pendingOrders' => Order::whereIn('status', ['pending', 'awaiting_payment'])->count(),
+                'totalOrders' => $orderStats->total_orders ?? 0,
+                'pendingOrders' => $orderStats->pending_orders ?? 0,
                 'revenueData' => Order::where('payment_status', 'paid')
                     ->where('created_at', '>=', now()->subDays($days))
                     ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')

@@ -23,10 +23,17 @@ class UserController extends Controller
         }
 
         $users = User::orderBy($sort, $direction)->paginate(15)->withQueryString();
-        $totalUsers = User::count();
-        $totalAdmin = User::where('role', 'admin')->count();
-        $totalCustomer = User::where('role', 'user')->count();
-        $newUsersThisMonth = User::where('created_at', '>=', now()->startOfMonth())->count();
+        $userStats = User::selectRaw("
+            count(*) as total,
+            sum(case when role = 'admin' then 1 else 0 end) as admin_count,
+            sum(case when role = 'user' then 1 else 0 end) as customer_count,
+            sum(case when created_at >= ? then 1 else 0 end) as new_this_month
+        ", [now()->startOfMonth()->toDateTimeString()])->first();
+
+        $totalUsers = $userStats->total ?? 0;
+        $totalAdmin = $userStats->admin_count ?? 0;
+        $totalCustomer = $userStats->customer_count ?? 0;
+        $newUsersThisMonth = $userStats->new_this_month ?? 0;
 
         return view('admin.users.index', compact(
             'users', 'totalUsers', 'totalAdmin', 'totalCustomer', 'newUsersThisMonth'

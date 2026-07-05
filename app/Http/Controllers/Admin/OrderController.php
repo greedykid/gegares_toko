@@ -114,11 +114,10 @@ class OrderController extends Controller
 
         if ($request->filled('search')) {
             $q = $request->search;
-            $query->where(function($query) use ($q) {
+            $userIds = \App\Models\User::where('name', 'LIKE', "%$q%")->pluck('id');
+            $query->where(function($query) use ($q, $userIds) {
                 $query->where('order_number', 'LIKE', "%$q%")
-                      ->orWhereHas('user', function($query) use ($q) {
-                          $query->where('name', 'LIKE', "%$q%");
-                      });
+                      ->orWhereIn('user_id', $userIds);
             });
         }
 

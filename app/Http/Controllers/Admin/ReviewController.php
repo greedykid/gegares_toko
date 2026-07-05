@@ -37,12 +37,11 @@ class ReviewController extends Controller
         // 2. Filtering Logic
         if ($request->filled('search')) {
             $q = $request->search;
-            $query->where(function($query) use ($q) {
-                $query->whereHas('product', function($query) use ($q) {
-                    $query->where('name', 'LIKE', "%$q%");
-                })->orWhereHas('user', function($query) use ($q) {
-                    $query->where('name', 'LIKE', "%$q%");
-                });
+            $productIds = \App\Models\Product::where('name', 'LIKE', "%$q%")->pluck('id');
+            $userIds = \App\Models\User::where('name', 'LIKE', "%$q%")->pluck('id');
+            $query->where(function($query) use ($productIds, $userIds) {
+                $query->whereIn('product_id', $productIds)
+                      ->orWhereIn('user_id', $userIds);
             });
         }
 
@@ -72,11 +71,18 @@ class ReviewController extends Controller
         // 3. Global Statistics (Unfiltered) — cached briefly since they scan the
         // whole table and are shown as an at-a-glance overview.
         $stats = \Illuminate\Support\Facades\Cache::remember('admin.reviews.stats', 60, function () {
+            $raw = Review::selectRaw("
+                count(*) as total,
+                sum(case when is_approved = 0 then 1 else 0 end) as pending,
+                avg(rating) as avg_rating,
+                sum(case when image is not null then 1 else 0 end) as photo
+            ")->first();
+
             return [
-                'total' => Review::count(),
-                'pending' => Review::where('is_approved', false)->count(),
-                'avg' => Review::avg('rating') ?? 0,
-                'photo' => Review::whereNotNull('image')->count(),
+                'total' => $raw->total ?? 0,
+                'pending' => $raw->pending ?? 0,
+                'avg' => $raw->avg_rating ?? 0,
+                'photo' => $raw->photo ?? 0,
             ];
         });
         $totalReviews = $stats['total'];
