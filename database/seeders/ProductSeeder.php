@@ -426,6 +426,7 @@ class ProductSeeder extends Seeder
                     'price' => $p['price'],
                     'stock' => $p['stock'],
                     'is_featured' => $p['is_featured'],
+                    'image' => 'products/' . Str::slug($p['name']) . '.png',
                     'rating_avg' => rand(35, 50) / 10,
                     'rating_count' => rand(5, 120),
                 ]
