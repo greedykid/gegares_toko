@@ -56,10 +56,17 @@ class ProductController extends Controller
         $products = $query->paginate(15)->appends($request->query());
         $categories = Category::all();
         
-        $totalProducts = Product::count();
-        $featuredProducts = Product::where('is_featured', true)->count();
-        $outOfStock = Product::where('stock', 0)->count();
-        $lowStock = Product::where('stock', '>', 0)->where('stock', '<', 5)->count();
+        $productStats = Product::selectRaw("
+            count(*) as total,
+            sum(case when is_featured = 1 then 1 else 0 end) as featured,
+            sum(case when stock = 0 then 1 else 0 end) as out_of_stock,
+            sum(case when stock > 0 and stock < 5 then 1 else 0 end) as low_stock
+        ")->first();
+
+        $totalProducts = $productStats->total ?? 0;
+        $featuredProducts = $productStats->featured ?? 0;
+        $outOfStock = $productStats->out_of_stock ?? 0;
+        $lowStock = $productStats->low_stock ?? 0;
 
         return view('admin.products.index', compact(
             'products', 
