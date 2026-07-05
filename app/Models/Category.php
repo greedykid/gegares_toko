@@ -11,6 +11,14 @@ class Category extends Model
 {
     use SoftDeletes, HasFactory;
 
+    protected static function booted(): void
+    {
+        $flush = fn () => \App\Support\StorefrontCache::forget(\App\Support\StorefrontCache::CATALOG_KEYS);
+        static::saved($flush);
+        static::deleted($flush);
+        static::restored($flush);
+    }
+
     protected $fillable = ['name', 'slug', 'image', 'description', 'is_active'];
 
     protected $casts = [

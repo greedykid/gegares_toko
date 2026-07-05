@@ -10,6 +10,14 @@ class Review extends Model
 {
     use SoftDeletes;
 
+    protected static function booted(): void
+    {
+        $flush = fn () => \App\Support\StorefrontCache::forget(\App\Support\StorefrontCache::REVIEW_KEYS);
+        static::saved($flush);
+        static::deleted($flush);
+        static::restored($flush);
+    }
+
     protected $fillable = [
         'user_id', 'product_id', 'order_id',
         'rating', 'comment', 'image', 'is_approved',

@@ -1037,52 +1037,61 @@ CARA PESAN:
      */
     protected function getProductWhitelist(): string
     {
-        $products = Product::whereHas('category', fn($q) => $q->where('is_active', true))->pluck('name');
+        // Product names change rarely; cache the grounding whitelist so it is not
+        // rebuilt on every chat message.
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.whitelist', 300, function () {
+            $products = Product::whereHas('category', fn($q) => $q->where('is_active', true))->pluck('name');
 
-        if ($products->isEmpty()) {
-            return "(Katalog kosong)";
-        }
+            if ($products->isEmpty()) {
+                return "(Katalog kosong)";
+            }
 
-        $list = "";
-        foreach ($products as $i => $name) {
-            $list .= ($i + 1) . ". {$name}\n";
-        }
-        return $list;
+            $list = "";
+            foreach ($products as $i => $name) {
+                $list .= ($i + 1) . ". {$name}\n";
+            }
+            return $list;
+        });
     }
 
     protected function getProductCatalog(): string
     {
-        $products = Product::with(['category', 'reviews' => function($q) {
-            $q->where('is_approved', true);
-        }])->whereHas('category', function($q) {
-            $q->where('is_active', true);
-        })->get();
+        // The AI catalog payload is expensive to build (products + approved
+        // reviews). Cache briefly; add-to-cart still validates live stock, so a
+        // short staleness window here is safe.
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.catalog', 120, function () {
+            $products = Product::with(['category', 'reviews' => function($q) {
+                $q->where('is_approved', true);
+            }])->whereHas('category', function($q) {
+                $q->where('is_active', true);
+            })->get();
 
-        if ($products->isEmpty()) {
-            return "Katalog sedang kosong.";
-        }
+            if ($products->isEmpty()) {
+                return "Katalog sedang kosong.";
+            }
 
-        $catalog = "";
-        $grouped = $products->groupBy(fn($p) => $p->category->name ?? 'Lainnya');
+            $catalog = "";
+            $grouped = $products->groupBy(fn($p) => $p->category->name ?? 'Lainnya');
 
-        foreach ($grouped as $categoryName => $categoryProducts) {
-            $catalog .= "\n## Kategori: {$categoryName}\n";
-            foreach ($categoryProducts as $p) {
-                $ratingAvg = $p->reviews->avg('rating');
-                $ratingCount = $p->reviews->count();
-                $ratingStr = $ratingCount > 0 ? sprintf("⭐ %.1f (%d ulasan)", $ratingAvg, $ratingCount) : "Belum ada ulasan";
-                $stockStatus = $p->stock <= 0 ? '❌ HABIS' : ($p->stock < 5 ? "⚠️ Sisa {$p->stock}" : "✅ Tersedia ({$p->stock})");
-                $featured = $p->is_featured ? ' 🔥 FEATURED' : '';
-                $desc = mb_substr($p->description ?? '', 0, 200);
-                
-                $catalog .= "- **{$p->name}**: {$p->formatted_price} | Stok: {$stockStatus} | Rating: {$ratingStr}{$featured}\n";
-                if (!empty($desc)) {
-                    $catalog .= "  Deskripsi: {$desc}\n";
+            foreach ($grouped as $categoryName => $categoryProducts) {
+                $catalog .= "\n## Kategori: {$categoryName}\n";
+                foreach ($categoryProducts as $p) {
+                    $ratingAvg = $p->reviews->avg('rating');
+                    $ratingCount = $p->reviews->count();
+                    $ratingStr = $ratingCount > 0 ? sprintf("⭐ %.1f (%d ulasan)", $ratingAvg, $ratingCount) : "Belum ada ulasan";
+                    $stockStatus = $p->stock <= 0 ? '❌ HABIS' : ($p->stock < 5 ? "⚠️ Sisa {$p->stock}" : "✅ Tersedia ({$p->stock})");
+                    $featured = $p->is_featured ? ' 🔥 FEATURED' : '';
+                    $desc = mb_substr($p->description ?? '', 0, 200);
+
+                    $catalog .= "- **{$p->name}**: {$p->formatted_price} | Stok: {$stockStatus} | Rating: {$ratingStr}{$featured}\n";
+                    if (!empty($desc)) {
+                        $catalog .= "  Deskripsi: {$desc}\n";
+                    }
                 }
             }
-        }
 
-        return $catalog;
+            return $catalog;
+        });
     }
 
     /**
@@ -1090,30 +1099,35 @@ CARA PESAN:
      */
     protected function getBestSellers(): string
     {
-        $bestSellers = OrderItem::query()
-            ->whereHas('order', function($q) {
-                $q->where('payment_status', 'paid');
-            })
-            ->selectRaw('product_name, product_id, SUM(quantity) as total_qty')
-            ->groupBy('product_id', 'product_name')
-            ->orderByDesc('total_qty')
-            ->take(5)
-            ->get();
+        return \Illuminate\Support\Facades\Cache::remember('chatbot.bestsellers', 300, function () {
+            $bestSellers = OrderItem::query()
+                ->whereHas('order', function($q) {
+                    $q->where('payment_status', 'paid');
+                })
+                ->selectRaw('product_name, product_id, SUM(quantity) as total_qty')
+                ->groupBy('product_id', 'product_name')
+                ->orderByDesc('total_qty')
+                ->take(5)
+                ->get();
 
-        if ($bestSellers->isEmpty()) {
-            return "Belum ada data penjualan.";
-        }
+            if ($bestSellers->isEmpty()) {
+                return "Belum ada data penjualan.";
+            }
 
-        $list = "";
-        $rank = 1;
-        foreach ($bestSellers as $item) {
-            $product = Product::find($item->product_id);
-            $price = $product ? $product->formatted_price : 'N/A';
-            $list .= "{$rank}. **{$item->product_name}** — Terjual {$item->total_qty} porsi ({$price})\n";
-            $rank++;
-        }
+            // Batch-load prices for all best-sellers in one query (avoids N+1).
+            $prices = Product::whereIn('id', $bestSellers->pluck('product_id'))->get()->keyBy('id');
 
-        return $list;
+            $list = "";
+            $rank = 1;
+            foreach ($bestSellers as $item) {
+                $product = $prices->get($item->product_id);
+                $price = $product ? $product->formatted_price : 'N/A';
+                $list .= "{$rank}. **{$item->product_name}** — Terjual {$item->total_qty} porsi ({$price})\n";
+                $rank++;
+            }
+
+            return $list;
+        });
     }
 
     // ─────────────────────────────────────────────────────────────

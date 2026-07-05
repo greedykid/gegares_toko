@@ -35,7 +35,7 @@ class OrderController extends Controller
 
     public function exportCsv(Request $request)
     {
-        $orders = $this->getOrderQuery($request)->get();
+        $orders = $this->getOrderQuery($request)->with('items')->get();
         
         $filename = "laporan-pesanan-" . now()->format('Y-m-d-His') . ".csv";
         $headers = [
@@ -99,7 +99,9 @@ class OrderController extends Controller
             $direction = 'desc';
         }
 
-        $query = Order::with(['user', 'address', 'items.product']);
+        // Items are only needed by CSV export / printable report (added there),
+        // not by the list view — so keep the base list query lean.
+        $query = Order::with(['user', 'address']);
 
         if ($request->filled('search')) {
             $q = $request->search;
@@ -119,12 +121,14 @@ class OrderController extends Controller
             $query->where('payment_status', $request->payment_status);
         }
 
+        // Use a range on the raw timestamp instead of whereDate() so the
+        // created_at index can be used (whereDate wraps the column in DATE()).
         if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
+            $query->where('created_at', '>=', $request->from_date . ' 00:00:00');
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
+            $query->where('created_at', '<=', $request->to_date . ' 23:59:59');
         }
 
         if ($sort === 'created_at') {

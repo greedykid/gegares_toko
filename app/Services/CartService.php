@@ -166,10 +166,19 @@ class CartService
     public function validateStock(): array
     {
         $cart = $this->getItems();
+        if (empty($cart)) {
+            return [];
+        }
+
         $errors = [];
 
+        // Batch-load every product (with variants) referenced by the cart in a
+        // single query instead of one query per item (avoids N+1).
+        $productIds = array_values(array_unique(array_column($cart, 'product_id')));
+        $products = Product::with('variants')->whereIn('id', $productIds)->get()->keyBy('id');
+
         foreach ($cart as $cartKey => $item) {
-            $product = Product::with('variants')->find($item['product_id']);
+            $product = $products->get($item['product_id']);
 
             if (!$product) {
                 $errors[] = "Produk '{$item['name']}' sudah tidak tersedia.";
