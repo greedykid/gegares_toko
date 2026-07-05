@@ -23,6 +23,11 @@ class DashboardController extends Controller
             ];
         });
 
+        $totalSales = $summary['totalSales'];
+        $totalUsers = $summary['totalUsers'];
+        $totalOrders = $summary['totalOrders'];
+        $pendingOrders = $summary['pendingOrders'];
+
         $lowStockProducts = Cache::remember('admin:dashboard:low_stock_products', now()->addMinutes(5), function () {
             return Product::lowStock()->with('category')->get();
         });
@@ -69,11 +74,12 @@ class DashboardController extends Controller
         $bestSellerData = $bestSellers->pluck('total_qty')->map(fn($val) => (int) $val)->toArray();
 
         return view('admin.dashboard', compact(
-            'summary', 'lowStockProducts', 'recentOrders',
+            'totalSales', 'totalUsers', 'totalOrders',
+            'pendingOrders', 'lowStockProducts', 'recentOrders',
             'chartLabels', 'chartData',
             'bestSellerLabels', 'bestSellerData',
             'recentReviews'
-        ))->with($summary);
+        ));
     }
 
     public function storeSettings()
