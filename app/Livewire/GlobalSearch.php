@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class GlobalSearch extends Component
@@ -20,36 +21,48 @@ class GlobalSearch extends Component
         $term = trim($this->search);
 
         if (mb_strlen($term) >= 2) {
-            // 1. Direct substring match (fast, exact path)
-            $results = Product::where(function ($q) use ($term) {
-                    $q->where('name', 'like', '%' . $term . '%')
-                      ->orWhere('description', 'like', '%' . $term . '%');
-                })
-                ->take(5)
-                ->get();
+            $cacheKey = 'global_search:' . md5(mb_strtolower($term));
+            $cached = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($term) {
+                $results = Product::where(function ($q) use ($term) {
+                        $q->where('name', 'like', '%' . $term . '%')
+                          ->orWhere('description', 'like', '%' . $term . '%');
+                    })
+                    ->take(5)
+                    ->get();
 
-            $categories = Category::where('is_active', true)
-                ->where('name', 'like', '%' . $term . '%')
-                ->take(3)
-                ->get();
+                $categories = Category::where('is_active', true)
+                    ->where('name', 'like', '%' . $term . '%')
+                    ->take(3)
+                    ->get();
 
-            // 2. Typo-tolerant fallback when the direct match is thin/empty
-            if ($results->count() < 5) {
-                $fuzzyProducts = $this->fuzzyProducts($term, $results->pluck('id')->all());
-                if ($fuzzyProducts->isNotEmpty()) {
-                    // Mark as fuzzy only when the exact path found nothing on its own.
-                    $isFuzzy = $results->isEmpty();
-                    $results = $results->concat($fuzzyProducts)->take(5);
+                $isFuzzy = false;
+
+                if ($results->count() < 5) {
+                    $fuzzyProducts = $this->fuzzyProducts($term, $results->pluck('id')->all());
+                    if ($fuzzyProducts->isNotEmpty()) {
+                        $isFuzzy = $results->isEmpty();
+                        $results = $results->concat($fuzzyProducts)->take(5);
+                    }
                 }
-            }
 
-            if ($categories->isEmpty()) {
-                $fuzzyCats = $this->fuzzyCategories($term);
-                if ($fuzzyCats->isNotEmpty()) {
-                    $categories = $fuzzyCats;
-                    $isFuzzy = $results->isEmpty() ? true : $isFuzzy;
+                if ($categories->isEmpty()) {
+                    $fuzzyCats = $this->fuzzyCategories($term);
+                    if ($fuzzyCats->isNotEmpty()) {
+                        $categories = $fuzzyCats;
+                        $isFuzzy = $results->isEmpty() ? true : $isFuzzy;
+                    }
                 }
-            }
+
+                return [
+                    'results' => $results,
+                    'categories' => $categories,
+                    'isFuzzy' => $isFuzzy,
+                ];
+            });
+
+            $results = $cached['results'];
+            $categories = $cached['categories'];
+            $isFuzzy = $cached['isFuzzy'];
         }
 
         return view('livewire.global-search', [
@@ -73,8 +86,12 @@ class GlobalSearch extends Component
             return collect();
         }
 
+        $candidateLimit = max(25, $limit * 20);
+
         return Product::query()
+            ->select(['id', 'name', 'slug', 'price', 'stock', 'image'])
             ->when(!empty($excludeIds), fn ($q) => $q->whereNotIn('id', $excludeIds))
+            ->take($candidateLimit)
             ->get()
             ->map(function ($product) use ($term) {
                 return ['product' => $product, 'score' => $this->fuzzyScore($term, $product->name)];
@@ -89,6 +106,7 @@ class GlobalSearch extends Component
     protected function fuzzyCategories(string $term): Collection
     {
         return Category::where('is_active', true)
+            ->select(['id', 'name', 'slug', 'image', 'is_active'])
             ->get()
             ->map(function ($category) use ($term) {
                 return ['category' => $category, 'score' => $this->fuzzyScore($term, $category->name)];
@@ -121,7 +139,6 @@ class GlobalSearch extends Component
             default => 3,
         };
 
-        // Compare against the whole name and each individual word.
         $words = preg_split('/\s+/', $candidate);
         $words[] = $candidate;
 
@@ -133,7 +150,6 @@ class GlobalSearch extends Component
 
             $distance = levenshtein($term, $word);
 
-            // Catch typos at the start of a longer word (e.g. "risol" ~ "risoles").
             if (mb_strlen($word) > $termLen) {
                 $distance = min($distance, levenshtein($term, mb_substr($word, 0, $termLen)));
             }
