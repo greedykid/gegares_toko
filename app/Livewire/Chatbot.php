@@ -181,7 +181,7 @@ class Chatbot extends Component
             $order = Order::find($routeOrder);
         }
 
-        if (!$order || $order->user_id !== Auth::id()) {
+        if (!$order || (int) $order->user_id !== (int) Auth::id()) {
             return;
         }
 

@@ -54,7 +54,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
 
         $order->load(['items.product', 'address']);
 
@@ -63,7 +63,7 @@ class OrderController extends Controller
 
     public function payment(Order $order, PakasirService $pakasirService)
     {
-        abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
 
         if (in_array($order->payment_status, ['failed', 'expired'])) {
             return redirect()->route('orders.show', $order)
@@ -90,7 +90,7 @@ class OrderController extends Controller
 
     public function checkStatus(Order $order, PakasirService $pakasirService)
     {
-        abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
 
         if ($order->payment_status !== 'paid') {
             $cacheKey = 'pakasir_sync_limit_' . $order->id;
@@ -110,7 +110,7 @@ class OrderController extends Controller
 
     public function getTracking(Order $order, \App\Services\BiteshipService $biteshipService)
     {
-        abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
 
         // Try real API first if tracking number exists
         if ($order->tracking_number) {
@@ -194,7 +194,7 @@ class OrderController extends Controller
 
     public function complete(Order $order)
     {
-        abort_if($order->user_id !== \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
 
         if ($order->status !== 'shipped') {
             return redirect()->back()->with('error', 'Hanya pesanan dengan status dikirim yang dapat diselesaikan.');
