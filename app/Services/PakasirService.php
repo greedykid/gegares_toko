@@ -160,23 +160,57 @@ class PakasirService
         }
 
         $slug = config('pakasir.project_slug', 'gegares');
-        $orderId = $order->pakasir_order_id ?: $this->getPakasirOrderId($order->order_number);
+        // Try different project slug casing strategies due to inconsistent casing requirements in Pakasir
+        $projectSlugStrategies = array_values(array_unique([
+            $slug,
+            ucfirst($slug),
+            strtoupper($slug)
+        ]));
+
+        // Generate casing strategies for order_id to query due to inconsistent Pakasir API case matching
+        $casingStrategies = [];
+        $orderNumber = $order->order_number;
+        $parts = explode('-', $orderNumber);
+        if (count($parts) === 3) {
+            $prefix = $parts[0] . '-' . $parts[1];
+            $suffix = $parts[2];
+            // Try all combinations of prefix and suffix casing:
+            $casingStrategies[] = strtoupper($prefix) . '-' . strtoupper($suffix); // GGR-...-HEX
+            $casingStrategies[] = strtoupper($prefix) . '-' . strtolower($suffix); // GGR-...-hex
+            $casingStrategies[] = strtolower($prefix) . '-' . strtoupper($suffix); // ggr-...-HEX
+            $casingStrategies[] = strtolower($prefix) . '-' . strtolower($suffix); // ggr-...-hex
+        } else {
+            $casingStrategies[] = $orderNumber;
+            $casingStrategies[] = strtolower($orderNumber);
+            $casingStrategies[] = strtoupper($orderNumber);
+        }
+
+        // Add the stored pakasir_order_id as the very first check if it exists
+        if ($order->pakasir_order_id) {
+            array_unshift($casingStrategies, $order->pakasir_order_id);
+        }
+        $casingStrategies = array_values(array_unique($casingStrategies));
+
         // Webhook confirmation retries to absorb QRIS settlement lag; the polling
         // sync uses a single non-blocking attempt to avoid freezing the UI.
         $maxAttempts = $withRetry ? 2 : 1;
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
-            $response = Http::get('https://app.pakasir.com/api/transactiondetail', [
-                'project' => $slug,
-                'amount' => 0, // Pass 0 to bypass Pakasir's amount validation; we verify amount ourselves.
-                'order_id' => $orderId,
-                'api_key' => $apiKey,
-            ]);
+            foreach ($projectSlugStrategies as $projectSlug) {
+                foreach ($casingStrategies as $orderIdToCheck) {
+                    $response = Http::get('https://app.pakasir.com/api/transactiondetail', [
+                        'project' => $projectSlug,
+                        'amount' => 0, // Pass 0 to bypass Pakasir's amount validation; we verify amount ourselves.
+                        'order_id' => $orderIdToCheck,
+                        'api_key' => $apiKey,
+                    ]);
 
-            if ($response->successful()) {
-                $transaction = $response->json('transaction');
-                if ($transaction && ($transaction['status'] ?? null) === 'completed') {
-                    return $transaction;
+                    if ($response->successful()) {
+                        $transaction = $response->json('transaction');
+                        if ($transaction && ($transaction['status'] ?? null) === 'completed') {
+                            return $transaction;
+                        }
+                    }
                 }
             }
 
