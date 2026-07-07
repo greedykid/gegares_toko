@@ -83,15 +83,7 @@ class ProductSeeder extends Seeder
                 'stock' => 25,
                 'is_featured' => false,
             ],
-            [
-                'category' => 'kue-kering',
-                'name' => 'Kastengel',
-                'description' => 'Kue keju premium dengan rasa gurih yang kaya. Menggunakan keju Edam asli untuk cita rasa terbaik.',
-                'price' => 45000,
-                'stock' => 20,
-                'is_featured' => true,
-            ],
-            [
+[
                 'category' => 'kue-kering',
                 'name' => 'Nastar Premium',
                 'description' => 'Kue kering isi selai nanas madu buatan sendiri dengan mentega Wijsman yang wangi dan lumer di lidah.',
@@ -140,15 +132,7 @@ class ProductSeeder extends Seeder
                 'stock' => 0,
                 'is_featured' => false,
             ],
-            [
-                'category' => 'gorengan',
-                'name' => 'Tahu Isi Sayur',
-                'description' => 'Tahu goreng renyah dengan isian sayur kol, wortel, dan tauge yang gurih pedas.',
-                'price' => 10000,
-                'stock' => 50,
-                'is_featured' => false,
-            ],
-            [
+[
                 'category' => 'gorengan',
                 'name' => 'Bakwan Jagung',
                 'description' => 'Bakwan renyah dengan jagung manis pipil segar dan bumbu ketumbar daun bawang.',
@@ -231,16 +215,7 @@ class ProductSeeder extends Seeder
                 'stock' => 25,
                 'is_featured' => true,
             ],
-            [
-                'category' => 'bubur-tradisional',
-                'name' => 'Bubur Candil',
-                'description' => 'Bola-bola ketan kenyal (intil) dengan kuah gula merah manis legit disiram santan kental yang gurih.',
-                'price' => 16000,
-                'stock' => 20,
-                'is_featured' => false,
-            ],
-
-            // ── Tambahan: Kue Basah ──
+// ── Tambahan: Kue Basah ──
             [
                 'category' => 'kue-basah',
                 'name' => 'Kue Cubit',
@@ -351,24 +326,7 @@ class ProductSeeder extends Seeder
                 'stock' => 36,
                 'is_featured' => false,
             ],
-            [
-                'category' => 'jajanan-kukus',
-                'name' => 'Bolu Kukus Mekar',
-                'description' => 'Bolu kukus klasik yang mekar sempurna dengan tekstur lembut dan rasa manis cokelat-vanila.',
-                'price' => 14000,
-                'stock' => 40,
-                'is_featured' => false,
-            ],
-            [
-                'category' => 'jajanan-kukus',
-                'name' => 'Arem-Arem',
-                'description' => 'Nasi gurih bersantan berisi tumis ayam dan sayur, dibungkus daun pisang dan dikukus hingga padat.',
-                'price' => 17000,
-                'stock' => 30,
-                'is_featured' => false,
-            ],
-
-            // ── Tambahan: Minuman Tradisional ──
+// ── Tambahan: Minuman Tradisional ──
             [
                 'category' => 'minuman-tradisional',
                 'name' => 'Wedang Jahe Susu',
@@ -377,15 +335,7 @@ class ProductSeeder extends Seeder
                 'stock' => 35,
                 'is_featured' => false,
             ],
-            [
-                'category' => 'minuman-tradisional',
-                'name' => 'Es Cendol Durian',
-                'description' => 'Cendol kenyal dengan santan gurih, gula merah, dan topping durian asli yang harum legit.',
-                'price' => 18000,
-                'stock' => 28,
-                'is_featured' => true,
-            ],
-            [
+[
                 'category' => 'minuman-tradisional',
                 'name' => 'Bajigur',
                 'description' => 'Minuman hangat khas Sunda dari santan, gula aren, dan jahe dengan potongan kolang-kaling.',

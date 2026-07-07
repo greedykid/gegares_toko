@@ -62,8 +62,8 @@
                         <div class="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8" x-data="{ photoPreview: null }">
                             <div class="relative shrink-0 w-32 h-32 group mx-auto sm:mx-0">
                                 <template x-if="!photoPreview">
-                                    @if($user->avatar)
-                                        <img src="{{ asset('storage/' . $user->avatar) }}" class="w-full h-full rounded-4xl object-cover shadow-md border-4 border-white dark:border-slate-900 ring-1 ring-slate-200/50 dark:ring-slate-800">
+                                    @if($user->avatar_url)
+                                        <img src="{{ $user->avatar_url }}" class="w-full h-full rounded-4xl object-cover shadow-md border-4 border-white dark:border-slate-900 ring-1 ring-slate-200/50 dark:ring-slate-800">
                                     @else
                                         <div class="w-full h-full rounded-4xl bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-5xl font-black shadow-md border-4 border-white dark:border-slate-900 ring-1 ring-slate-200/50 dark:ring-slate-800">
                                             {{ strtoupper(substr($user->name, 0, 1)) }}

@@ -168,8 +168,8 @@
                         <div class="hidden md:flex items-center">
                             <div class="relative ml-1" x-data="{ open: false }">
                                 <button @click="open = !open" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/50 dark:hover:border-slate-800 transition-all duration-200 active:scale-90 group">
-                                    @if(auth()->user()->avatar)
-                                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-8 h-8 rounded-lg object-cover shadow-xs ring-2 ring-transparent group-hover:ring-primary-450 dark:group-hover:ring-primary-500 transition-all">
+                                    @if(auth()->user()->avatar_url)
+                                        <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-lg object-cover shadow-xs ring-2 ring-transparent group-hover:ring-primary-450 dark:group-hover:ring-primary-500 transition-all">
                                     @else
                                         <div class="w-8 h-8 rounded-lg bg-linear-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-extrabold shadow-xs ring-2 ring-transparent group-hover:ring-primary-450 dark:group-hover:ring-primary-500 transition-all duration-300">
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -291,8 +291,8 @@
                         <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                             @auth
                                 <div class="flex items-center gap-3.5 mb-4">
-                                    @if(auth()->user()->avatar)
-                                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-12 h-12 rounded-xl object-cover shadow-sm ring-2 ring-primary-100 dark:ring-primary-950">
+                                    @if(auth()->user()->avatar_url)
+                                        <img src="{{ auth()->user()->avatar_url }}" class="w-12 h-12 rounded-xl object-cover shadow-sm ring-2 ring-primary-100 dark:ring-primary-950">
                                     @else
                                         <div class="w-12 h-12 rounded-xl bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-base font-black shadow-sm ring-2 ring-primary-100 dark:ring-primary-950">
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
