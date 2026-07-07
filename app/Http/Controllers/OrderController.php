@@ -78,7 +78,7 @@ class OrderController extends Controller
             $order = $pakasirService->syncOrderWithPakasir($order);
 
             // Set the cache throttle so polling doesn't immediately check again
-            \Illuminate\Support\Facades\Cache::put('pakasir_sync_limit_' . $order->id, true, 15);
+            \Illuminate\Support\Facades\Cache::put('pakasir_sync_limit_' . $order->id, true, 2);
         }
 
         return response()
@@ -95,10 +95,10 @@ class OrderController extends Controller
         if ($order->payment_status !== 'paid') {
             $cacheKey = 'pakasir_sync_limit_' . $order->id;
             
-            // Only query Pakasir if the cache lock has expired (at most once per 15s)
+            // Only query Pakasir if the cache lock has expired (at most once per 2s)
             if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
                 $order = $pakasirService->syncOrderWithPakasir($order);
-                \Illuminate\Support\Facades\Cache::put($cacheKey, true, 15);
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, 2);
             }
         }
 

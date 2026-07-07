@@ -145,7 +145,7 @@
                             }
                         })
                         .catch(err => console.error('Error checking status:', err));
-                }, 3000); // Poll every 3 seconds
+                }, 2000); // Poll every 2 seconds
             });
         </script>
     @endif
