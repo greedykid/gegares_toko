@@ -79,7 +79,7 @@
                  <div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4">
                      {{-- Connecting Line (Desktop) --}}
                      <div class="absolute top-5 left-8 right-8 h-1 bg-slate-100 dark:bg-slate-800 hidden md:block rounded-full overflow-hidden">
-                         <div class="h-full bg-primary-500 transition-all duration-500" 
+                         <div class="h-full bg-emerald-500 transition-all duration-500" 
                               :style="{ width: liveStatus === 'completed' ? '100%' : (liveStatus === 'shipped' ? '66%' : (['paid', 'processing'].includes(liveStatus) ? '33%' : '0%')) }">
                          </div>
                      </div>
@@ -87,73 +87,95 @@
                      {{-- Step 1: Dipesan --}}
                      <div class="flex flex-row md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto md:flex-1">
                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300"
-                              :class="['pending', 'awaiting_payment', 'paid', 'processing', 'shipped', 'completed'].includes(liveStatus) 
-                                  ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20' 
-                                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400'">
+                              :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) 
+                                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
+                                  : 'bg-primary-500 border-primary-500 text-white ring-4 ring-primary-500/30 shadow-lg shadow-primary-500/20 animate-pulse-subtle'">
                              <span x-show="!['paid', 'processing', 'shipped', 'completed'].includes(liveStatus)">1</span>
                              <svg x-show="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus)" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                          </div>
                          <div class="text-left md:text-center">
                              <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100">Pesanan Dibuat</p>
-                             <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider">Selesai</p>
+                             <p class="text-[11px] uppercase mt-0.5 tracking-wider"
+                                :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) 
+                                    ? 'text-slate-400 dark:text-slate-500 font-bold' 
+                                    : 'text-primary-600 dark:text-primary-455 font-black'"
+                                x-text="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) ? 'Selesai' : 'Belum Bayar'">Selesai</p>
                          </div>
                      </div>
 
                      {{-- Vertical Connector Line (Mobile) --}}
                      <div class="w-0.5 h-6 ml-5 -my-4 md:hidden block transition-colors duration-300"
-                          :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) ? 'bg-primary-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
+                          :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
 
                      {{-- Step 2: Dibayar / Dikemas --}}
                      <div class="flex flex-row md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto md:flex-1">
                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300"
-                              :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) 
-                                  ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20' 
-                                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400'">
+                              :class="['shipped', 'completed'].includes(liveStatus) 
+                                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
+                                  : (['paid', 'processing'].includes(liveStatus)
+                                      ? 'bg-primary-500 border-primary-500 text-white ring-4 ring-primary-500/30 shadow-lg shadow-primary-500/20 animate-pulse-subtle'
+                                      : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400')">
                              <span x-show="!['shipped', 'completed'].includes(liveStatus)">2</span>
                              <svg x-show="['shipped', 'completed'].includes(liveStatus)" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                          </div>
                          <div class="text-left md:text-center">
                              <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100">Sedang Dikemas</p>
-                             <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider"
-                                x-text="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) ? 'Selesai' : 'Menunggu'">Menunggu</p>
+                             <p class="text-[11px] uppercase mt-0.5 tracking-wider"
+                                :class="['shipped', 'completed'].includes(liveStatus) 
+                                    ? 'text-slate-400 dark:text-slate-500 font-bold' 
+                                    : (['paid', 'processing'].includes(liveStatus)
+                                        ? 'text-primary-600 dark:text-primary-455 font-black'
+                                        : 'text-slate-400 dark:text-slate-655')"
+                                x-text="['shipped', 'completed'].includes(liveStatus) ? 'Selesai' : (['paid', 'processing'].includes(liveStatus) ? 'Diproses' : 'Belum')">Belum</p>
                          </div>
                      </div>
 
                      {{-- Vertical Connector Line (Mobile) --}}
                      <div class="w-0.5 h-6 ml-5 -my-4 md:hidden block transition-colors duration-300"
-                          :class="['shipped', 'completed'].includes(liveStatus) ? 'bg-primary-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
+                          :class="['shipped', 'completed'].includes(liveStatus) ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
 
                      {{-- Step 3: Dikirim --}}
                      <div class="flex flex-row md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto md:flex-1">
                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300"
-                              :class="['shipped', 'completed'].includes(liveStatus) 
-                                  ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20' 
-                                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400'">
-                             <span x-show="!['completed'].includes(liveStatus)">3</span>
-                             <svg x-show="['completed'].includes(liveStatus)" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                              :class="liveStatus === 'completed' 
+                                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
+                                  : (liveStatus === 'shipped'
+                                      ? 'bg-primary-500 border-primary-500 text-white ring-4 ring-primary-500/30 shadow-lg shadow-primary-500/20 animate-pulse-subtle'
+                                      : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400')">
+                             <span x-show="liveStatus !== 'completed'">3</span>
+                             <svg x-show="liveStatus === 'completed'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                          </div>
                          <div class="text-left md:text-center">
                              <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100">Dalam Perjalanan</p>
-                             <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider"
-                                x-text="['shipped', 'completed'].includes(liveStatus) ? 'Selesai' : 'Belum'">Belum</p>
+                             <p class="text-[11px] uppercase mt-0.5 tracking-wider"
+                                :class="liveStatus === 'completed' 
+                                    ? 'text-slate-400 dark:text-slate-500 font-bold' 
+                                    : (liveStatus === 'shipped'
+                                        ? 'text-primary-600 dark:text-primary-455 font-black'
+                                        : 'text-slate-400 dark:text-slate-655')"
+                                x-text="liveStatus === 'completed' ? 'Selesai' : (liveStatus === 'shipped' ? 'DikirimKurir' : 'Belum')">Belum</p>
                          </div>
                      </div>
 
                      {{-- Vertical Connector Line (Mobile) --}}
                      <div class="w-0.5 h-6 ml-5 -my-4 md:hidden block transition-colors duration-300"
-                          :class="['completed'].includes(liveStatus) ? 'bg-primary-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
+                          :class="liveStatus === 'completed' ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
 
                      {{-- Step 4: Selesai --}}
                      <div class="flex flex-row md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto md:flex-1">
                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300"
-                              :class="['completed'].includes(liveStatus) 
+                              :class="liveStatus === 'completed' 
                                   ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
                                   : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400'">
-                             <span>4</span>
+                             <span x-show="liveStatus !== 'completed'">4</span>
+                             <svg x-show="liveStatus === 'completed'" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                          </div>
                          <div class="text-left md:text-center">
                              <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100">Pesanan Tiba</p>
-                             <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider"
+                             <p class="text-[11px] uppercase mt-0.5 tracking-wider"
+                                :class="liveStatus === 'completed' 
+                                    ? 'text-emerald-600 dark:text-emerald-400 font-black' 
+                                    : 'text-slate-400 dark:text-slate-655'"
                                 x-text="liveStatus === 'completed' ? 'Selesai' : 'Belum'">Belum</p>
                          </div>
                      </div>
@@ -286,50 +308,71 @@
                  </div>
              </template>
 
-            {{-- Products List --}}
-            <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm ring-1 ring-slate-200/50 dark:ring-slate-800/80 overflow-hidden">
-                <div class="p-6 sm:p-8">
-                    <h3 class="text-xl font-black text-slate-900 dark:text-white mb-6">Daftar Produk</h3>
-                    <div class="space-y-4">
-                        @foreach($order->items as $item)
-                            <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 group">
-                                <div class="flex items-start sm:items-center gap-5">
-                                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 shadow-sm relative border border-slate-200/50 dark:border-slate-800">
-                                        @if($item->product && $item->product->image)
-                                            <img src="{{ asset('storage/' . $item->product->image) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                                        @else
-                                            <div class="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
-                                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-                                            </div>
-                                        @endif
-                                        <div class="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg border border-white/10 shadow-sm">
-                                            {{ $item->quantity }}x
-                                        </div>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-primary-600 transition-colors">
-                                            @if($item->product)
-                                                <a href="{{ route('products.show', $item->product) }}">{{ $item->product_name }}</a>
-                                            @else
-                                                {{ $item->product_name }}
-                                            @endif
-                                        </h4>
-                                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Rp {{ number_format($item->product_price, 0, ',', '.') }}</p>
-                                    </div>
-                                    <div class="text-base font-black text-slate-900 dark:text-white shrink-0 self-start sm:self-center">
-                                        Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                                    </div>
-                                </div>
-
-                                {{-- Review Block --}}
-                                @if($order->status === 'completed' && $item->product_id)
-                                    <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800">
-                                        @livewire('submit-review', ['orderId' => $order->id, 'productId' => $item->product_id], 'review-'.$item->id)
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
+             {{-- Products List --}}
+             <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm ring-1 ring-slate-200/50 dark:ring-slate-800/80 overflow-hidden">
+                 <div class="p-6 sm:p-8">
+                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/60">
+                         <h3 class="text-lg lg:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+                             <div class="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
+                             </div>
+                             Daftar Produk
+                         </h3>
+                         <span class="inline-flex items-center px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 shadow-2xs border border-slate-200/40 dark:border-slate-700/50">
+                             {{ count($order->items) }} Items
+                         </span>
+                     </div>
+                     
+                     <div class="space-y-4">
+                         @foreach($order->items as $item)
+                             <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20 transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-900/40 hover:shadow-md hover:shadow-slate-150/10 dark:hover:shadow-none hover:-translate-y-0.5 group">
+                                 <div class="flex items-start sm:items-center gap-5">
+                                     {{-- Product Image Container --}}
+                                     <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 shadow-xs relative border border-slate-200/60 dark:border-slate-800/60 group-hover:border-primary-500/30 transition-colors">
+                                         @if($item->product && $item->product->image)
+                                             <img src="{{ asset('storage/' . $item->product->image) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $item->product_name }}">
+                                         @else
+                                             <div class="w-full h-full flex items-center justify-center text-slate-355 bg-slate-100 dark:bg-slate-900">
+                                                 <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
+                                             </div>
+                                         @endif
+                                         {{-- Quantity overlay badge with elegant glass style --}}
+                                         <div class="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-slate-900/75 dark:bg-slate-950/80 backdrop-blur-xs text-white text-[10px] font-black rounded-lg border border-white/15 dark:border-slate-800 shadow-sm transition-transform group-hover:scale-105">
+                                             x{{ $item->quantity }}
+                                         </div>
+                                     </div>
+                                     
+                                     {{-- Product Info --}}
+                                     <div class="flex-1 min-w-0">
+                                         <h4 class="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                             @if($item->product)
+                                                 <a href="{{ route('products.show', $item->product) }}" class="hover:underline decoration-2 underline-offset-4">{{ $item->product_name }}</a>
+                                             @else
+                                                 {{ $item->product_name }}
+                                             @endif
+                                         </h4>
+                                         <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1.5 tracking-wide flex items-center gap-1.5">
+                                             <span>Rp {{ number_format($item->product_price, 0, ',', '.') }}</span>
+                                             <span class="text-slate-300 dark:text-slate-700 select-none">|</span>
+                                             <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-450">Qty: {{ $item->quantity }}</span>
+                                         </p>
+                                     </div>
+                                     
+                                     {{-- Subtotal Price --}}
+                                     <div class="text-base font-black text-slate-900 dark:text-white shrink-0 self-start sm:self-center bg-white dark:bg-slate-900/60 px-3.5 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800/80 group-hover:border-primary-500/20 group-hover:bg-primary-50/10 dark:group-hover:bg-primary-950/10 transition-all duration-300 shadow-2xs">
+                                         Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                     </div>
+                                 </div>
+ 
+                                 {{-- Review Block --}}
+                                 @if($order->status === 'completed' && $item->product_id)
+                                     <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/80">
+                                         @livewire('submit-review', ['orderId' => $order->id, 'productId' => $item->product_id], 'review-'.$item->id)
+                                     </div>
+                                 @endif
+                             </div>
+                         @endforeach
+                     </div>
 
                     @if($order->notes)
                         <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
@@ -351,37 +394,64 @@
             
             {{-- Address Summary --}}
             @if($order->address)
-            <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80">
-                <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                    Dikirim Kepada
+            <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80">
+                <h3 class="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                    Alamat Pengiriman
                 </h3>
-                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                <div class="p-5 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/60 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 px-2 py-0.5 rounded bg-primary-100 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400 text-[10px] font-bold uppercase tracking-wider border border-primary-200/30 dark:border-primary-900/50 shadow-2xs">
+                        {{ $order->address->label }}
+                    </div>
+
                     <p class="text-base font-extrabold text-slate-900 dark:text-slate-100">{{ $order->address->recipient_name }}</p>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{{ $order->address->full_address }}</p>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 leading-relaxed select-all">{{ $order->address->full_address }}</p>
                     
-                    <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700" x-data="{ userPhone: '{{ $order->user->phone ?? $order->address->phone }}' }">
-                        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 select-all" x-text="userPhone"></p>
+                    <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between"
+                         x-data="{ copied: false, phone: '{{ $order->user->phone ?? $order->address->phone }}' }">
+                        <a :href="'tel:' + phone" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-xs font-bold text-slate-700 dark:text-slate-355 border border-slate-200/60 dark:border-slate-800 transition-colors shadow-2xs">
+                            <svg class="w-3.5 h-3.5 text-primary-555" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.443-5.15-3.768-6.593-6.593l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
+                            <span x-text="copied ? 'Tersalin!' : phone" :class="copied ? 'text-emerald-600 dark:text-emerald-400' : ''"></span>
+                        </a>
+                        <button @click="navigator.clipboard.writeText(phone); copied = true; setTimeout(() => copied = false, 2000)" 
+                                class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-355 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95" 
+                                title="Salin nomor">
+                            <svg x-show="!copied" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                            </svg>
+                            <svg x-show="copied" class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" style="display: none;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
             @endif
 
             {{-- Ringkasan Biaya --}}
-            <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80 sticky top-28 xl:top-32">
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">Ringkasan Biaya</h3>
+            <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80 sticky top-28 xl:top-32">
+                <h3 class="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>
+                    Ringkasan Biaya
+                </h3>
                 <div class="space-y-4">
                     <div class="flex justify-between items-center text-sm">
                         <span class="font-medium text-slate-500 dark:text-slate-400">Total Harga Produk</span>
-                        <span class="font-bold text-slate-700 dark:text-slate-300">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-200">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between items-center text-sm">
                         <span class="font-medium text-slate-500 dark:text-slate-400">Ongkos Kirim</span>
-                        <span class="font-bold text-slate-700 dark:text-slate-300">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-200">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
                     </div>
-                    <div class="flex justify-between items-center border-t border-dashed border-slate-200 dark:border-slate-700 pt-5 mt-2">
-                        <span class="text-base font-bold text-slate-900 dark:text-white">Total Belanja</span>
-                        <span class="text-2xl font-black text-primary-600 dark:text-primary-400 tracking-tight">{{ $order->formatted_total }}</span>
+                    @if($order->discount_amount > 0)
+                        <div class="flex justify-between items-center text-sm text-emerald-600 dark:text-emerald-400">
+                            <span class="font-medium">Potongan Diskon</span>
+                            <span class="font-bold">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+                    <div class="flex justify-between items-center border-t border-dashed border-slate-200 dark:border-slate-800 pt-5 mt-2">
+                        <span class="text-sm font-extrabold text-slate-850 dark:text-slate-200">Total Belanja</span>
+                        <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $order->formatted_total }}</span>
                     </div>
                 </div>
 
