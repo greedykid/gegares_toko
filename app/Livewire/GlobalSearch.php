@@ -72,7 +72,7 @@ class GlobalSearch extends Component
 
         // Cache the candidate pool briefly so typing doesn't re-fetch the whole
         // catalog on every keystroke that triggers a fuzzy fallback.
-        $candidatesData = \Illuminate\Support\Facades\Cache::remember('search.fuzzy.products', 3600, fn () => Product::select('id', 'name', 'image', 'price', 'rating_avg', 'rating_count')->get()->toArray());
+        $candidatesData = \Illuminate\Support\Facades\Cache::remember('search.fuzzy.products', 3600, fn () => Product::select('id', 'slug', 'name', 'image', 'price', 'rating_avg', 'rating_count')->get()->toArray());
         $candidates = collect($candidatesData)->map(fn ($p) => new Product($p));
 
         return $candidates
