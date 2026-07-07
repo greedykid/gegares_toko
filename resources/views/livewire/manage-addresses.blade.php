@@ -285,15 +285,9 @@
                                 <div wire:ignore>
                                     <div x-ref="mapContainer" style="height: 220px; width: 100%;" class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden z-0"></div>
                                 </div>
-                                <div class="flex items-center gap-4 mt-2">
-                                    <div class="flex-1">
-                                        <label class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-600">Latitude</label>
-                                        <input type="text" readonly class="w-full px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-400 font-mono" x-bind:value="$wire.latitude">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-600">Longitude</label>
-                                        <input type="text" readonly class="w-full px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-400 font-mono" x-bind:value="$wire.longitude">
-                                    </div>
+                                <div class="hidden">
+                                    <input type="hidden" x-bind:value="$wire.latitude">
+                                    <input type="hidden" x-bind:value="$wire.longitude">
                                 </div>
                             </div>
                         </div>

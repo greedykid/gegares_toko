@@ -79,10 +79,8 @@
                                 <input type="radio" name="payment_method_select" value="pakasir" class="hidden" @change="paymentMethod = 'pakasir'" :checked="paymentMethod === 'pakasir'">
                                 
                                 <div class="flex items-center gap-5 w-full">
-                                    <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 6.375v-1.5zM3.75 9.75c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-1.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-1.5zM11.25 5.625a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75zM12 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75zM12 15.375a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75z" />
-                                        </svg>
+                                    <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+                                        <img src="{{ asset('images/pakasir.png') }}" alt="Pakasir" class="w-full h-full object-contain">
                                     </div>
                                     <div class="flex-1">
                                         <p class="text-base font-bold text-slate-900 dark:text-white">Pakasir (Otomatis)</p>

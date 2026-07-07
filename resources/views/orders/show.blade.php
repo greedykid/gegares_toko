@@ -326,9 +326,9 @@
                      <div class="space-y-4">
                          @foreach($order->items as $item)
                              <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20 transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-900/40 hover:shadow-md hover:shadow-slate-150/10 dark:hover:shadow-none hover:-translate-y-0.5 group">
-                                 <div class="flex items-start sm:items-center gap-5">
+                                 <div class="flex items-start gap-4 sm:gap-5">
                                      {{-- Product Image Container --}}
-                                     <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 shadow-xs relative border border-slate-200/60 dark:border-slate-800/60 group-hover:border-primary-500/30 transition-colors">
+                                     <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 shadow-xs relative border border-slate-200/60 dark:border-slate-800/60 group-hover:border-primary-500/30 transition-colors">
                                          @if($item->product && $item->product->image)
                                              <img src="{{ asset('storage/' . $item->product->image) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $item->product_name }}">
                                          @else
@@ -337,30 +337,32 @@
                                              </div>
                                          @endif
                                          {{-- Quantity overlay badge with elegant glass style --}}
-                                         <div class="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-slate-900/75 dark:bg-slate-950/80 backdrop-blur-xs text-white text-[10px] font-black rounded-lg border border-white/15 dark:border-slate-800 shadow-sm transition-transform group-hover:scale-105">
+                                         <div class="absolute bottom-1 right-1 px-1.5 py-0.5 bg-slate-900/75 dark:bg-slate-950/80 backdrop-blur-xs text-white text-[9px] sm:text-[10px] font-black rounded-lg border border-white/15 dark:border-slate-800 shadow-sm transition-transform group-hover:scale-105">
                                              x{{ $item->quantity }}
                                          </div>
                                      </div>
                                      
-                                     {{-- Product Info --}}
-                                     <div class="flex-1 min-w-0">
-                                         <h4 class="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                             @if($item->product)
-                                                 <a href="{{ route('products.show', $item->product) }}" class="hover:underline decoration-2 underline-offset-4">{{ $item->product_name }}</a>
-                                             @else
-                                                 {{ $item->product_name }}
-                                             @endif
-                                         </h4>
-                                         <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1.5 tracking-wide flex items-center gap-1.5">
-                                             <span>Rp {{ number_format($item->product_price, 0, ',', '.') }}</span>
-                                             <span class="text-slate-300 dark:text-slate-700 select-none">|</span>
-                                             <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-450">Qty: {{ $item->quantity }}</span>
-                                         </p>
-                                     </div>
-                                     
-                                     {{-- Subtotal Price --}}
-                                     <div class="text-base font-black text-slate-900 dark:text-white shrink-0 self-start sm:self-center bg-white dark:bg-slate-900/60 px-3.5 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800/80 group-hover:border-primary-500/20 group-hover:bg-primary-50/10 dark:group-hover:bg-primary-950/10 transition-all duration-300 shadow-2xs">
-                                         Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                     {{-- Product Info & Subtotal (responsive wrap) --}}
+                                     <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                         <div>
+                                             <h4 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                                 @if($item->product)
+                                                     <a href="{{ route('products.show', $item->product) }}" class="hover:underline decoration-2 underline-offset-4">{{ $item->product_name }}</a>
+                                                 @else
+                                                     {{ $item->product_name }}
+                                                 @endif
+                                             </h4>
+                                             <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1 sm:mt-1.5 tracking-wide flex items-center gap-1.5">
+                                                 <span>Rp {{ number_format($item->product_price, 0, ',', '.') }}</span>
+                                                 <span class="text-slate-300 dark:text-slate-700 select-none">|</span>
+                                                 <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-450">Qty: {{ $item->quantity }}</span>
+                                             </p>
+                                         </div>
+                                         
+                                         {{-- Subtotal Price --}}
+                                         <div class="text-xs sm:text-base font-black text-slate-900 dark:text-white shrink-0 self-start sm:self-center bg-white dark:bg-slate-900/60 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl border border-slate-100 dark:border-slate-800/80 group-hover:border-primary-500/20 group-hover:bg-primary-50/10 dark:group-hover:bg-primary-950/10 transition-all duration-300 shadow-2xs">
+                                             Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                         </div>
                                      </div>
                                  </div>
  
