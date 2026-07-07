@@ -24,7 +24,8 @@ class PakasirService
             $orderId = $this->getPakasirOrderId($order->order_number);
             
             // Redirect user back to our payment page when done
-            $redirectUrl = route('orders.payment', $order) . '?chatbot_open=1';
+            $isChatbotOrder = str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot');
+            $redirectUrl = route('orders.payment', $order) . ($isChatbotOrder ? '?chatbot_open=1' : '');
             
             // Construct the Pakasir hosted payment URL (restricted to QRIS channel only)
             $paymentUrl = "https://app.pakasir.com/pay/{$slug}/{$amount}?order_id={$orderId}&payment_channel=qris&redirect=" . urlencode($redirectUrl);

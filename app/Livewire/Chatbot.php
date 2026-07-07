@@ -113,6 +113,7 @@ class Chatbot extends Component
         $recentPaidOrders = Order::where('user_id', Auth::id())
             ->where('payment_status', 'paid')
             ->where('paid_at', '>=', now()->subHours(2))
+            ->where('notes', 'LIKE', '%Dipesan otomatis via AI Chatbot%')
             ->get();
 
         if ($recentPaidOrders->isEmpty()) {
@@ -192,6 +193,9 @@ class Chatbot extends Component
         }
 
         if ($order->payment_status === 'paid') {
+            if (!$isChatbotOrder) {
+                return;
+            }
             $acknowledged = session('gegares_acknowledged_paid_orders', []);
             if (!in_array($order->id, $acknowledged)) {
                 $acknowledged[] = $order->id;

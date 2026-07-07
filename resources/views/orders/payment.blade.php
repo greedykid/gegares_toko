@@ -132,6 +132,20 @@
                         window.location.reload();
                     }
                 });
+
+                // Auto polling to check if webhook has marked order as paid
+                const checkStatusUrl = '{{ route('orders.status', $order) }}';
+                const interval = setInterval(function() {
+                    fetch(checkStatusUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.payment_status === 'paid') {
+                                clearInterval(interval);
+                                window.location.reload();
+                            }
+                        })
+                        .catch(err => console.error('Error checking status:', err));
+                }, 3000); // Poll every 3 seconds
             });
         </script>
     @endif

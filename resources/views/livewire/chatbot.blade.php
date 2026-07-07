@@ -354,7 +354,7 @@
                     @click="const container = document.getElementById('chat-messages'); if(container) { container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); }"
                     class="absolute -top-12 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 rounded-full shadow-lg border border-slate-200/80 dark:border-slate-800/80 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-700 dark:hover:text-primary-300 transition-all active:scale-95 cursor-pointer"
                     style="display: none;">
-                <svg class="w-4 h-4 text-primary-600 dark:text-primary-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
                 </svg>
                 <span>Lihat pesan baru</span>

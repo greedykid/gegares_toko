@@ -41,6 +41,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             'payment_method' => 'qris',
             'shipping_courier' => 'jne',
             'shipping_service' => 'reg',
+            'notes' => 'Dipesan otomatis via AI Chatbot',
             'paid_at' => now(),
         ]);
 
