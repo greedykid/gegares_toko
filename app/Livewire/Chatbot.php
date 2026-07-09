@@ -461,6 +461,13 @@ class Chatbot extends Component
         // Clear cart
         $cartService->clear();
 
+        // Notify the customer their order was received (queued, non-blocking).
+        try {
+            $user->notify(new \App\Notifications\OrderPlacedNotification($order));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('OrderPlaced notification failed: ' . $e->getMessage());
+        }
+
         // Dispatch events
         $this->dispatch('cart-updated');
         $this->dispatch('wishlist-updated');

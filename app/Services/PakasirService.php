@@ -235,12 +235,12 @@ class PakasirService
      */
     protected function markOrderPaid(Order $order, string $paymentMethod, ?string $completedAt): void
     {
-        DB::transaction(function () use ($order, $paymentMethod, $completedAt) {
+        $didTransition = DB::transaction(function () use ($order, $paymentMethod, $completedAt) {
             // Re-fetch under a row lock to make the paid-transition idempotent.
             $locked = Order::whereKey($order->getKey())->lockForUpdate()->first();
 
             if (!$locked || $locked->payment_status === 'paid') {
-                return; // Already processed by a concurrent request.
+                return false; // Already processed by a concurrent request.
             }
 
             // Deduct stock first (atomic SQL decrement) while still inside the lock.
@@ -258,9 +258,22 @@ class PakasirService
                 'payment_method' => $paymentMethod,
                 'paid_at' => $completedAt ? Carbon::parse($completedAt) : now(),
             ]);
+
+            return true;
         });
 
         $order->refresh();
+
+        // Notify the customer their payment succeeded (queued, non-blocking).
+        // Only fires for the call that actually performed the paid transition,
+        // so concurrent webhook/sync requests never send a duplicate email.
+        if ($didTransition && $order->user) {
+            try {
+                $order->user->notify(new \App\Notifications\OrderPaidNotification($order));
+            } catch (\Throwable $e) {
+                Log::error('OrderPaid notification failed: ' . $e->getMessage());
+            }
+        }
     }
 
     /**

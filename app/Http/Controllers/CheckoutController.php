@@ -112,6 +112,13 @@ class CheckoutController extends Controller
 
         $cartService->clear();
 
+        // Notify the customer their order was received (queued, non-blocking).
+        try {
+            $order->user->notify(new \App\Notifications\OrderPlacedNotification($order));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('OrderPlaced notification failed: ' . $e->getMessage());
+        }
+
         return redirect()->route('orders.payment', $order);
     }
 }
