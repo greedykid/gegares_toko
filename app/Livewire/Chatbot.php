@@ -754,7 +754,10 @@ FORMAT RESPONS:
             message: $userMsg,
             systemContext: $systemPrompt,
             conversationHistory: $conversationMemory,
-            temperature: 0.3,
+            // Low temperature: answers are grounded factual lookups against the
+            // catalog/store context, not creative writing. Higher values made the
+            // model invent bank names, opening hours and delivery estimates.
+            temperature: 0.2,
             maxTokens: 1024
         );
 
@@ -830,11 +833,12 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
 5. **FORMAT KARTU**: Untuk menampilkan kartu produk, tulis nama produk dalam kurung siku ganda: [[NamaProduk]]. Nama HARUS PERSIS sesuai daftar produk di atas.
 6. **BAHASA**: Bahasa Indonesia sopan, friendly, dan hangat. Gunakan 'Kak' atau nama user. Format harga: Rp X.XXX.
 7. **JANGAN CAMPUR TOPIK**: Data pesanan HANYA boleh digunakan ketika user SECARA EKSPLISIT bertanya tentang 'status pesanan', 'pesanan saya', 'cek order', atau 'lacak resi'.
-8. **FORMAT REKOMENDASI PRODUK**: Saat merekomendasikan produk, gunakan format ini:
+8. **FORMAT REKOMENDASI PRODUK**: Saat MEREKOMENDASIKAN BEBERAPA produk (bukan menjawab pertanyaan atribut spesifik), gunakan format ini:
    - Tulis intro singkat 1-2 kalimat saja (contoh: 'Berikut jajanan terlaris kami yang paling digemari pelanggan!')
    - Lalu langsung tulis [[NamaProduk]] untuk setiap produk yang direkomendasikan (kartu produk akan otomatis muncul)
    - JANGAN tulis deskripsi detail tiap produk satu per satu. Informasi nama, harga, dan stok sudah ditampilkan di kartu produk.
    - Boleh tutup dengan 1 kalimat ajakan singkat (contoh: 'Langsung klik Beli di kartu produk ya Kak!')
+   ⚠️ Aturan ini TIDAK berlaku untuk pertanyaan atribut spesifik — lihat Aturan 11.
 9. **INTENSI MEMESAN / CHECKOUT / BELI**: Jika user meminta untuk membeli, memesan, checkout, atau menambahkan produk ke keranjang belanja (contoh: 'pesankan saya 4 Klepon', 'beli Klepon 3', 'tambah klepon ke keranjang'), kamu WAJIB menyertakan tag pemesanan berikut di baris baru di bagian paling akhir jawabanmu (sebelum ---SUGGESTIONS---):
    ---BUY---NamaProduk|Jumlah
    NamaProduk harus PERSIS sesuai dengan daftar produk di katalog. Jumlah harus berupa angka bulat positif (default 1 jika user tidak menentukan jumlah).
@@ -851,6 +855,16 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
    - Jika user menyebut SELERA (manis, gurih, pedas, segar), pilih produk yang sesuai berdasarkan deskripsi di katalog.
    - Prioritaskan produk yang TERSEDIA (hindari merekomendasikan yang HABIS, kecuali user spesifik menanyakannya).
    - Jika ada kupon/promo aktif yang relevan dengan rekomendasi, sebutkan secara singkat agar user terdorong membeli.
+11. **PERTANYAAN ATRIBUT SPESIFIK (WAJIB DIJAWAB EKSPLISIT)**: Jika user menanyakan satu atribut tertentu dari sebuah produk — HARGA, STOK, RATING, atau DESKRIPSI — kamu WAJIB menyebutkan nilai atribut itu SECARA EKSPLISIT dalam kalimat jawabanmu, disalin PERSIS dari KATALOG PRODUK.
+   ⚠️ Menampilkan kartu produk [[NamaProduk]] saja TIDAK CUKUP dan dianggap jawaban SALAH, karena kartu produk TIDAK menampilkan rating maupun deskripsi.
+   - Contoh BENAR (user tanya rating): '<NamaProduk> punya rating <angka dari katalog> dari 5 berdasarkan <jumlah> ulasan pelanggan, Kak.'
+   - Contoh SALAH: hanya menulis [[NamaProduk]] tanpa menyebutkan angka rating.
+   - Tulis nama produk PERSIS seperti di katalog (jangan disingkat atau salah ketik).
+   - Jika atribut yang ditanya tidak tersedia di katalog (contoh: 'Belum ada ulasan'), katakan apa adanya, JANGAN mengarang angka.
+12. **AKURASI INFO TOKO (ANTI-HALUSINASI)**: Semua informasi jam operasional, alamat toko, kontak, metode pembayaran, dan pengiriman HARUS disalin PERSIS dari bagian INFO TOKO & CARA PESAN di bawah.
+   - DILARANG KERAS mengarang nama bank, estimasi lama pengiriman, nama tingkatan layanan kurir, jam buka, atau alamat.
+   - Jika user bertanya alamat toko, sebutkan alamat lengkapnya. Jika bertanya jam buka, sebutkan jam operasionalnya.
+   - Jika suatu informasi TIDAK ADA di bagian INFO TOKO, jawab terus terang bahwa kamu tidak memiliki informasi tersebut dan arahkan user ke halaman terkait (Checkout / Kontak). JANGAN menebak.
 
 # PRODUK TERLARIS (BEST SELLERS)
 {$bestSellers}
@@ -997,29 +1011,58 @@ saran1|saran2|saran3";
         return $context;
     }
 
+    /**
+     * Store facts for the AI, read from the SAME source the public pages render
+     * (StoreSetting + its published fallbacks). Nothing here may be invented:
+     * a fact the website does not publish must not appear in this context, or
+     * the assistant will confidently state something no page can confirm.
+     *
+     * @see resources/views/pages/contact.blade.php for the mirrored fallbacks.
+     */
     protected function getStoreInfo(): string
     {
-        $setting = \App\Models\StoreSetting::first();
-        
-        $name = $setting?->store_name ?? 'Gegares';
-        $phone = $setting?->contact_phone ?? '+62 812-3456-7890';
-        $email = $setting?->contact_email ?? 'hello@gegares.com';
-        $address = $setting ? "{$setting->address_line}, {$setting->city}, {$setting->province} {$setting->postal_code}" : 'Jakarta Timur';
+        $store = new \Illuminate\Support\Fluent(
+            \Illuminate\Support\Facades\Cache::remember(
+                'store_settings',
+                86400,
+                fn () => (\App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting())->toArray()
+            )
+        );
+
+        $name = $store->store_name ?? 'Gegares';
+        $phone = $store->contact_phone ?? '+62 812-3456-7890';
+        $whatsapp = $store->contact_whatsapp ?? $phone;
+        $email = $store->contact_email ?? 'hello@gegares.com';
+
+        $address = $store->address_line
+            ? trim("{$store->address_line}, {$store->city}, {$store->province} {$store->postal_code}")
+            : 'Jl. Jajanan Pasar No. 12, Jakarta Selatan, Indonesia 12345';
+
+        $hours = $store->contact_hours
+            ? trim(preg_replace('/\s*\n\s*/', ' | ', $store->contact_hours))
+            : 'Setiap Hari: 06:00 - 17:00 WIB | Pemesanan WhatsApp: 24 Jam';
 
         return "Nama Toko: {$name}
-Jam Operasional: Senin - Minggu, 07:00 - 21:00 WIB
-Lokasi: {$address}
-Kontak: WhatsApp ({$phone}), Email ({$email})
+Jam Operasional: {$hours}
+Alamat Toko: {$address}
+Kontak: WhatsApp ({$whatsapp}), Telepon ({$phone}), Email ({$email})
 
-METODE PEMBAYARAN (via Pakasir):
-- QRIS (GoPay, ShopeePay, Dana, OVO)
-- Virtual Account (BCA, BNI, Mandiri, BRI, Permata)
-- Kartu Kredit/Debit
+METODE PEMBAYARAN (diproses via payment gateway Pakasir):
+- QRIS (dapat dibayar dengan e-wallet seperti GoPay, OVO, Dana, ShopeePay)
+- Virtual Account / Transfer Bank
+CATATAN PENTING: Daftar bank Virtual Account yang aktif dapat berubah sewaktu-waktu
+dan hanya ditampilkan pada halaman pembayaran Pakasir. Kamu DILARANG menyebutkan nama
+bank tertentu. Jika user bertanya bank apa saja, jawab bahwa pilihan bank yang tersedia
+akan muncul di halaman pembayaran setelah checkout.
 
-PENGIRIMAN (via Biteship):
-- Instant (1-2 jam, area Jakarta)
-- Same Day (hari yang sama)
-- Regular (1-3 hari kerja)
+PENGIRIMAN (diproses via Biteship):
+- Pilihan kurir, biaya ongkir, dan estimasi waktu pengiriman ditampilkan secara otomatis
+  pada halaman Checkout setelah user memilih alamat pengiriman.
+CATATAN PENTING: Toko tidak mempublikasikan durasi pengiriman maupun nama tingkatan
+layanan kurir di mana pun. Kamu DILARANG menyebutkan angka lama pengiriman dalam satuan
+jam/hari, dan DILARANG menyebutkan nama tingkatan layanan kurir. Jika user bertanya
+berapa lama pengiriman, jawab bahwa estimasi waktu bergantung pada kurir yang dipilih
+dan akan terlihat di halaman Checkout.
 
 CARA PESAN:
 1. Pilih jajanan favorit di halaman Produk.
