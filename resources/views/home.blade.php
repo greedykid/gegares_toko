@@ -26,25 +26,26 @@
 @endphp
 
 {{-- ─── HERO SECTION ─── --}}
+@php
+    // Build a padded slide list for an infinite track: [cloneOfLast, ...real, cloneOfFirst].
+    // The clones let a wrap (last→first) keep sliding in the same direction instead of
+    // rewinding across every slide, and are snapped back invisibly on transitionend.
+    $heroSlides = collect();
+    $multi = $featuredProducts->count() > 1;
+    if ($multi) {
+        $heroSlides->push(['product' => $featuredProducts->last(), 'eager' => false]);
+    }
+    foreach ($featuredProducts as $i => $p) {
+        $heroSlides->push(['product' => $p, 'eager' => $i === 0]);
+    }
+    if ($multi) {
+        $heroSlides->push(['product' => $featuredProducts->first(), 'eager' => false]);
+    }
+@endphp
 <section class="relative bg-white dark:bg-slate-950 transition-colors duration-500"
-         x-data="{
-            activeSlide: 0,
-            slidesCount: {{ $featuredProducts->count() }},
-            timer: null,
-            touchStartX: 0,
-            next() { this.activeSlide = (this.activeSlide + 1) % this.slidesCount },
-            prev() { this.activeSlide = (this.activeSlide - 1 + this.slidesCount) % this.slidesCount },
-            startAuto() { if (this.slidesCount > 1) this.timer = setInterval(() => this.next(), 5000) },
-            resetAuto() { clearInterval(this.timer); this.startAuto() },
-            onTouchStart(e) { this.touchStartX = e.changedTouches[0].screenX },
-            onTouchEnd(e) {
-                const dx = e.changedTouches[0].screenX - this.touchStartX;
-                if (Math.abs(dx) > 40) { dx < 0 ? this.next() : this.prev(); this.resetAuto(); }
-            }
-         }"
-         x-init="startAuto()">
+         x-data="heroCarousel({{ $featuredProducts->count() }})">
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 sm:pt-8 lg:pt-10 lg:pb-24">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
 
             {{-- Left: Text Content --}}
@@ -71,76 +72,77 @@
             {{-- Right: Slideshow --}}
             <div class="relative">
                 <div class="group/hero relative aspect-square sm:aspect-video lg:aspect-square max-w-md mx-auto">
-                    {{-- Carousel Frame --}}
-                    <div class="absolute inset-0 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 touch-pan-y select-none"
-                         @touchstart.passive="onTouchStart($event)" @touchend.passive="onTouchEnd($event)">
-                        {{-- Slides --}}
-                        @foreach($featuredProducts as $index => $product)
-                            @php
-                                $imagePath = $product->image ? asset('storage/' . $product->image) : null;
-                                $productRoute = route('products.show', $product->slug);
-                            @endphp
-                            <div x-show="activeSlide === {{ $index }}"
-                                 x-transition:enter="transition transform ease-out duration-1000"
-                                 x-transition:enter-start="-translate-x-full opacity-0"
-                                 x-transition:enter-end="translate-x-0 opacity-100"
-                                 x-transition:leave="transition transform ease-in duration-1000"
-                                 x-transition:leave-start="translate-x-0 opacity-100"
-                                 x-transition:leave-end="translate-x-full opacity-0"
-                                 class="absolute inset-0 w-full h-full"
-                                 @if($index > 0) x-cloak style="display: none;" @endif>
-                                
-                                <a href="{{ $productRoute }}" class="group block w-full h-full relative">
-                                    @if($imagePath)
-                                        {{-- The first slide is the LCP element: fetch it eagerly and at high
-                                             priority. Later slides are off-screen, so defer them. --}}
-                                        <img src="{{ $imagePath }}" alt="{{ $product->name }}"
-                                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                             width="480" height="480" decoding="async"
-                                             loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
-                                             fetchpriority="{{ $index === 0 ? 'high' : 'low' }}">
-                                    @else
-                                        {{-- Image Fallback --}}
-                                        <div class="w-full h-full flex flex-col items-center justify-center bg-primary-50 dark:bg-slate-900 transition-colors duration-300">
-                                            <svg class="w-12 h-12 text-primary-400/80 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 18.75V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75Z" />
-                                            </svg>
-                                            <span class="mt-2 text-xs text-primary-700 dark:text-slate-400 font-bold">{{ $product->name }}</span>
+                    {{-- Carousel Frame: a fixed viewport that clips a wide sliding track --}}
+                    <div x-ref="frame"
+                         class="absolute inset-0 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 touch-pan-y select-none"
+                         @touchstart.passive="onStart($event)" @touchmove="onMove($event)" @touchend.passive="onEnd($event)">
+                        {{-- Sliding track: one flex row, translated by whole slide widths --}}
+                        <div x-ref="track"
+                             class="flex h-full w-full will-change-transform"
+                             :class="animate ? 'transition-transform duration-500 ease-out' : ''"
+                             :style="trackStyle()"
+                             @transitionend="onTransitionEnd($event)">
+                            @foreach($heroSlides as $slide)
+                                @php
+                                    $product = $slide['product'];
+                                    $imagePath = $product->image ? asset('storage/' . $product->image) : null;
+                                    $productRoute = route('products.show', $product->slug);
+                                @endphp
+                                <div class="relative w-full h-full shrink-0 basis-full">
+                                    {{-- Suppress the click that fires after a horizontal swipe --}}
+                                    <a href="{{ $productRoute }}" class="group block w-full h-full relative"
+                                       @click="moved && $event.preventDefault()" draggable="false">
+                                        @if($imagePath)
+                                            {{-- The first real slide is the LCP element: fetch it eagerly and at
+                                                 high priority. Clones and later slides are deferred. --}}
+                                            <img src="{{ $imagePath }}" alt="{{ $product->name }}"
+                                                 class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-110"
+                                                 width="480" height="480" decoding="async" draggable="false"
+                                                 loading="{{ $slide['eager'] ? 'eager' : 'lazy' }}"
+                                                 fetchpriority="{{ $slide['eager'] ? 'high' : 'low' }}">
+                                        @else
+                                            {{-- Image Fallback --}}
+                                            <div class="w-full h-full flex flex-col items-center justify-center bg-primary-50 dark:bg-slate-900 transition-colors duration-300">
+                                                <svg class="w-12 h-12 text-primary-400/80 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 18.75V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75Z" />
+                                                </svg>
+                                                <span class="mt-2 text-xs text-primary-700 dark:text-slate-400 font-bold">{{ $product->name }}</span>
+                                            </div>
+                                        @endif
+
+                                        {{-- Slide Caption --}}
+                                        <div class="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/75 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                                            <div class="flex items-center justify-between gap-4">
+                                                <span class="text-sm font-bold text-white tracking-tight">{{ $product->name }}</span>
+                                                <span class="text-[10px] font-black uppercase text-white tracking-widest bg-primary-600 px-2 py-1 rounded">Lihat</span>
+                                            </div>
                                         </div>
-                                    @endif
-                                    
-                                    {{-- Slide Caption --}}
-                                    <div class="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/75 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
-                                        <div class="flex items-center justify-between gap-4">
-                                            <span class="text-sm font-bold text-white tracking-tight">{{ $product->name }}</span>
-                                            <span class="text-[10px] font-black uppercase text-white tracking-widest bg-primary-600 px-2 py-1 rounded">Lihat</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        @endforeach
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
 
                     {{-- Prev / Next Buttons --}}
-                    <button x-show="slidesCount > 1" @click="prev(); resetAuto()" type="button"
+                    <button x-show="count > 1" @click="prev(); resetAuto()" type="button"
                             class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-md hover:bg-white dark:hover:bg-slate-800 hover:scale-105 active:scale-95 opacity-100 lg:opacity-0 lg:group-hover/hero:opacity-100 transition-all duration-300"
                             aria-label="Slide sebelumnya">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
                     </button>
-                    <button x-show="slidesCount > 1" @click="next(); resetAuto()" type="button"
+                    <button x-show="count > 1" @click="next(); resetAuto()" type="button"
                             class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-md hover:bg-white dark:hover:bg-slate-800 hover:scale-105 active:scale-95 opacity-100 lg:opacity-0 lg:group-hover/hero:opacity-100 transition-all duration-300"
                             aria-label="Slide berikutnya">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
                     </button>
 
                     {{-- Navigation Dots --}}
-                    <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+                    <div x-show="count > 1" class="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                         @foreach($featuredProducts as $index => $product)
-                            <button @click="activeSlide = {{ $index }}; resetAuto()"
+                            <button @click="goto({{ $index }})" type="button"
                                     class="w-6 h-6 flex items-center justify-center rounded-full focus:outline-none"
                                     aria-label="Pilih slide {{ $index + 1 }}">
                                 <span class="h-1.5 rounded-full transition-all duration-300"
-                                      :class="activeSlide === {{ $index }} ? 'w-8 bg-primary-600' : 'w-2 bg-slate-300 dark:bg-slate-700 hover:bg-primary-300'"></span>
+                                      :class="real === {{ $index }} ? 'w-8 bg-primary-600' : 'w-2 bg-slate-300 dark:bg-slate-700 hover:bg-primary-300'"></span>
                             </button>
                         @endforeach
                     </div>
@@ -269,3 +271,128 @@
 </section>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        // A real sliding carousel over a padded track: DOM order is
+        // [cloneOfLast, slide0 … slideN-1, cloneOfFirst], so `index` runs 0..N+1
+        // and the two clones let a wrap keep sliding one step in the same
+        // direction, then snap back invisibly once the transition ends.
+        Alpine.data('heroCarousel', (count) => ({
+            count,
+            index: count > 1 ? 1 : 0, // start on the first real slide, past the leading clone
+            animate: true,
+            timer: null,
+
+            // drag state
+            startX: 0,
+            startY: 0,
+            dragPx: 0,
+            dragging: false,
+            horizontal: false,
+            moved: false,
+            frameW: 1,
+
+            get real() {
+                if (this.count < 2) return 0;
+                return ((this.index - 1) % this.count + this.count) % this.count;
+            },
+
+            init() {
+                this.startAuto();
+            },
+
+            trackStyle() {
+                return `transform: translateX(calc(${-this.index} * 100% + ${this.dragPx}px))`;
+            },
+
+            startAuto() {
+                this.stopAuto();
+                if (this.count > 1) this.timer = setInterval(() => this.next(), 5000);
+            },
+            stopAuto() {
+                clearInterval(this.timer);
+            },
+            resetAuto() {
+                this.startAuto();
+            },
+
+            next() {
+                if (this.count < 2) return;
+                this.animate = true;
+                this.index++;
+            },
+            prev() {
+                if (this.count < 2) return;
+                this.animate = true;
+                this.index--;
+            },
+            goto(realIndex) {
+                this.animate = true;
+                this.index = realIndex + 1;
+                this.resetAuto();
+            },
+
+            // Fires when the track finishes moving. When it has landed on a clone,
+            // jump to the matching real slide with animation off so it is invisible.
+            onTransitionEnd(e) {
+                // Ignore transitionend bubbling up from the image hover-zoom.
+                if (e.target !== this.$refs.track) return;
+
+                if (this.index === this.count + 1) {
+                    this.animate = false;
+                    this.index = 1;
+                } else if (this.index === 0) {
+                    this.animate = false;
+                    this.index = this.count;
+                }
+            },
+
+            onStart(e) {
+                if (this.count < 2) return;
+                this.dragging = true;
+                this.horizontal = false;
+                this.moved = false;
+                this.startX = e.touches[0].clientX;
+                this.startY = e.touches[0].clientY;
+                this.dragPx = 0;
+                this.frameW = this.$refs.frame.clientWidth || 1;
+                this.stopAuto();
+            },
+            onMove(e) {
+                if (!this.dragging) return;
+
+                const dx = e.touches[0].clientX - this.startX;
+                const dy = e.touches[0].clientY - this.startY;
+
+                // Decide direction once: a mostly-vertical gesture is a page
+                // scroll, so bow out and let the browser handle it.
+                if (!this.horizontal) {
+                    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+                    if (Math.abs(dy) > Math.abs(dx)) { this.dragging = false; return; }
+                    this.horizontal = true;
+                }
+
+                e.preventDefault();
+                this.moved = true;
+                this.animate = false; // follow the finger with no easing lag
+                this.dragPx = dx;
+            },
+            onEnd() {
+                if (!this.dragging) return;
+                this.dragging = false;
+
+                const threshold = Math.max(40, this.frameW * 0.15);
+                this.animate = true;
+
+                if (this.dragPx <= -threshold) this.index++;
+                else if (this.dragPx >= threshold) this.index--;
+
+                this.dragPx = 0;
+                this.startAuto();
+            },
+        }));
+    });
+</script>
+@endpush
