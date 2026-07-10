@@ -310,15 +310,22 @@
                             @include('products.partials.grid-items', ['products' => $products])
                         </div>
 
-                        {{-- Skeletons keep the grid height stable while a batch is in flight --}}
+                        {{-- Skeletons keep the grid height stable while a batch is in flight.
+                             They fade in, sweep with a shimmer, and mirror the real card
+                             shape so the swap to loaded cards is barely perceptible. --}}
                         <div x-show="loading" x-cloak
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
                             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mt-3 sm:mt-4 lg:mt-6">
                             <template x-for="i in 4" :key="i">
-                                <div class="animate-pulse rounded-3xl border border-slate-100 dark:border-slate-800/60 overflow-hidden">
-                                    <div class="aspect-square bg-slate-100 dark:bg-slate-800"></div>
-                                    <div class="p-4 space-y-2">
-                                        <div class="h-3 w-3/4 rounded bg-slate-100 dark:bg-slate-800"></div>
-                                        <div class="h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800"></div>
+                                <div class="rounded-3xl border border-slate-100 dark:border-slate-800/60 overflow-hidden">
+                                    <div class="aspect-square shimmer-block"></div>
+                                    <div class="p-3 sm:p-4 space-y-2.5">
+                                        <div class="h-3.5 w-3/4 rounded-md shimmer-block"></div>
+                                        <div class="h-3 w-1/2 rounded-md shimmer-block"></div>
+                                        <div class="h-6 w-1/3 rounded-md shimmer-block mt-3"></div>
+                                        <div class="h-9 w-full rounded-xl shimmer-block mt-1"></div>
                                     </div>
                                 </div>
                             </template>
