@@ -45,6 +45,15 @@ class ProductController extends Controller
 
         $products = $query->paginate(12)->withQueryString();
 
+        // Infinite scroll / "Muat Lebih Banyak": return just the next batch of
+        // cards so the browser appends them instead of repainting the page.
+        if ($request->boolean('partial')) {
+            return response()->json([
+                'html' => view('products.partials.grid-items', compact('products'))->render(),
+                'next_page_url' => $products->nextPageUrl(),
+            ]);
+        }
+
         return view('products.index', compact('products', 'categories'));
     }
 

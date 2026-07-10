@@ -305,13 +305,48 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-                        @foreach($products as $product)
-                            @include('components.product-card-grid', ['product' => $product])
-                        @endforeach
-                    </div>
-                    <div class="mt-8">
-                        {{ $products->links() }}
+                    <div x-data="productPager(@js($products->nextPageUrl()), @js($products->hasPages()))">
+                        <div x-ref="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+                            @include('products.partials.grid-items', ['products' => $products])
+                        </div>
+
+                        {{-- Skeletons keep the grid height stable while a batch is in flight --}}
+                        <div x-show="loading" x-cloak
+                            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mt-3 sm:mt-4 lg:mt-6">
+                            <template x-for="i in 4" :key="i">
+                                <div class="animate-pulse rounded-3xl border border-slate-100 dark:border-slate-800/60 overflow-hidden">
+                                    <div class="aspect-square bg-slate-100 dark:bg-slate-800"></div>
+                                    <div class="p-4 space-y-2">
+                                        <div class="h-3 w-3/4 rounded bg-slate-100 dark:bg-slate-800"></div>
+                                        <div class="h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Tripwire: entering the viewport pulls the next batch in early --}}
+                        <div x-ref="sentinel" aria-hidden="true" class="h-px"></div>
+
+                        <div class="mt-8 flex flex-col items-center gap-3" aria-live="polite">
+                            <p x-show="error" x-cloak class="text-sm font-semibold text-red-500">
+                                Gagal memuat produk. Periksa koneksi Anda.
+                            </p>
+
+                            <button type="button" x-show="nextUrl" x-cloak @click="loadMore()" :disabled="loading"
+                                class="px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold transition-colors">
+                                <span x-text="loading ? 'Memuat…' : (error ? 'Coba Lagi' : 'Muat Lebih Banyak')"></span>
+                            </button>
+
+                            <p x-show="paginated && !nextUrl && !loading" x-cloak
+                                class="text-sm text-slate-400 dark:text-slate-500">
+                                Semua produk sudah ditampilkan.
+                            </p>
+                        </div>
+
+                        {{-- Without JS the classic page links remain the only way through --}}
+                        <noscript>
+                            <div class="mt-8">{{ $products->links() }}</div>
+                        </noscript>
                     </div>
                 @else
                     <div class="flex flex-col items-center justify-center py-20 text-center">
@@ -328,3 +363,66 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('productPager', (initialNextUrl, paginated = false) => ({
+                nextUrl: initialNextUrl,
+                paginated,
+                loading: false,
+                error: false,
+                observer: null,
+
+                init() {
+                    if (!this.nextUrl || !('IntersectionObserver' in window)) return;
+
+                    // Prefetch a screen early so the grid never visibly runs dry.
+                    this.observer = new IntersectionObserver(([entry]) => {
+                        if (entry.isIntersecting && !this.loading && !this.error) {
+                            this.loadMore();
+                        }
+                    }, { rootMargin: '400px 0px' });
+
+                    this.observer.observe(this.$refs.sentinel);
+                },
+
+                destroy() {
+                    this.observer?.disconnect();
+                },
+
+                async loadMore() {
+                    if (this.loading || !this.nextUrl) return;
+
+                    this.loading = true;
+                    this.error = false;
+
+                    try {
+                        const url = new URL(this.nextUrl, window.location.origin);
+                        url.searchParams.set('partial', '1');
+
+                        const response = await fetch(url, {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        });
+
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                        const { html, next_page_url: next } = await response.json();
+
+                        // Alpine's mutation observer initialises the appended cards,
+                        // which is also what hydrates their Livewire wishlist buttons.
+                        this.$refs.grid.insertAdjacentHTML('beforeend', html);
+
+                        this.nextUrl = next;
+                        if (!this.nextUrl) this.observer?.disconnect();
+                    } catch (e) {
+                        // Leave nextUrl intact so the button retries the same page.
+                        this.error = true;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+            }));
+        });
+    </script>
+@endpush
