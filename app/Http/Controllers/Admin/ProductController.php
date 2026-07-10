@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -100,7 +101,7 @@ class ProductController extends Controller
         $data['is_featured'] = $request->boolean('is_featured');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = app(ImageOptimizer::class)->store($request->file('image'), 'products');
         }
 
         $product = Product::create($data);
@@ -121,7 +122,7 @@ class ProductController extends Controller
             $uploadedFiles = array_values(array_filter($request->file('gallery')));
             foreach ($uploadedFiles as $index => $file) {
                 if ($index >= 6) break; // Max 6 gallery
-                $path = $file->store('products/gallery', 'public');
+                $path = app(ImageOptimizer::class)->store($file, 'products/gallery');
                 $product->images()->create([
                     'image_path' => $path,
                     'sort_order' => $index
@@ -160,7 +161,7 @@ class ProductController extends Controller
         $data['is_featured'] = $request->boolean('is_featured');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = app(ImageOptimizer::class)->store($request->file('image'), 'products');
         } elseif ($request->boolean('remove_image')) {
             $data['image'] = null;
         }
@@ -211,7 +212,7 @@ class ProductController extends Controller
                 $uploadedFiles = array_values(array_filter($request->file('gallery')));
                 foreach ($uploadedFiles as $index => $file) {
                     if ($index >= $maxAllowedNew) break;
-                    $path = $file->store('products/gallery', 'public');
+                    $path = app(ImageOptimizer::class)->store($file, 'products/gallery');
                     $product->images()->create([
                         'image_path' => $path,
                         'sort_order' => $maxSortOrder + 1 + $index

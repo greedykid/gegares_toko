@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -67,7 +68,7 @@ class CategoryController extends Controller
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = app(ImageOptimizer::class)->store($request->file('image'), 'categories');
         }
 
         Category::create($data);
@@ -88,7 +89,7 @@ class CategoryController extends Controller
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = app(ImageOptimizer::class)->store($request->file('image'), 'categories');
         }
 
         $category->update($data);

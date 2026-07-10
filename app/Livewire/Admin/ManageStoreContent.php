@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\StoreSetting;
+use App\Services\ImageOptimizer;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -191,7 +192,7 @@ class ManageStoreContent extends Component
         // Process new gallery images
         if (!empty($this->new_gallery_images)) {
             foreach ($this->new_gallery_images as $image) {
-                $path = $image->store('settings/gallery', 'public');
+                $path = app(ImageOptimizer::class)->store($image, 'settings/gallery');
                 $this->about_gallery[] = $path;
             }
             // Clear upload temp state
@@ -201,7 +202,7 @@ class ManageStoreContent extends Component
         // Process new payment method logos
         if (!empty($this->new_payment_logos)) {
             foreach ($this->new_payment_logos as $logo) {
-                $path = $logo->store('settings/payment_logos', 'public');
+                $path = app(ImageOptimizer::class)->store($logo, 'settings/payment_logos');
                 $this->payment_logos[] = $path;
             }
             $this->new_payment_logos = [];

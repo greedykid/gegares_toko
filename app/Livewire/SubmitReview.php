@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
+use App\Services\ImageOptimizer;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -48,7 +49,7 @@ class SubmitReview extends Component
 
         $imagePath = null;
         if ($this->image) {
-            $imagePath = $this->image->store('reviews', 'public');
+            $imagePath = app(ImageOptimizer::class)->store($this->image, 'reviews');
         }
 
         $this->existingReview = Review::create([

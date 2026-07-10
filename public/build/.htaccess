@@ -1,0 +1,11 @@
+# Vite fingerprints every filename (app-BoTptOig.css), so a rebuild always
+# produces a new URL and these files can never go stale. PageSpeed reported the
+# JS bundle as having no cache lifetime at all; pin both to a year.
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+</IfModule>

@@ -92,9 +92,13 @@
                                 
                                 <a href="{{ $productRoute }}" class="group block w-full h-full relative">
                                     @if($imagePath)
-                                        <img src="{{ $imagePath }}" alt="{{ $product->name }}" 
+                                        {{-- The first slide is the LCP element: fetch it eagerly and at high
+                                             priority. Later slides are off-screen, so defer them. --}}
+                                        <img src="{{ $imagePath }}" alt="{{ $product->name }}"
                                              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                             width="480" height="480">
+                                             width="480" height="480" decoding="async"
+                                             loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                                             fetchpriority="{{ $index === 0 ? 'high' : 'low' }}">
                                     @else
                                         {{-- Image Fallback --}}
                                         <div class="w-full h-full flex flex-col items-center justify-center bg-primary-50 dark:bg-slate-900 transition-colors duration-300">

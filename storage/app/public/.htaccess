@@ -1,0 +1,11 @@
+# Served publicly through the public/storage symlink. These were coming back
+# with a 7-day lifetime; admin re-uploads land under a fresh random filename,
+# so a longer window cannot serve a stale image for those.
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=2592000"
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 30 days"
+</IfModule>
