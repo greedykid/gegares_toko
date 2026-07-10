@@ -132,6 +132,43 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
         ->parameters(['kupon' => 'coupon']);
 });
 
+/*
+| ─── Legacy English URLs (301) ───
+| These paths were renamed, but old links live outside our control and cannot
+| be rewritten retroactively:
+|   - every payment link already stored in Pakasir has the return URL baked in
+|     (Order::pakasir_link, e.g. redirect=/orders/4/payment), so a customer who
+|     finishes paying an older order lands here;
+|   - password-reset and order emails already sitting in customers' inboxes.
+| The query string is carried over — the chatbot flow depends on ?chatbot_open=1.
+*/
+$legacy = function (string $path) {
+    $query = request()->getQueryString();
+
+    return redirect()->to($query ? "{$path}?{$query}" : $path, 301);
+};
+
+Route::get('/products', fn () => $legacy('/produk'));
+Route::get('/products/{product}', fn (string $product) => $legacy("/produk/{$product}"))->where('product', '[A-Za-z0-9._-]+');
+Route::get('/about', fn () => $legacy('/tentang'));
+Route::get('/contact', fn () => $legacy('/kontak'));
+Route::get('/login', fn () => $legacy('/masuk'));
+Route::get('/register', fn () => $legacy('/daftar'));
+Route::get('/forgot-password', fn () => $legacy('/lupa-kata-sandi'));
+Route::get('/reset-password/{token}', fn (string $token) => $legacy("/atur-ulang-kata-sandi/{$token}"))->where('token', '[A-Za-z0-9]+');
+Route::get('/checkout', fn () => $legacy('/pemesanan'));
+Route::get('/wishlist', fn () => $legacy('/favorit'));
+Route::get('/settings', fn () => $legacy('/pengaturan'));
+
+Route::get('/orders', fn () => $legacy('/pesanan'));
+Route::get('/orders/{order}', fn (string $order) => $legacy("/pesanan/{$order}"))->where('order', '[0-9]+');
+Route::get('/orders/{order}/payment', fn (string $order) => $legacy("/pesanan/{$order}/pembayaran"))->where('order', '[0-9]+');
+Route::get('/orders/{order}/tracking', fn (string $order) => $legacy("/pesanan/{$order}/lacak"))->where('order', '[0-9]+');
+Route::get('/orders/{order}/status', fn (string $order) => $legacy("/pesanan/{$order}/status"))->where('order', '[0-9]+');
+
+Route::get('/admin/login', fn () => $legacy('/admin'));
+Route::get('/admin/dashboard', fn () => $legacy('/admin/dasbor'));
+
 // ─── Webhook (paths fixed by Pakasir & Biteship dashboards — do not translate) ───
 Route::post('/webhook/midtrans', [WebhookController::class, 'midtrans'])->name('webhook.midtrans');
 Route::post('/webhook/pakasir', [WebhookController::class, 'pakasir'])->name('webhook.pakasir');
