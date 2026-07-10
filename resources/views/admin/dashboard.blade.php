@@ -75,10 +75,13 @@
         <div class="p-6">
             <div class="relative">
                 <div id="revenueChart" style="min-height: 350px;"></div>
-                <p id="revenueEmpty"
-                    class="hidden absolute inset-0 items-center justify-center pointer-events-none text-sm font-semibold text-slate-400 dark:text-slate-500">
-                    Belum ada pendapatan pada rentang ini.
-                </p>
+                {{-- Inset from the left so the message never sits on the y-axis labels --}}
+                <div id="revenueEmpty"
+                    class="hidden absolute inset-y-0 left-20 right-3 items-center justify-center pointer-events-none">
+                    <span class="max-w-full px-3 py-1.5 rounded-lg bg-white/95 dark:bg-slate-900/95 text-xs sm:text-sm font-semibold leading-snug text-slate-400 dark:text-slate-500 text-center">
+                        Belum ada pendapatan pada rentang ini.
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -194,6 +197,17 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     let period = 'month';
 
+    const revenueEl = document.querySelector('#revenueChart');
+
+    // A "11 Jun" label needs roughly 56px of breathing room. On a phone the
+    // chart is only ~330px wide, so the desktop tick counts collide into an
+    // unreadable band; derive the count from the real width instead.
+    const tickCount = (p) => {
+        const width = revenueEl.clientWidth || window.innerWidth;
+        const fits = Math.max(2, Math.floor(width / 56));
+        return Math.min(PERIODS[p].tickAmount, fits);
+    };
+
     const rupiah = (v) => 'Rp ' + Math.round(v).toLocaleString('id-ID');
 
     // Axis labels get a compact form so 30 ticks never collide; the tooltip
@@ -216,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // yaxis drops `max` and the rupiah formatter.
     const xAxis = (labels) => ({
         categories: labels,
-        tickAmount: PERIODS[period].tickAmount,
+        tickAmount: tickCount(period),
         tickPlacement: 'on',
         labels: {
             style: { colors: colors.text, fontSize: '11px', fontWeight: 500 },
@@ -243,7 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const getChartColors = () => {
         const isDark = document.documentElement.classList.contains('dark');
         return {
-            grid: isDark ? '#1e293b' : '#f1f5f9',
+            // The previous pair (#f1f5f9 / #1e293b) sat at ~1.1:1 against the
+            // card in both themes, which reads as no gridline at all. These
+            // land near 1.5:1 (light) and 1.6:1 (dark) — visible, still quiet.
+            grid: isDark ? '#3f3f46' : '#cbd5e1',
             text: isDark ? '#94a3b8' : '#64748b',
             title: isDark ? '#f1f5f9' : '#1e293b',
             tooltipTheme: isDark ? 'dark' : 'light'
@@ -342,6 +359,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     tabs.forEach((btn) => btn.addEventListener('click', () => applyPeriod(btn.dataset.period)));
     applyPeriod(period);
+
+    // Apex reflows on resize but keeps the old tickAmount, so a phone rotated
+    // to landscape would stay at the cramped portrait tick count.
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            revenueChart.updateOptions({ xaxis: xAxis(revenue[period].labels) });
+        }, 200);
+    });
 
     const bsOptions = {
         series: bsSeries,
