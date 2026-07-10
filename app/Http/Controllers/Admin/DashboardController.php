@@ -15,11 +15,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $days = 30;
-
         // Heavy aggregate metrics are recomputed at most once per minute; the
         // dashboard is an overview so slightly stale numbers are acceptable.
-        $metrics = Cache::remember('admin.dashboard.metrics', 60, function () use ($days) {
+        $metrics = Cache::remember('admin.dashboard.metrics', 60, function () {
             $orderStats = Order::selectRaw("
                 count(*) as total_orders,
                 sum(case when payment_status = 'paid' then total else 0 end) as total_sales,
@@ -31,14 +29,7 @@ class DashboardController extends Controller
                 'totalUsers' => User::where('role', 'user')->count(),
                 'totalOrders' => $orderStats->total_orders ?? 0,
                 'pendingOrders' => $orderStats->pending_orders ?? 0,
-                'revenueData' => Order::where('payment_status', 'paid')
-                    ->where('created_at', '>=', now()->subDays($days))
-                    ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')
-                    ->groupBy('date')
-                    ->orderBy('date')
-                    ->get()
-                    ->pluck('revenue', 'date')
-                    ->toArray(),
+                'revenueSeries' => $this->buildRevenueSeries(),
                 'bestSellers' => OrderItem::query()
                     ->whereHas('order', fn($q) => $q->where('payment_status', 'paid'))
                     ->selectRaw('product_name, SUM(quantity) as total_qty')
@@ -55,16 +46,7 @@ class DashboardController extends Controller
         $totalUsers = $metrics['totalUsers'];
         $totalOrders = $metrics['totalOrders'];
         $pendingOrders = $metrics['pendingOrders'];
-
-        // Build chart labels/data from cached revenue map (cheap, keeps dates current).
-        $revenueData = $metrics['revenueData'];
-        $chartLabels = [];
-        $chartData = [];
-        for ($i = $days; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $chartLabels[] = now()->subDays($i)->format('d M');
-            $chartData[] = (float) ($revenueData[$date] ?? 0);
-        }
+        $revenueSeries = $metrics['revenueSeries'];
 
         $bestSellerLabels = array_column($metrics['bestSellers'], 'name');
         $bestSellerData = array_column($metrics['bestSellers'], 'qty');
@@ -77,10 +59,60 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'totalSales', 'totalUsers', 'totalOrders',
             'pendingOrders', 'lowStockProducts', 'recentOrders',
-            'chartLabels', 'chartData',
+            'revenueSeries',
             'bestSellerLabels', 'bestSellerData',
             'recentReviews'
         ));
+    }
+
+    /**
+     * Paid revenue for the three ranges the dashboard chart can switch between:
+     * today (per hour), the last 7 days and the last 30 days (per day).
+     *
+     * @return array<string, array{labels: string[], data: float[]}>
+     */
+    protected function buildRevenueSeries(): array
+    {
+        // One query covers both the 7- and 30-day ranges.
+        $daily = Order::where('payment_status', 'paid')
+            ->where('created_at', '>=', now()->subDays(29)->startOfDay())
+            ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')
+            ->groupBy('date')
+            ->pluck('revenue', 'date')
+            ->toArray();
+
+        $range = function (int $days) use ($daily): array {
+            $labels = [];
+            $data = [];
+
+            for ($i = $days - 1; $i >= 0; $i--) {
+                $day = now()->subDays($i);
+                $labels[] = $day->format('d M');
+                $data[] = (float) ($daily[$day->format('Y-m-d')] ?? 0);
+            }
+
+            return ['labels' => $labels, 'data' => $data];
+        };
+
+        // Today, bucketed per hour. Bucketing in PHP rather than with HOUR()
+        // keeps this working on SQLite (used by the test suite) as well as MySQL.
+        $hourly = array_fill(0, 24, 0.0);
+
+        Order::where('payment_status', 'paid')
+            ->whereDate('created_at', today())
+            ->get(['created_at', 'total'])
+            ->each(function (Order $order) use (&$hourly) {
+                $hourly[(int) $order->created_at->format('G')] += (float) $order->total;
+            });
+
+        return [
+            'day' => [
+                'labels' => array_map(fn ($h) => sprintf('%02d:00', $h), range(0, 23)),
+                'data' => array_values($hourly),
+            ],
+            'week' => $range(7),
+            'month' => $range(30),
+        ];
     }
 
     public function storeSettings()

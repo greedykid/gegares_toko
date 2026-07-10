@@ -54,20 +54,32 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     {{-- Revenue Chart --}}
     <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
-        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
                 <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Grafik Pendapatan</h3>
-                <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Pendapatan 30 hari terakhir</p>
+                <p id="revenueSubtitle" class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Pendapatan 30 hari terakhir</p>
+                <p id="revenueTotal" class="text-2xl font-black text-slate-900 dark:text-slate-100 mt-2 tabular-nums">&nbsp;</p>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Area Chart
-                </span>
+
+            {{-- Range switcher --}}
+            <div id="revenuePeriodTabs" role="group" aria-label="Rentang waktu pendapatan"
+                class="inline-flex shrink-0 gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+                <button type="button" data-period="day" aria-pressed="false"
+                    class="revenue-period-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer">1 Hari</button>
+                <button type="button" data-period="week" aria-pressed="false"
+                    class="revenue-period-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer">1 Minggu</button>
+                <button type="button" data-period="month" aria-pressed="true"
+                    class="revenue-period-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer">1 Bulan</button>
             </div>
         </div>
         <div class="p-6">
-            <div id="revenueChart" style="min-height: 350px;"></div>
+            <div class="relative">
+                <div id="revenueChart" style="min-height: 350px;"></div>
+                <p id="revenueEmpty"
+                    class="hidden absolute inset-0 items-center justify-center pointer-events-none text-sm font-semibold text-slate-400 dark:text-slate-500">
+                    Belum ada pendapatan pada rentang ini.
+                </p>
+            </div>
         </div>
     </div>
 
@@ -83,9 +95,8 @@
     </div>
 
     {{-- Chart Data Provider --}}
-    <div id="chartDataPrv" 
-         data-series="{{ json_encode($chartData) }}" 
-         data-labels="{{ json_encode($chartLabels) }}"
+    <div id="chartDataPrv"
+         data-revenue="{{ json_encode($revenueSeries) }}"
          data-bs-series="{{ json_encode($bestSellerData) }}"
          data-bs-labels="{{ json_encode($bestSellerLabels) }}"
          class="hidden"></div>
@@ -172,10 +183,62 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const dataProv = document.getElementById('chartDataPrv');
-    const seriesData = JSON.parse(dataProv.dataset.series);
-    const labelsData = JSON.parse(dataProv.dataset.labels);
+    const revenue = JSON.parse(dataProv.dataset.revenue);
     const bsSeries = JSON.parse(dataProv.dataset.bsSeries);
     const bsLabels = JSON.parse(dataProv.dataset.bsLabels);
+
+    const PERIODS = {
+        day:   { subtitle: 'Pendapatan hari ini (per jam)', tickAmount: 6 },
+        week:  { subtitle: 'Pendapatan 7 hari terakhir',    tickAmount: 7 },
+        month: { subtitle: 'Pendapatan 30 hari terakhir',   tickAmount: 8 },
+    };
+    let period = 'month';
+
+    const rupiah = (v) => 'Rp ' + Math.round(v).toLocaleString('id-ID');
+
+    // Axis labels get a compact form so 30 ticks never collide; the tooltip
+    // still shows the exact amount.
+    const rupiahShort = (v) => {
+        if (v >= 1e9) return 'Rp ' + (v / 1e9).toFixed(1).replace('.', ',') + 'M';
+        if (v >= 1e6) return 'Rp ' + (v / 1e6).toFixed(1).replace('.', ',') + 'jt';
+        if (v >= 1e3) return 'Rp ' + Math.round(v / 1e3) + 'rb';
+        return 'Rp ' + Math.round(v);
+    };
+
+    // With an all-zero range Apex invents a 0–2 scale, which renders as the
+    // duplicated ticks "Rp 2, Rp 2, Rp 1, Rp 1, Rp 0". Pin a nominal ceiling
+    // instead; `undefined` hands the axis back to Apex for real data.
+    const yAxisMax = (data) => (data.some((v) => v > 0) ? undefined : 100000);
+
+    // Apex replaces an axis config wholesale rather than merging it, so every
+    // updateOptions() that touches an axis must pass the complete config.
+    // A partial xaxis drops `categories` (dates fall back to 1..30); a partial
+    // yaxis drops `max` and the rupiah formatter.
+    const xAxis = (labels) => ({
+        categories: labels,
+        tickAmount: PERIODS[period].tickAmount,
+        tickPlacement: 'on',
+        labels: {
+            style: { colors: colors.text, fontSize: '11px', fontWeight: 500 },
+            rotate: 0,
+            hideOverlappingLabels: true,
+            trim: false,
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        crosshairs: { stroke: { color: '#10b981', width: 1, dashArray: 4 } }
+    });
+
+    const yAxis = (data) => ({
+        min: 0,
+        max: yAxisMax(data),
+        forceNiceScale: true,
+        tickAmount: 4,
+        labels: {
+            style: { colors: colors.text, fontSize: '11px' },
+            formatter: rupiahShort
+        }
+    });
 
     const getChartColors = () => {
         const isDark = document.documentElement.classList.contains('dark');
@@ -190,16 +253,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let colors = getChartColors();
 
     const revenueOptions = {
-        series: [{ name: 'Pendapatan', data: seriesData }],
+        series: [{ name: 'Pendapatan', data: revenue[period].data }],
         chart: {
+            id: 'revenue',
             height: 350,
             type: 'area',
             toolbar: { show: false },
             fontFamily: 'Inter, sans-serif',
-            zoom: { enabled: false }
+            zoom: { enabled: false },
+            animations: { easing: 'easeinout', speed: 400 }
         },
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 3, colors: ['#10b981'] },
+        stroke: { curve: 'smooth', width: 2.5, colors: ['#10b981'] },
+        markers: {
+            size: 0,
+            strokeWidth: 2,
+            strokeColors: '#10b981',
+            hover: { size: 6 }
+        },
         fill: {
             type: 'gradient',
             gradient: {
@@ -216,35 +287,61 @@ document.addEventListener('DOMContentLoaded', function() {
         grid: {
             borderColor: colors.grid,
             strokeDashArray: 4,
-            xaxis: { lines: { show: true } },
+            padding: { left: 4, right: 12 },
+            xaxis: { lines: { show: false } },
             yaxis: { lines: { show: true } }
         },
-        xaxis: {
-            categories: labelsData,
-            labels: {
-                style: { colors: colors.text, fontSize: '11px' },
-                rotate: -45,
-                rotateAlways: false,
-                hideOverlappingLabels: true,
-            },
-            axisBorder: { show: false },
-            axisTicks: { show: false }
-        },
-        yaxis: {
-            labels: {
-                style: { colors: colors.text, fontSize: '11px' },
-                formatter: (value) => "Rp " + value.toLocaleString('id-ID')
-            }
-        },
+        xaxis: xAxis(revenue[period].labels),
+        yaxis: yAxis(revenue[period].data),
         tooltip: {
             theme: colors.tooltipTheme,
-            y: { formatter: (value) => "Rp " + value.toLocaleString('id-ID') }
+            x: { show: true },
+            y: { formatter: rupiah },
+            marker: { show: false }
         },
         colors: ['#10b981']
     };
 
     const revenueChart = new ApexCharts(document.querySelector("#revenueChart"), revenueOptions);
     revenueChart.render();
+
+    // ── Range switcher ──────────────────────────────────────────────
+    const tabs = [...document.querySelectorAll('.revenue-period-btn')];
+    const subtitleEl = document.getElementById('revenueSubtitle');
+    const totalEl = document.getElementById('revenueTotal');
+    const emptyEl = document.getElementById('revenueEmpty');
+
+    const ACTIVE = ['bg-white', 'dark:bg-slate-900', 'text-emerald-600', 'dark:text-emerald-400', 'shadow-sm'];
+    const IDLE = ['text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-100'];
+
+    function applyPeriod(next) {
+        period = next;
+        const { labels, data } = revenue[period];
+        const total = data.reduce((a, b) => a + b, 0);
+
+        // Categories and series must land in one call: updating them separately
+        // leaves the axis rendered against the previous range's label count.
+        revenueChart.updateOptions({
+            series: [{ name: 'Pendapatan', data }],
+            xaxis: xAxis(labels),
+            yaxis: yAxis(data),
+        });
+
+        subtitleEl.textContent = PERIODS[period].subtitle;
+        totalEl.textContent = rupiah(total);
+        emptyEl.classList.toggle('hidden', total > 0);
+        emptyEl.classList.toggle('flex', total === 0);
+
+        tabs.forEach((btn) => {
+            const on = btn.dataset.period === period;
+            btn.setAttribute('aria-pressed', String(on));
+            btn.classList.remove(...ACTIVE, ...IDLE);
+            btn.classList.add(...(on ? ACTIVE : IDLE));
+        });
+    }
+
+    tabs.forEach((btn) => btn.addEventListener('click', () => applyPeriod(btn.dataset.period)));
+    applyPeriod(period);
 
     const bsOptions = {
         series: bsSeries,
@@ -295,11 +392,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Live Theme Switcher for Charts
     window.addEventListener('theme-changed', () => {
         const newColors = getChartColors();
-        
+        colors = newColors;
+
         revenueChart.updateOptions({
             grid: { borderColor: newColors.grid },
-            xaxis: { labels: { style: { colors: newColors.text } } },
-            yaxis: { labels: { style: { colors: newColors.text } } },
+            // Full axis configs: partials would drop the categories / formatter.
+            xaxis: xAxis(revenue[period].labels),
+            yaxis: yAxis(revenue[period].data),
             tooltip: { theme: newColors.tooltipTheme }
         });
 
