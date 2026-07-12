@@ -411,61 +411,20 @@ class Chatbot extends Component
             return;
         }
 
-        $subtotal = $cartService->getSubtotal();
-        $coupon = $cartService->getCoupon();
-        $discountAmount = $cartService->getDiscountAmount();
-        $total = $subtotal + $cost - $discountAmount;
-
-        $order = Order::create([
-            'user_id' => $user->id,
-            'order_number' => Order::generateOrderNumber(),
-            'address_id' => $address->id,
-            'coupon_id' => $coupon['id'] ?? null,
-            'discount_amount' => $discountAmount,
-            'subtotal' => $subtotal,
-            'shipping_cost' => $cost,
-            'total' => $total,
-            'status' => 'pending',
-            'payment_status' => 'unpaid',
-            'payment_method' => 'pakasir',
-            'shipping_courier' => $courier,
-            'shipping_service' => $service,
-            'notes' => 'Dipesan otomatis via AI Chatbot',
-        ]);
-
-        if ($coupon) {
-            \App\Models\Coupon::where('id', $coupon['id'])->increment('used_count');
-        }
-
-        foreach ($cartItems as $item) {
-            $order->items()->create([
-                'product_id' => $item['product_id'],
-                'product_variant_id' => $item['variant_id'] ?? null,
-                'product_name' => $item['name'],
-                'variant_name' => $item['variant_name'] ?? null,
-                'product_price' => $item['price'],
-                'quantity' => $item['quantity'],
-                'subtotal' => $item['price'] * $item['quantity'],
-            ]);
-        }
-
-        $pakasirService = app(\App\Services\PakasirService::class);
-        $paymentUrl = $pakasirService->createPaymentUrl($order);
-
-        if (!$paymentUrl) {
-            $order->delete();
+        // Delegate to the shared service so this chatbot flow and the web
+        // checkout build orders identically (and atomically) — see OrderService.
+        try {
+            ['order' => $order, 'paymentUrl' => $paymentUrl] = app(\App\Services\OrderService::class)
+                ->createFromCart($user, [
+                    'address_id' => $address->id,
+                    'shipping_courier' => $courier,
+                    'shipping_service' => $service,
+                    'shipping_cost' => $cost,
+                    'notes' => 'Dipesan otomatis via AI Chatbot',
+                ]);
+        } catch (\App\Exceptions\PaymentGatewayException $e) {
             $this->addBotMessage("Maaf Kak, terjadi kendala saat menghubungi payment gateway Pakasir. Silakan coba kembali beberapa saat lagi.");
             return;
-        }
-
-        // Clear cart
-        $cartService->clear();
-
-        // Notify the customer their order was received (queued, non-blocking).
-        try {
-            $user->notify(new \App\Notifications\OrderPlacedNotification($order));
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('OrderPlaced notification failed: ' . $e->getMessage());
         }
 
         // Dispatch events
