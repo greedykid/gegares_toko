@@ -19,7 +19,7 @@ Pesanan Kakak akan segera kami proses dan kirimkan.
 **Total Dibayar:** {{ $rupiah($order->total) }}
 **Metode Pembayaran:** {{ strtoupper($order->payment_method ?? '-') }}
 @if ($order->paid_at)
-**Waktu Pembayaran:** {{ $order->paid_at->timezone(config('app.timezone'))->format('d M Y H:i') }}
+**Waktu Pembayaran:** {{ $order->paid_at->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
 @endif
 
 <x-mail::button :url="route('orders.show', $order)" color="success">

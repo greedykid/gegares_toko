@@ -256,7 +256,15 @@ class PakasirService
                 'status' => 'paid',
                 'payment_status' => 'paid',
                 'payment_method' => $paymentMethod,
-                'paid_at' => $completedAt ? Carbon::parse($completedAt) : now(),
+                // Pakasir sends `completed_at` without an offset, so it must be read
+                // against its own zone and then shifted into the app timezone.
+                // The shift is not optional: Eloquent stores whatever wall-clock the
+                // Carbon carries, so a UTC 05:00 would be written as "05:00" and read
+                // back as 05:00 WIB — the payment would look 7 hours early.
+                'paid_at' => $completedAt
+                    ? Carbon::parse($completedAt, config('pakasir.timezone', 'UTC'))
+                        ->setTimezone(config('app.timezone'))
+                    : now(),
             ]);
 
             return true;
