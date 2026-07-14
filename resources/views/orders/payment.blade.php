@@ -133,19 +133,46 @@
                     }
                 });
 
-                // Auto polling to check if webhook has marked order as paid
+                // Poll until the webhook (or our own sync) marks the order paid.
+                //
+                // Chained rather than setInterval: a fixed interval fires again
+                // whether or not the previous check has come back, and since PHP
+                // holds an exclusive session lock per request, the pile-up made
+                // each check wait on the last one — the page stayed on "menunggu
+                // pembayaran" well after the payment had gone through. Each check
+                // now starts only once the previous one has finished.
                 const checkStatusUrl = '{{ route('orders.status', $order) }}';
-                const interval = setInterval(function() {
-                    fetch(checkStatusUrl)
-                        .then(response => response.json())
-                        .then(data => {
+                const POLL_MS = 2000;
+                let stopped = false;
+
+                async function checkStatus() {
+                    if (stopped) return;
+
+                    try {
+                        const response = await fetch(checkStatusUrl, {
+                            headers: { 'Accept': 'application/json' },
+                            cache: 'no-store',
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+
                             if (data.payment_status === 'paid') {
-                                clearInterval(interval);
+                                stopped = true;
                                 window.location.reload();
+                                return;
                             }
-                        })
-                        .catch(err => console.error('Error checking status:', err));
-                }, 2000); // Poll every 2 seconds
+                        }
+                    } catch (err) {
+                        // Network hiccup — just try again on the next tick.
+                    }
+
+                    setTimeout(checkStatus, POLL_MS);
+                }
+
+                // First check right away: the webhook usually lands while Pakasir
+                // is still redirecting the customer back here.
+                checkStatus();
             });
         </script>
     @endif

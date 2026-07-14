@@ -160,67 +160,87 @@ class PakasirService
         }
 
         $slug = config('pakasir.project_slug', 'gegares');
-        // Try different project slug casing strategies due to inconsistent casing requirements in Pakasir
+
+        // The id we actually registered with Pakasir when the payment link was
+        // created, so it is the one that should match on the first try.
+        $canonicalOrderId = $order->pakasir_order_id ?: $this->getPakasirOrderId($order->order_number);
+
+        // ── Interactive path: the payment page and its 2-second polling ──
+        // One request, nothing more. The exhaustive sweep below fired up to
+        // 15 sequential API calls per check, so a single poll could take
+        // seconds; because PHP holds an exclusive session lock for the whole
+        // request, the next poll queued behind it and the page kept showing
+        // "menunggu pembayaran" long after the payment had actually settled.
+        if (!$withRetry) {
+            return $this->queryTransaction($slug, $canonicalOrderId, $apiKey);
+        }
+
+        // ── Webhook path: authoritative and runs without a user waiting on it ──
+        // It can afford the full sweep: Pakasir has been inconsistent about the
+        // casing it accepts, and QRIS settlement can lag by a second or two.
         $projectSlugStrategies = array_values(array_unique([
             $slug,
             ucfirst($slug),
-            strtoupper($slug)
+            strtoupper($slug),
         ]));
 
-        // Generate casing strategies for order_id to query due to inconsistent Pakasir API case matching
-        $casingStrategies = [];
-        $orderNumber = $order->order_number;
-        $parts = explode('-', $orderNumber);
+        $casingStrategies = [$canonicalOrderId];
+        $parts = explode('-', $order->order_number);
         if (count($parts) === 3) {
             $prefix = $parts[0] . '-' . $parts[1];
             $suffix = $parts[2];
-            // Try all combinations of prefix and suffix casing:
             $casingStrategies[] = strtoupper($prefix) . '-' . strtoupper($suffix); // GGR-...-HEX
             $casingStrategies[] = strtoupper($prefix) . '-' . strtolower($suffix); // GGR-...-hex
             $casingStrategies[] = strtolower($prefix) . '-' . strtoupper($suffix); // ggr-...-HEX
             $casingStrategies[] = strtolower($prefix) . '-' . strtolower($suffix); // ggr-...-hex
         } else {
-            $casingStrategies[] = $orderNumber;
-            $casingStrategies[] = strtolower($orderNumber);
-            $casingStrategies[] = strtoupper($orderNumber);
-        }
-
-        // Add the stored pakasir_order_id as the very first check if it exists
-        if ($order->pakasir_order_id) {
-            array_unshift($casingStrategies, $order->pakasir_order_id);
+            $casingStrategies[] = strtolower($order->order_number);
+            $casingStrategies[] = strtoupper($order->order_number);
         }
         $casingStrategies = array_values(array_unique($casingStrategies));
 
-        // Webhook confirmation retries to absorb QRIS settlement lag; the polling
-        // sync uses a single non-blocking attempt to avoid freezing the UI.
-        $maxAttempts = $withRetry ? 2 : 1;
-
-        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+        for ($attempt = 1; $attempt <= 2; $attempt++) {
             foreach ($projectSlugStrategies as $projectSlug) {
                 foreach ($casingStrategies as $orderIdToCheck) {
-                    $response = Http::get('https://app.pakasir.com/api/transactiondetail', [
-                        'project' => $projectSlug,
-                        'amount' => 0, // Pass 0 to bypass Pakasir's amount validation; we verify amount ourselves.
-                        'order_id' => $orderIdToCheck,
-                        'api_key' => $apiKey,
-                    ]);
+                    $transaction = $this->queryTransaction($projectSlug, $orderIdToCheck, $apiKey);
 
-                    if ($response->successful()) {
-                        $transaction = $response->json('transaction');
-                        if ($transaction && ($transaction['status'] ?? null) === 'completed') {
-                            return $transaction;
-                        }
+                    if ($transaction) {
+                        return $transaction;
                     }
                 }
             }
 
             // QRIS settlement can lag; retry once after a short delay.
-            if ($attempt < $maxAttempts) {
+            if ($attempt < 2) {
                 sleep(2);
             }
         }
 
         return null;
+    }
+
+    /**
+     * Ask Pakasir for one transaction. Returns it only when it is 'completed'.
+     *
+     * The timeout is deliberate: without one, a slow Pakasir response would hang
+     * the request for the client's default (30s) while holding the session lock.
+     */
+    protected function queryTransaction(string $projectSlug, string $orderId, string $apiKey): ?array
+    {
+        $response = Http::timeout(8)->get('https://app.pakasir.com/api/transactiondetail', [
+            'project' => $projectSlug,
+            'amount' => 0, // Pass 0 to bypass Pakasir's amount validation; we verify amount ourselves.
+            'order_id' => $orderId,
+            'api_key' => $apiKey,
+        ]);
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        $transaction = $response->json('transaction');
+
+        return $transaction && ($transaction['status'] ?? null) === 'completed' ? $transaction : null;
     }
 
     /**
