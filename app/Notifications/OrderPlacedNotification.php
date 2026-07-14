@@ -35,6 +35,7 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject('Pesanan Diterima #' . $order->order_number)
+            ->theme('gegares')
             ->markdown('mail.orders.placed', [
                 'order' => $order,
                 'user' => $notifiable,

@@ -34,6 +34,7 @@ class OrderPaidNotification extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject('Pembayaran Berhasil #' . $order->order_number)
+            ->theme('gegares')
             ->markdown('mail.orders.paid', [
                 'order' => $order,
                 'user' => $notifiable,
