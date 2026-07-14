@@ -93,12 +93,20 @@
                                     <a href="{{ $productRoute }}" class="group block w-full h-full relative"
                                        @click="moved && $event.preventDefault()" draggable="false">
                                         @if($imagePath)
-                                            {{-- The first real slide is the LCP element: fetch it eagerly and at
-                                                 high priority. Clones and later slides are deferred. --}}
+                                            {{-- Every slide loads eagerly. The off-screen slides sit outside the
+                                                 clipped frame, so with loading="lazy" the browser never even
+                                                 requested them until they slid into view — swiping quickly (or the
+                                                 5s autoplay) landed on a slide whose image had not started
+                                                 downloading, and it showed up blank.
+
+                                                 Only the first real slide keeps fetchpriority="high": it is the LCP
+                                                 element. The rest are fetched at low priority so they queue behind
+                                                 it instead of competing with it. Clones reuse the same src and are
+                                                 served from cache. --}}
                                             <img src="{{ $imagePath }}" alt="{{ $product->name }}"
                                                  class="w-full h-full object-cover pointer-events-none transition-transform duration-700 group-hover:scale-110"
                                                  width="480" height="480" decoding="async" draggable="false"
-                                                 loading="{{ $slide['eager'] ? 'eager' : 'lazy' }}"
+                                                 loading="eager"
                                                  fetchpriority="{{ $slide['eager'] ? 'high' : 'low' }}">
                                         @else
                                             {{-- Image Fallback --}}
