@@ -224,8 +224,17 @@
                                     d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                                     clip-rule="evenodd" />
                             </svg>
-                            <span>Menampilkan <strong
-                                    class="px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100/80 dark:border-slate-800 font-bold">{{ $products->firstItem() ?? 0 }}-{{ $products->lastItem() ?? 0 }}</strong>
+                            {{-- The counter lives outside the productPager scope, so it listens for
+                                 the window event that scroll-loading fires. Without this it kept
+                                 reading "1-12" from the server-rendered page while the grid below
+                                 had already grown. `first` stays put (a visitor can land on ?page=2);
+                                 only the upper bound tracks how many cards are actually rendered. --}}
+                            <span x-data="{
+                                    first: {{ $products->firstItem() ?? 0 }},
+                                    last: {{ $products->lastItem() ?? 0 }},
+                                 }"
+                                 @products-loaded.window="last = first + $event.detail.count - 1">Menampilkan <strong
+                                    class="px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100/80 dark:border-slate-800 font-bold"><span x-text="first">{{ $products->firstItem() ?? 0 }}</span>-<span x-text="last">{{ $products->lastItem() ?? 0 }}</span></strong>
                                 dari <strong
                                     class="px-2 py-0.5 rounded-lg bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-400 border border-primary-100/30 font-bold">{{ $products->total() }}</strong>
                                 produk</span>
@@ -419,6 +428,12 @@
                         // Alpine's mutation observer initialises the appended cards,
                         // which is also what hydrates their Livewire wishlist buttons.
                         this.$refs.grid.insertAdjacentHTML('beforeend', html);
+
+                        // Tell the "Menampilkan x-y dari z" counter, which sits outside
+                        // this component, how many cards are now on the page.
+                        window.dispatchEvent(new CustomEvent('products-loaded', {
+                            detail: { count: this.$refs.grid.children.length },
+                        }));
 
                         this.nextUrl = next;
                         if (!this.nextUrl) this.observer?.disconnect();
