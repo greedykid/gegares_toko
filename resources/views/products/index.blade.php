@@ -314,6 +314,8 @@
                         </div>
                     </div>
 
+                    @include('products.partials.active-filters')
+
                     <div x-data="productPager(@js($products->nextPageUrl()), @js($products->hasPages()))">
                         <div x-ref="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                             @include('products.partials.grid-items', ['products' => $products])
@@ -365,6 +367,11 @@
                         </noscript>
                     </div>
                 @else
+                    {{-- Also shown here: with no results there is no header bar, and these
+                         badges are the visitor's only way to undo the filter that emptied
+                         the page. --}}
+                    @include('products.partials.active-filters')
+
                     <div class="flex flex-col items-center justify-center py-20 text-center">
                         <svg class="w-16 h-16 text-slate-200 dark:text-slate-700 mb-4" fill="none" viewBox="0 0 24 24"
                             stroke-width="1" stroke="currentColor">
@@ -373,6 +380,17 @@
                         </svg>
                         <p class="text-lg font-semibold text-slate-500 transition-colors">Tidak ada produk ditemukan</p>
                         <p class="text-sm text-slate-400 mt-1 transition-colors">Coba ubah filter pencarian Anda</p>
+
+                        {{-- A dead end otherwise: the badges above undo one filter at a time,
+                             but a visitor who just wants out needs a single way back to the
+                             full catalogue. --}}
+                        <a href="{{ route('products.index') }}"
+                            class="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold transition-colors">
+                            Lihat Semua Jajanan
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
                     </div>
                 @endif
             </div>
