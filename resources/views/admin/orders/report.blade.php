@@ -117,7 +117,7 @@
             <div class="max-w-sm">
                 <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Catatan Laporan</h5>
                 <p class="text-[10px] text-slate-400 leading-relaxed italic font-medium">
-                    Laporan ini dihasilkan secara otomatis oleh sistem administrasi Gegares. Pendapatan Bersih dihitung berdasarkan pesanan dengan status 'Selesai'. Data tidak mencakup potongan biaya payment gateway Midtrans.
+                    Laporan ini dihasilkan secara otomatis oleh sistem administrasi Gegares. Pendapatan Bersih dihitung berdasarkan pesanan dengan status 'Selesai'. Data tidak mencakup potongan biaya payment gateway Pakasir.
                 </p>
             </div>
             
