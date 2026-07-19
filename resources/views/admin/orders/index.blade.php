@@ -517,7 +517,7 @@
                     <div class="space-y-2">
                         <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Metode Pembayaran</h4>
                         <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm flex items-center justify-between transition-colors">
-                            <span class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider transition-colors" x-text="selectedOrder?.payment_method?.toUpperCase() || 'MIDTRANS'"></span>
+                            <span class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider transition-colors" x-text="selectedOrder?.payment_method?.toUpperCase() || 'PAKASIR'"></span>
                             <div class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter transition-colors border"
                                  :class="{
                                      'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-650 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30': selectedOrder?.payment_status === 'paid',

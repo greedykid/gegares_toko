@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
-    // Midtrans integration removed. Use Pakasir webhook instead.
-
     public function pakasir(Request $request, PakasirService $pakasirService)
     {
         Log::info('Pakasir webhook received', $request->all());
