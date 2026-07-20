@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('order_number')->unique();
-            $table->string('biteship_order_id')->nullable()->index();
-            $table->string('courier_tracking_id')->nullable()->index();
+            $table->string('order_number', 30)->unique(); // e.g. GGR-20260721-ABC123
+            $table->string('biteship_order_id', 40)->nullable()->index();
+            $table->string('courier_tracking_id', 40)->nullable()->index();
             $table->foreignId('address_id')->constrained();
             $table->decimal('subtotal', 12, 2);
             $table->decimal('shipping_cost', 12, 2)->default(0);
@@ -27,12 +27,12 @@ return new class extends Migration
             $table->enum('payment_status', [
                 'unpaid', 'pending', 'paid', 'failed', 'expired'
             ])->default('unpaid');
-            $table->string('payment_method')->nullable();
-            $table->string('pakasir_link')->nullable();
-            $table->string('pakasir_order_id')->nullable();
-            $table->string('shipping_courier')->nullable();
-            $table->string('shipping_service')->nullable();
-            $table->string('tracking_number')->nullable();
+            $table->string('payment_method', 30)->nullable(); // qris / pakasir
+            $table->string('pakasir_link', 512)->nullable(); // hosted payment URL (with encoded redirect)
+            $table->string('pakasir_order_id', 30)->nullable();
+            $table->string('shipping_courier', 30)->nullable(); // grab / jne
+            $table->string('shipping_service', 40)->nullable(); // same_day / reg
+            $table->string('tracking_number', 64)->nullable(); // courier waybill
             $table->text('notes')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();

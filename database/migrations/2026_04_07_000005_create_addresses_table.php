@@ -11,18 +11,18 @@ return new class extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('label');
-            $table->string('recipient_name');
-            $table->string('phone');
+            $table->string('label', 40); // Rumah / Kantor
+            $table->string('recipient_name', 100);
+            $table->string('phone', 20);
             $table->text('address_line');
-            $table->string('area_id')->nullable();
-            $table->string('city');
-            $table->string('province');
-            $table->string('postal_code');
+            $table->string('area_id', 64)->nullable(); // Biteship area id
+            $table->string('city', 60);
+            $table->string('province', 60);
+            $table->string('postal_code', 10);
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->boolean('is_primary')->default(false);
-            $table->string('biteship_location_id')->nullable();
+            $table->string('biteship_location_id', 40)->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
