@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Jobs\BookBiteshipOrder;
+use App\Services\BiteshipService;
+use App\Support\StorefrontCache;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
@@ -34,50 +37,24 @@ class Order extends Model
     protected static function booted()
     {
         // Invalidate dashboard metrics & best-seller caches on any order change.
-        $flushCache = fn () => \App\Support\StorefrontCache::forget(\App\Support\StorefrontCache::ORDER_KEYS);
+        $flushCache = fn () => StorefrontCache::forget(StorefrontCache::ORDER_KEYS);
         static::saved($flushCache);
         static::deleted($flushCache);
 
         static::updated(function ($order) {
-            // Check if status transitioned to 'paid'
-            if ($order->wasChanged('status') && $order->status === 'paid') {
-                // Prevent real API calls during tests unless the service is explicitly mocked/bound in the container
-                if (app()->runningUnitTests() && !app()->bound(\App\Services\BiteshipService::class)) {
+            // When an order becomes paid and is not yet booked, hand the Biteship
+            // booking to a queued job. This deliberately does NOT call the API
+            // here: the paid transition happens inside PakasirService::
+            // markOrderPaid()'s DB transaction + row lock, so a synchronous HTTP
+            // call would hold the lock for the whole round-trip. The job runs on
+            // a worker once the transaction has committed. See BookBiteshipOrder.
+            if ($order->wasChanged('status') && $order->status === 'paid' && empty($order->biteship_order_id)) {
+                // Prevent real API calls during tests unless the service is explicitly mocked/bound in the container.
+                if (app()->runningUnitTests() && ! app()->bound(BiteshipService::class)) {
                     return;
                 }
 
-                if (empty($order->biteship_order_id)) {
-                    // Check if reallocation retry count has exceeded
-                    // Check if reallocation retry count has exceeded
-                    $retryKey = 'biteship_reallocation_retries_' . $order->id;
-                    if (\Illuminate\Support\Facades\Cache::get($retryKey, 0) >= 2) {
-                        \Illuminate\Support\Facades\Log::warning("Biteship Auto-Process: Order #{$order->order_number} has exceeded re-allocation retry limit. Skipping auto-booking.");
-                        return;
-                    }
-
-                    try {
-                        $biteship = app(\App\Services\BiteshipService::class);
-                        $result = $biteship->createOrder($order);
-                        
-                        if ($result && isset($result['success']) && $result['success']) {
-                            static::withoutEvents(function () use ($order, $result) {
-                                $order->syncOriginal();
-                                $order->update([
-                                    'status' => 'processing',
-                                    'biteship_order_id' => $result['id'] ?? $order->biteship_order_id,
-                                    'courier_tracking_id' => $result['courier']['tracking_id'] ?? $result['courier_tracking_id'] ?? $order->courier_tracking_id,
-                                    'tracking_number' => $result['courier']['waybill_id'] ?? $order->tracking_number,
-                                ]);
-                            });
-                            \Illuminate\Support\Facades\Log::info("Biteship Auto-Process: Order #{$order->order_number} successfully processed to Biteship.");
-                        } else {
-                            $err = $result['error'] ?? 'Unknown error';
-                            \Illuminate\Support\Facades\Log::warning("Biteship Auto-Process Failed for Order #{$order->order_number}: " . $err);
-                        }
-                    } catch (\Exception $e) {
-                        \Illuminate\Support\Facades\Log::error("Biteship Auto-Process Error for Order #{$order->order_number}: " . $e->getMessage());
-                    }
-                }
+                BookBiteshipOrder::dispatch($order->id);
             }
         });
     }
@@ -86,19 +63,21 @@ class Order extends Model
     {
         // Prioritize Courier Tracking ID (e.g. 8wzOjhwBw8pbfdl0y8QrObNZ) over courier Waybill ID (WYB...)
         $id = $this->courier_tracking_id ?? $this->tracking_number;
-        if (!$id) return '';
+        if (! $id) {
+            return '';
+        }
 
-        $baseUrl = 'https://track.biteship.com/' . $id;
+        $baseUrl = 'https://track.biteship.com/'.$id;
 
         // Smart Sandbox Detection: If using a biteship_test key, append the development environment flag
         $apiKey = config('biteship.api_key');
         $isSandbox = str_starts_with($apiKey ?? '', 'biteship_test.');
-        
+
         // Apply flag to Biteship IDs (ttce, WYB, or 24-character alphanumeric tracking ID)
         $isBiteshipId = str_starts_with($id, 'ttce') || str_starts_with($id, 'WYB') || preg_match('/^[a-zA-Z0-9]{24}$/', $id);
 
         if ($isSandbox && $isBiteshipId) {
-            return $baseUrl . '?environment=development';
+            return $baseUrl.'?environment=development';
         }
 
         return $baseUrl;
@@ -126,12 +105,12 @@ class Order extends Model
 
     public static function generateOrderNumber(): string
     {
-        return 'GGR-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
+        return 'GGR-'.date('Ymd').'-'.strtoupper(substr(uniqid(), -6));
     }
 
     public function getFormattedTotalAttribute(): string
     {
-        return 'Rp ' . number_format((float) $this->total, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->total, 0, ',', '.');
     }
 
     public function getStatusLabelAttribute(): string

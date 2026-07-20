@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Order;
+use App\Services\BiteshipService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * Books a paid order with Biteship outside the request lifecycle.
+ *
+ * This used to run synchronously inside Order's `updated` model event, which
+ * fired inside PakasirService::markOrderPaid()'s DB transaction while a
+ * `lockForUpdate` row lock was still held. A slow Biteship response therefore
+ * kept the order row locked and the payment transaction open for the whole
+ * network round-trip, and a Biteship timeout could roll back an already-settled
+ * payment. Dispatching a queued job moves the network call to a worker that
+ * runs after the transaction has committed and the lock is released.
+ */
+class BookBiteshipOrder implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(public int $orderId) {}
+
+    public function handle(BiteshipService $biteship): void
+    {
+        $order = Order::find($this->orderId);
+
+        // Defensive re-checks: the job can run after the paid transition was
+        // rolled back, after a concurrent worker already booked the order, or
+        // after an admin booked it manually. Only auto-book a still-unbooked,
+        // paid order.
+        if (! $order || $order->status !== 'paid' || ! empty($order->biteship_order_id)) {
+            return;
+        }
+
+        // Cap automated re-allocation attempts so a courier that keeps rejecting
+        // cannot loop forever (the Biteship webhook resets status back to paid).
+        $retryKey = 'biteship_reallocation_retries_'.$order->id;
+        if (Cache::get($retryKey, 0) >= 2) {
+            Log::warning("Biteship Auto-Process: Order #{$order->order_number} has exceeded re-allocation retry limit. Skipping auto-booking.");
+
+            return;
+        }
+
+        try {
+            $result = $biteship->createOrder($order);
+
+            if ($result && ($result['success'] ?? false)) {
+                // withoutEvents: the status→processing write must not re-fire the
+                // paid listener that dispatched this job.
+                Order::withoutEvents(function () use ($order, $result) {
+                    $order->syncOriginal();
+                    $order->update([
+                        'status' => 'processing',
+                        'biteship_order_id' => $result['id'] ?? $order->biteship_order_id,
+                        'courier_tracking_id' => $result['courier']['tracking_id'] ?? $result['courier_tracking_id'] ?? $order->courier_tracking_id,
+                        'tracking_number' => $result['courier']['waybill_id'] ?? $order->tracking_number,
+                    ]);
+                });
+                Log::info("Biteship Auto-Process: Order #{$order->order_number} successfully processed to Biteship.");
+            } else {
+                $err = $result['error'] ?? 'Unknown error';
+                Log::warning("Biteship Auto-Process Failed for Order #{$order->order_number}: ".$err);
+            }
+        } catch (\Throwable $e) {
+            Log::error("Biteship Auto-Process Error for Order #{$order->order_number}: ".$e->getMessage());
+        }
+    }
+}
