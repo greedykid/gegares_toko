@@ -3,16 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use Illuminate\Http\Request;
-
+use App\Services\BiteshipService;
 use App\Services\PakasirService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         $query = $user->orders()->with('items')->latest();
 
         if ($request->filled('status')) {
@@ -42,10 +45,11 @@ class OrderController extends Controller
             'pending' => ($counts->get('pending', 0) + $counts->get('awaiting_payment', 0)),
             'processing' => ($counts->get('paid', 0) + $counts->get('processing', 0) + $counts->get('shipped', 0)),
             'completed' => $counts->get('completed', 0),
+            // Range bounds (not whereMonth/whereYear) so the created_at index can
+            // be used — wrapping the column in a function would disable it.
             'monthly_spent' => $user->orders()
                 ->whereNotIn('status', ['pending', 'awaiting_payment', 'cancelled'])
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
+                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
                 ->sum('total'),
         ];
 
@@ -54,7 +58,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) Auth::id(), 403);
 
         $order->load(['items.product', 'address']);
 
@@ -63,22 +67,24 @@ class OrderController extends Controller
 
     public function payment(Order $order, PakasirService $pakasirService)
     {
-        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) Auth::id(), 403);
 
         if (in_array($order->payment_status, ['failed', 'expired'])) {
             return redirect()->route('orders.show', $order)
                 ->with('error', 'Pesanan ini sudah tidak bisa dibayar.');
         }
 
-        // Sync status with Pakasir if not already paid
+        // Sync status with Pakasir if not already paid. Honour the same 2s throttle
+        // the polling path uses (checkStatus) so refreshing this page repeatedly
+        // cannot hammer Pakasir with back-to-back 8s API calls while holding the
+        // session lock.
         if ($order->payment_status !== 'paid') {
-            // Force a fresh check by clearing any existing throttle cache
-            \Illuminate\Support\Facades\Cache::forget('pakasir_sync_limit_' . $order->id);
+            $cacheKey = 'pakasir_sync_limit_'.$order->id;
 
-            $order = $pakasirService->syncOrderWithPakasir($order);
-
-            // Set the cache throttle so polling doesn't immediately check again
-            \Illuminate\Support\Facades\Cache::put('pakasir_sync_limit_' . $order->id, true, 2);
+            if (! Cache::has($cacheKey)) {
+                $order = $pakasirService->syncOrderWithPakasir($order);
+                Cache::put($cacheKey, true, 2);
+            }
         }
 
         return response()
@@ -90,15 +96,15 @@ class OrderController extends Controller
 
     public function checkStatus(Order $order, PakasirService $pakasirService)
     {
-        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) Auth::id(), 403);
 
         if ($order->payment_status !== 'paid') {
-            $cacheKey = 'pakasir_sync_limit_' . $order->id;
-            
+            $cacheKey = 'pakasir_sync_limit_'.$order->id;
+
             // Only query Pakasir if the cache lock has expired (at most once per 2s)
-            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            if (! Cache::has($cacheKey)) {
                 $order = $pakasirService->syncOrderWithPakasir($order);
-                \Illuminate\Support\Facades\Cache::put($cacheKey, true, 2);
+                Cache::put($cacheKey, true, 2);
             }
         }
 
@@ -108,22 +114,22 @@ class OrderController extends Controller
         ]);
     }
 
-    public function getTracking(Order $order, \App\Services\BiteshipService $biteshipService)
+    public function getTracking(Order $order, BiteshipService $biteshipService)
     {
-        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) Auth::id(), 403);
 
         // Try real API first if tracking number exists
         if ($order->tracking_number) {
             $tracking = $biteshipService->trackShipment($order->tracking_number, strtolower($order->shipping_courier));
-            
+
             if ($tracking && isset($tracking['success']) && $tracking['success']) {
                 $status = $tracking['status'] ?? 'allocated';
-                
-                $history = collect($tracking['history'] ?? [])->map(function($h) {
+
+                $history = collect($tracking['history'] ?? [])->map(function ($h) {
                     return [
                         'status' => $h['status'],
                         'note' => $this->translateBiteshipNote($h['note'] ?? 'Status diperbarui'),
-                        'time' => \Illuminate\Support\Carbon::parse($h['updated_at'] ?? $h['time'] ?? now())->translatedFormat('d M, H:i')
+                        'time' => Carbon::parse($h['updated_at'] ?? $h['time'] ?? now())->translatedFormat('d M, H:i'),
                     ];
                 })->toArray();
 
@@ -136,10 +142,10 @@ class OrderController extends Controller
                         'phone' => $tracking['courier']['phone'] ?? '-',
                         'plate_number' => $tracking['courier']['plate_number'] ?? 'GGR-TRK',
                         'photo' => $tracking['courier']['photo'] ?? 'https://i.pravatar.cc/150?u=biteship',
-                        'type' => $tracking['courier']['type'] ?? ($order->shipping_courier . ' ' . $order->shipping_service)
+                        'type' => $tracking['courier']['type'] ?? ($order->shipping_courier.' '.$order->shipping_service),
                     ],
                     'link' => $order->tracking_url,
-                    'history' => array_reverse($history)
+                    'history' => array_reverse($history),
                 ]);
             }
         }
@@ -167,8 +173,8 @@ class OrderController extends Controller
                 $history[] = ['status' => 'delivered', 'note' => 'Selesai: Pesanan telah diterima oleh pelanggan', 'time' => $order->updated_at->translatedFormat('d M, H:i')];
             } else {
                 // processing
-                $history[] = ['status' => 'allocated', 'note' => 'Mencari kurir terdekat...', 'time' => \Illuminate\Support\Carbon::now()->subMinutes(5)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan dan sedang menuju lokasi Anda', 'time' => \Illuminate\Support\Carbon::now()->subMinutes(2)->translatedFormat('d M, H:i')];
+                $history[] = ['status' => 'allocated', 'note' => 'Mencari kurir terdekat...', 'time' => Carbon::now()->subMinutes(5)->translatedFormat('d M, H:i')];
+                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan dan sedang menuju lokasi Anda', 'time' => Carbon::now()->subMinutes(2)->translatedFormat('d M, H:i')];
             }
 
             $history = array_reverse($history);
@@ -182,10 +188,10 @@ class OrderController extends Controller
                     'phone' => '081234567890',
                     'plate_number' => 'B 3546 UIL',
                     'photo' => 'https://i.pravatar.cc/150?u=budi',
-                    'type' => strtoupper($order->shipping_courier . ' ' . $order->shipping_service)
+                    'type' => strtoupper($order->shipping_courier.' '.$order->shipping_service),
                 ],
                 'link' => $order->tracking_url,
-                'history' => $history
+                'history' => $history,
             ]);
         }
 
@@ -194,14 +200,14 @@ class OrderController extends Controller
 
     public function complete(Order $order)
     {
-        abort_if((int) $order->user_id !== (int) \Illuminate\Support\Facades\Auth::id(), 403);
+        abort_if((int) $order->user_id !== (int) Auth::id(), 403);
 
         if ($order->status !== 'shipped') {
             return redirect()->back()->with('error', 'Hanya pesanan dengan status dikirim yang dapat diselesaikan.');
         }
 
         $order->update([
-            'status' => 'completed'
+            'status' => 'completed',
         ]);
 
         return redirect()->route('orders.show', $order)->with('success', 'Pesanan telah selesai. Terima kasih telah berbelanja!');
@@ -230,7 +236,9 @@ class OrderController extends Controller
 
     private function translateBiteshipNote($note)
     {
-        if (!$note) return '';
+        if (! $note) {
+            return '';
+        }
 
         $mappings = [
             // Confirmed / Allocated
@@ -256,11 +264,11 @@ class OrderController extends Controller
             // In Transit / Dropping off
             'Item is on the way to customer.' => 'Paket sedang dalam perjalanan menuju alamat tujuan.',
             'Courier is dropping off item to destination' => 'Kurir sedang mengantar pesanan ke tujuan',
-            
+
             // Hold / Issue
             'Your shipment is on hold at the moment.' => 'Pengiriman Anda sedang ditangguhkan sementara.',
             'Order is on hold for a moment due to shipment issue' => 'Pesanan ditangguhkan sementara karena kendala pengiriman',
-            
+
             // Delivered
             'Item has been delivered.' => 'Pesanan telah sampai di tujuan.',
             'Order has been delivered' => 'Pesanan telah sampai di tujuan',

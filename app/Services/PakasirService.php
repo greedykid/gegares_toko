@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Notifications\OrderPaidNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -12,9 +13,6 @@ class PakasirService
 {
     /**
      * Create redirect payment URL for Pakasir.
-     *
-     * @param Order $order
-     * @return string|null
      */
     public function createPaymentUrl(Order $order): ?string
     {
@@ -22,13 +20,13 @@ class PakasirService
             $slug = config('pakasir.project_slug', 'gegares');
             $amount = (int) $order->total;
             $orderId = $this->getPakasirOrderId($order->order_number);
-            
+
             // Redirect user back to our payment page when done
             $isChatbotOrder = str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot');
-            $redirectUrl = route('orders.payment', $order) . ($isChatbotOrder ? '?chatbot_open=1' : '');
-            
+            $redirectUrl = route('orders.payment', $order).($isChatbotOrder ? '?chatbot_open=1' : '');
+
             // Construct the Pakasir hosted payment URL (restricted to QRIS channel only)
-            $paymentUrl = "https://app.pakasir.com/pay/{$slug}/{$amount}?order_id={$orderId}&payment_channel=qris&redirect=" . urlencode($redirectUrl);
+            $paymentUrl = "https://app.pakasir.com/pay/{$slug}/{$amount}?order_id={$orderId}&payment_channel=qris&redirect=".urlencode($redirectUrl);
 
             $order->update([
                 'pakasir_link' => $paymentUrl,
@@ -37,24 +35,23 @@ class PakasirService
 
             return $paymentUrl;
         } catch (\Exception $e) {
-            Log::error('Pakasir createPaymentUrl error: ' . $e->getMessage());
+            Log::error('Pakasir createPaymentUrl error: '.$e->getMessage());
+
             return null;
         }
     }
 
     /**
      * Handle incoming Pakasir Webhook notification.
-     *
-     * @param array $payload
-     * @return Order|null
      */
     public function handleNotification(array $payload): ?Order
     {
         try {
             $orderId = $payload['order_id'] ?? null;
 
-            if (!$orderId) {
+            if (! $orderId) {
                 Log::warning('Pakasir Webhook: Missing order_id in payload');
+
                 return null;
             }
 
@@ -63,8 +60,9 @@ class PakasirService
                 ->orWhereRaw('LOWER(pakasir_order_id) = ?', [strtolower($orderId)])
                 ->first();
 
-            if (!$order) {
+            if (! $order) {
                 Log::warning("Pakasir Webhook: Order not found for ID {$orderId}");
+
                 return null;
             }
 
@@ -80,18 +78,20 @@ class PakasirService
 
             if ($transaction) {
                 if ((int) ($transaction['amount'] ?? 0) !== (int) $order->total) {
-                    Log::warning("Pakasir Webhook: Amount mismatch for Order #{$orderId}. API amount: " . ($transaction['amount'] ?? 'null') . ", Order total: {$order->total}");
+                    Log::warning("Pakasir Webhook: Amount mismatch for Order #{$orderId}. API amount: ".($transaction['amount'] ?? 'null').", Order total: {$order->total}");
+
                     return null;
                 }
 
                 $this->markOrderPaid($order, $transaction['payment_method'] ?? 'qris', $transaction['completed_at'] ?? null);
                 Log::info("Pakasir Webhook: Order #{$orderId} confirmed paid via API.");
+
                 return $order;
             }
 
             // Fallback only when no API key is configured (e.g. local development):
             // verify the payload amount at minimum so the flow still works offline.
-            if (!config('pakasir.api_key')) {
+            if (! config('pakasir.api_key')) {
                 $status = $payload['status'] ?? null;
                 $amount = $payload['amount'] ?? null;
 
@@ -104,18 +104,17 @@ class PakasirService
             }
 
             Log::warning("Pakasir Webhook: Unable to confirm a completed transaction with Pakasir API for Order #{$orderId}. Ignoring payload.");
+
             return $order;
         } catch (\Exception $e) {
-            Log::error('Pakasir handleNotification error: ' . $e->getMessage());
+            Log::error('Pakasir handleNotification error: '.$e->getMessage());
+
             return null;
         }
     }
 
     /**
      * Sync order status directly with Pakasir API.
-     *
-     * @param Order $order
-     * @return Order|null
      */
     public function syncOrderWithPakasir(Order $order): ?Order
     {
@@ -124,8 +123,9 @@ class PakasirService
                 return $order;
             }
 
-            if (!config('pakasir.api_key')) {
+            if (! config('pakasir.api_key')) {
                 Log::warning('Pakasir sync: API Key is not configured.');
+
                 return $order;
             }
 
@@ -140,7 +140,8 @@ class PakasirService
 
             return $order->refresh();
         } catch (\Exception $e) {
-            Log::error('Pakasir syncOrderWithPakasir error: ' . $e->getMessage());
+            Log::error('Pakasir syncOrderWithPakasir error: '.$e->getMessage());
+
             return $order;
         }
     }
@@ -149,13 +150,12 @@ class PakasirService
      * Query Pakasir's API for a completed transaction belonging to the order.
      * Uses the single canonical order id format (no casing brute-force).
      *
-     * @param Order $order
      * @return array|null The transaction array when status is 'completed', otherwise null.
      */
     protected function fetchCompletedTransaction(Order $order, bool $withRetry = true): ?array
     {
         $apiKey = config('pakasir.api_key');
-        if (!$apiKey) {
+        if (! $apiKey) {
             return null;
         }
 
@@ -171,7 +171,7 @@ class PakasirService
         // seconds; because PHP holds an exclusive session lock for the whole
         // request, the next poll queued behind it and the page kept showing
         // "menunggu pembayaran" long after the payment had actually settled.
-        if (!$withRetry) {
+        if (! $withRetry) {
             return $this->queryTransaction($slug, $canonicalOrderId, $apiKey);
         }
 
@@ -187,12 +187,12 @@ class PakasirService
         $casingStrategies = [$canonicalOrderId];
         $parts = explode('-', $order->order_number);
         if (count($parts) === 3) {
-            $prefix = $parts[0] . '-' . $parts[1];
+            $prefix = $parts[0].'-'.$parts[1];
             $suffix = $parts[2];
-            $casingStrategies[] = strtoupper($prefix) . '-' . strtoupper($suffix); // GGR-...-HEX
-            $casingStrategies[] = strtoupper($prefix) . '-' . strtolower($suffix); // GGR-...-hex
-            $casingStrategies[] = strtolower($prefix) . '-' . strtoupper($suffix); // ggr-...-HEX
-            $casingStrategies[] = strtolower($prefix) . '-' . strtolower($suffix); // ggr-...-hex
+            $casingStrategies[] = strtoupper($prefix).'-'.strtoupper($suffix); // GGR-...-HEX
+            $casingStrategies[] = strtoupper($prefix).'-'.strtolower($suffix); // GGR-...-hex
+            $casingStrategies[] = strtolower($prefix).'-'.strtoupper($suffix); // ggr-...-HEX
+            $casingStrategies[] = strtolower($prefix).'-'.strtolower($suffix); // ggr-...-hex
         } else {
             $casingStrategies[] = strtolower($order->order_number);
             $casingStrategies[] = strtoupper($order->order_number);
@@ -234,7 +234,7 @@ class PakasirService
             'api_key' => $apiKey,
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return null;
         }
 
@@ -247,11 +247,6 @@ class PakasirService
      * Atomically mark an order as paid and deduct stock exactly once.
      * Wrapped in a transaction with a row lock so concurrent webhook/sync
      * calls cannot double-deduct stock or double-process the payment.
-     *
-     * @param Order $order
-     * @param string $paymentMethod
-     * @param string|null $completedAt
-     * @return void
      */
     protected function markOrderPaid(Order $order, string $paymentMethod, ?string $completedAt): void
     {
@@ -259,16 +254,22 @@ class PakasirService
             // Re-fetch under a row lock to make the paid-transition idempotent.
             $locked = Order::whereKey($order->getKey())->lockForUpdate()->first();
 
-            if (!$locked || $locked->payment_status === 'paid') {
+            if (! $locked || $locked->payment_status === 'paid') {
                 return false; // Already processed by a concurrent request.
             }
 
             // Deduct stock first (atomic SQL decrement) while still inside the lock.
+            // The `stock >= quantity` guard means two orders racing for the last
+            // unit can never drive stock negative: whichever loses the race matches
+            // zero rows and is logged instead of silently overselling.
             foreach ($locked->items as $item) {
-                if ($item->product_variant_id) {
-                    $item->variant()->decrement('stock', $item->quantity);
-                } else {
-                    $item->product()->decrement('stock', $item->quantity);
+                $relation = $item->product_variant_id ? $item->variant() : $item->product();
+
+                $affected = $relation->where('stock', '>=', $item->quantity)
+                    ->decrement('stock', $item->quantity);
+
+                if ($affected === 0) {
+                    Log::warning("Stock oversell prevented for Order #{$locked->order_number}: '{$item->product_name}' requested {$item->quantity} but insufficient stock remains.");
                 }
             }
 
@@ -297,25 +298,23 @@ class PakasirService
         // so concurrent webhook/sync requests never send a duplicate email.
         if ($didTransition && $order->user) {
             try {
-                $order->user->notify(new \App\Notifications\OrderPaidNotification($order));
+                $order->user->notify(new OrderPaidNotification($order));
             } catch (\Throwable $e) {
-                Log::error('OrderPaid notification failed: ' . $e->getMessage());
+                Log::error('OrderPaid notification failed: '.$e->getMessage());
             }
         }
     }
 
     /**
      * Get consistent order ID format for Pakasir (uppercase prefix GGR-YYYYMMDD, lowercase suffix).
-     *
-     * @param string $orderNumber
-     * @return string
      */
     public function getPakasirOrderId(string $orderNumber): string
     {
         $parts = explode('-', $orderNumber);
         if (count($parts) === 3) {
-            return strtoupper($parts[0] . '-' . $parts[1]) . '-' . strtolower($parts[2]);
+            return strtoupper($parts[0].'-'.$parts[1]).'-'.strtolower($parts[2]);
         }
+
         return strtoupper($orderNumber);
     }
 }
