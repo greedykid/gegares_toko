@@ -22,7 +22,17 @@
     },
     submitProcessShipping(orderId) {
         const form = document.getElementById('process-shipping-form');
-        form.action = `/admin/orders/${orderId}/process-shipping`;
+        // Named route → Indonesian path (/admin/pesanan/{id}/proses-pengiriman);
+        // the old hardcoded /admin/orders/ path 404'd.
+        form.action = '{{ route('admin.orders.process-shipping', ['order' => '__ID__']) }}'.replace('__ID__', orderId);
+        form.submit();
+    },
+    submitCancelOrder(orderId) {
+        if (!confirm('Batalkan pesanan ini? Jika sudah dibooking, pengiriman di Biteship juga dibatalkan. Tindakan ini tidak bisa dibatalkan.')) return;
+        const reason = prompt('Alasan pembatalan (opsional):', 'Dibatalkan oleh admin') || 'Dibatalkan oleh admin';
+        const form = document.getElementById('cancel-order-form');
+        form.action = '{{ route('admin.orders.cancel-shipping', ['order' => '__ID__']) }}'.replace('__ID__', orderId);
+        form.querySelector('[name=cancellation_reason]').value = reason;
         form.submit();
     },
     async fetchTracking() {
@@ -30,10 +40,10 @@
             this.trackingData = null;
             return;
         }
-        
+
         this.loadingTracking = true;
         try {
-            const response = await fetch(`/admin/orders/${this.selectedOrder.id}/tracking`);
+            const response = await fetch('{{ route('admin.orders.tracking', ['order' => '__ID__']) }}'.replace('__ID__', this.selectedOrder.id));
             const data = await response.json();
             if (data.success) {
                 this.trackingData = data;
@@ -687,7 +697,18 @@
                             Cari Ulang Kurir
                         </button>
                     </template>
-                    <button @click="showDetail = false" 
+
+                    {{-- Cancel: the one real courier action Biteship's API exposes.
+                         Only orders still in fulfilment (processing/shipped) can be cancelled. --}}
+                    <template x-if="['processing', 'shipped'].includes(selectedOrder?.status)">
+                        <button type="button"
+                                @click="submitCancelOrder(selectedOrder.id)"
+                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-red-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-red-700 transition-all shadow-sm shadow-red-200 flex items-center gap-1.5 sm:gap-2">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                            Batalkan Pesanan
+                        </button>
+                    </template>
+                    <button @click="showDetail = false"
                             class="px-3 py-1.5 sm:px-5 sm:py-2 bg-slate-900 dark:bg-slate-800 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200">Tutup</button>
                 </div>
             </div>
@@ -697,6 +718,12 @@
     {{-- Hidden form for Biteship shipping process --}}
     <form id="process-shipping-form" method="POST" style="display: none;">
         @csrf
+    </form>
+
+    {{-- Hidden form for cancelling an order (and its Biteship shipment) --}}
+    <form id="cancel-order-form" method="POST" style="display: none;">
+        @csrf
+        <input type="hidden" name="cancellation_reason" value="">
     </form>
 </div>
 @endsection

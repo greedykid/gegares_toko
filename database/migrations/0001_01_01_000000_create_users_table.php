@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('google_id')->nullable()->unique()->index();
-            $table->string('google_avatar')->nullable();
+            $table->string('name', 100);
+            $table->string('email')->unique(); // 255: RFC-max email length
+            $table->string('google_id', 40)->nullable()->unique()->index(); // Google "sub" (~21 digits)
+            $table->string('google_avatar', 512)->nullable(); // avatar URL
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password'); // 255: room for bcrypt/argon hashes
             $table->enum('role', ['admin', 'user'])->default('user');
-            $table->string('avatar')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('avatar', 255)->nullable(); // stored file path
+            $table->string('phone', 20)->nullable(); // +62 8xx-xxxx-xxxx
             $table->json('notification_settings')->nullable();
             $table->rememberToken();
             $table->timestamps();

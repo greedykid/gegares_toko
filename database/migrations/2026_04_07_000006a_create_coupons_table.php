@@ -11,7 +11,7 @@ return new class extends Migration
         if (!Schema::hasTable('coupons')) {
             Schema::create('coupons', function (Blueprint $table) {
                 $table->id();
-                $table->string('code')->unique();
+                $table->string('code', 20)->unique(); // promo code, e.g. GRATISONGKIR2026
                 $table->enum('type', ['fixed', 'percent']);
                 $table->decimal('value', 12, 2);
                 $table->decimal('min_purchase', 12, 2)->nullable()->default(0);

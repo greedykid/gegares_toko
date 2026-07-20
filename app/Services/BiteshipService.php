@@ -2,17 +2,19 @@
 
 namespace App\Services;
 
+use App\Models\Order;
+use App\Models\StoreSetting;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use App\Models\Order;
-use App\Models\User;
-use App\Models\StoreSetting;
 
 class BiteshipService
 {
     protected string $baseUrl;
+
     protected string $apiKey;
+
     protected int $timeout;
 
     public function __construct()
@@ -26,7 +28,7 @@ class BiteshipService
     {
         // Area lookups are static reference data; cache successful results so
         // typing in the address autocomplete doesn't hit the API every keystroke.
-        $cacheKey = 'biteship_area_' . md5(mb_strtolower(trim($query)));
+        $cacheKey = 'biteship_area_'.md5(mb_strtolower(trim($query)));
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
@@ -47,18 +49,22 @@ class BiteshipService
                 // Filter only for DKI Jakarta
                 $result = collect($areas)->filter(function ($area) {
                     $province = $area['administrative_division_level_1_name'] ?? '';
+
                     return stripos($province, 'DKI Jakarta') !== false;
                 })->values()->toArray();
 
                 // Only cache successful lookups (never cache API failures).
                 Cache::put($cacheKey, $result, now()->addDay());
+
                 return $result;
             }
 
-            Log::warning('Biteship searchArea failed: ' . $response->body());
+            Log::warning('Biteship searchArea failed: '.$response->body());
+
             return [];
         } catch (\Exception $e) {
-            Log::error('Biteship searchArea error: ' . $e->getMessage());
+            Log::error('Biteship searchArea error: '.$e->getMessage());
+
             return [];
         }
     }
@@ -92,11 +98,11 @@ class BiteshipService
                 'items' => $itemsPayload,
             ];
 
-            $cacheKey = 'biteship_rates_' . md5(json_encode($payload));
+            $cacheKey = 'biteship_rates_'.md5(json_encode($payload));
 
             return Cache::remember($cacheKey, 300, function () use ($payload) {
-                Log::info('Biteship Rates Payload: ' . json_encode($payload));
-                
+                Log::info('Biteship Rates Payload: '.json_encode($payload));
+
                 $response = Http::withToken($this->apiKey)
                     ->timeout($this->timeout)
                     ->post("{$this->baseUrl}/rates/couriers", $payload);
@@ -107,15 +113,18 @@ class BiteshipService
                     // Filter only Instant and Sameday
                     return collect($rates)->filter(function ($rate) {
                         $type = strtolower($rate['type'] ?? '');
+
                         return in_array($type, ['instant', 'same_day', 'sameday']);
                     })->values()->toArray();
                 }
 
-                Log::warning('Biteship getShippingRates failed: ' . $response->body());
+                Log::warning('Biteship getShippingRates failed: '.$response->body());
+
                 return [];
             });
         } catch (\Exception $e) {
-            Log::error('Biteship getShippingRates error: ' . $e->getMessage());
+            Log::error('Biteship getShippingRates error: '.$e->getMessage());
+
             return [];
         }
     }
@@ -124,7 +133,7 @@ class BiteshipService
     {
         // Short-lived cache so repeated tracking polls (user + admin) don't hit
         // the API every few seconds; webhooks still update status in real time.
-        $cacheKey = 'biteship_track_' . $trackingId . '_' . strtolower($courierId);
+        $cacheKey = 'biteship_track_'.$trackingId.'_'.strtolower($courierId);
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
@@ -138,12 +147,14 @@ class BiteshipService
             if ($response->successful()) {
                 $data = $response->json();
                 Cache::put($cacheKey, $data, 60);
+
                 return $data;
             }
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Biteship trackShipment error: ' . $e->getMessage());
+            Log::error('Biteship trackShipment error: '.$e->getMessage());
+
             return null;
         }
     }
@@ -159,10 +170,12 @@ class BiteshipService
                 return $response->json('id');
             }
 
-            Log::warning('Biteship createLocation failed: ' . $response->body());
+            Log::warning('Biteship createLocation failed: '.$response->body());
+
             return null;
         } catch (\Exception $e) {
-            Log::error('Biteship createLocation error: ' . $e->getMessage());
+            Log::error('Biteship createLocation error: '.$e->getMessage());
+
             return null;
         }
     }
@@ -178,10 +191,12 @@ class BiteshipService
                 return true;
             }
 
-            Log::warning('Biteship updateLocation failed: ' . $response->body());
+            Log::warning('Biteship updateLocation failed: '.$response->body());
+
             return false;
         } catch (\Exception $e) {
-            Log::error('Biteship updateLocation error: ' . $e->getMessage());
+            Log::error('Biteship updateLocation error: '.$e->getMessage());
+
             return false;
         }
     }
@@ -193,7 +208,7 @@ class BiteshipService
                 return ['error' => 'API Key Biteship belum dikonfigurasi di file .env (BITESHIP_API_KEY).'];
             }
 
-            if (!$order->address) {
+            if (! $order->address) {
                 return ['error' => 'Alamat pengiriman tidak ditemukan untuk pesanan ini.'];
             }
 
@@ -209,7 +224,7 @@ class BiteshipService
                 'phone' => ($setting && $setting->contact_phone) ? $setting->contact_phone : '08219293812',
                 'email' => ($setting && $setting->contact_email) ? $setting->contact_email : 'admin@gegares.com',
                 'organization' => 'Gegares',
-                'address' => ($setting && $setting->address_line) ? $setting->address_line . ', ' . $setting->city . ', ' . $setting->province : 'Jl. Jembatan Besi II No. 1, Jakarta Barat',
+                'address' => ($setting && $setting->address_line) ? $setting->address_line.', '.$setting->city.', '.$setting->province : 'Jl. Jembatan Besi II No. 1, Jakarta Barat',
                 'postal_code' => ($setting && $setting->postal_code) ? (int) $setting->postal_code : 11320,
                 'coordinate' => [
                     'latitude' => ($setting && $setting->latitude) ? (float) $setting->latitude : -6.1558,
@@ -221,7 +236,7 @@ class BiteshipService
                 'contact_name' => $order->address->recipient_name,
                 'contact_phone' => $order->address->phone,
                 'contact_email' => $order->user->email,
-                'address' => $order->address->address_line . ', ' . $order->address->city . ', ' . $order->address->province,
+                'address' => $order->address->address_line.', '.$order->address->city.', '.$order->address->province,
                 'postal_code' => (int) $order->address->postal_code,
                 'coordinate' => [
                     'latitude' => (float) $order->address->latitude,
@@ -252,17 +267,17 @@ class BiteshipService
 
             // Check if it's a same day service (Grab/Gojek sameday) and check if we are outside the service hours
             $isSameDay = in_array($courierCompany, ['grab', 'gojek']) && in_array($courierType, ['same_day', 'sameday']);
-            
+
             if ($isSameDay) {
                 $now = now()->timezone('Asia/Jakarta');
-                $hour = (int)$now->format('H');
-                
+                $hour = (int) $now->format('H');
+
                 // Grab Same Day: 09:00 - 14:00, Gojek Same Day: 09:00 - 15:00
                 $maxHour = ($courierCompany === 'grab') ? 14 : 15;
-                
+
                 if ($hour >= $maxHour || $hour < 9) {
                     $deliveryType = 'scheduled';
-                    
+
                     if ($hour >= $maxHour) {
                         // Schedule for tomorrow at 09:00
                         $scheduledDate = $now->copy()->addDay();
@@ -270,7 +285,7 @@ class BiteshipService
                         // Schedule for today at 09:00
                         $scheduledDate = $now->copy();
                     }
-                    
+
                     $deliveryDate = $scheduledDate->format('Y-m-d');
                     $deliveryTime = '09:00';
                 }
@@ -309,7 +324,7 @@ class BiteshipService
                 $payload['delivery_time'] = $deliveryTime;
             }
 
-            Log::info('Biteship Create Order Payload: ' . json_encode($payload));
+            Log::info('Biteship Create Order Payload: '.json_encode($payload));
 
             $response = Http::withToken($this->apiKey)
                 ->timeout($this->timeout)
@@ -317,33 +332,34 @@ class BiteshipService
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 // Store the Biteship Order ID and Tracking ID for future reliable webhooks and links
                 if (isset($data['id'])) {
                     $order->update([
                         'biteship_order_id' => $data['id'],
-                        'courier_tracking_id' => $data['courier']['tracking_id'] ?? $data['courier_tracking_id'] ?? null
+                        'courier_tracking_id' => $data['courier']['tracking_id'] ?? $data['courier_tracking_id'] ?? null,
                     ]);
                 }
-                
+
                 // Ensure success field is set
-                if (!isset($data['success'])) {
+                if (! isset($data['success'])) {
                     $data['success'] = true;
                 }
-                
+
                 return $data;
             }
 
-            Log::warning('Biteship createOrder failed: ' . $response->body());
-            
-            $errorMessage = $response->json('error') 
-                ?? $response->json('message') 
+            Log::warning('Biteship createOrder failed: '.$response->body());
+
+            $errorMessage = $response->json('error')
+                ?? $response->json('message')
                 ?? ($response->json('errors') ? implode(', ', (array) $response->json('errors')) : null)
-                ?? 'Unknown error from Biteship (HTTP Status ' . $response->status() . ')';
+                ?? 'Unknown error from Biteship (HTTP Status '.$response->status().')';
 
             return ['error' => $errorMessage];
         } catch (\Exception $e) {
-            Log::error('Biteship createOrder error: ' . $e->getMessage());
+            Log::error('Biteship createOrder error: '.$e->getMessage());
+
             return ['error' => $e->getMessage()];
         }
     }
@@ -359,11 +375,62 @@ class BiteshipService
                 return $response->json();
             }
 
-            Log::warning('Biteship getOrder failed: ' . $response->body());
+            Log::warning('Biteship getOrder failed: '.$response->body());
+
             return null;
         } catch (\Exception $e) {
-            Log::error('Biteship getOrder error: ' . $e->getMessage());
+            Log::error('Biteship getOrder error: '.$e->getMessage());
+
             return null;
+        }
+    }
+
+    /**
+     * Cancel an order at Biteship (POST /v1/orders/:id/cancel).
+     *
+     * This is one of the few real order actions the merchant API exposes — the
+     * granular courier statuses (allocated/picking_up/…) are driven by Biteship
+     * and only ever reach us through the webhook, they cannot be set from here.
+     *
+     * @return array{success?: bool, error?: string}
+     */
+    public function cancelOrder(Order $order, string $reason = 'Dibatalkan oleh penjual'): array
+    {
+        try {
+            if (empty($this->apiKey)) {
+                return ['error' => 'API Key Biteship belum dikonfigurasi di file .env (BITESHIP_API_KEY).'];
+            }
+
+            if (empty($order->biteship_order_id)) {
+                return ['error' => 'Pesanan ini belum terhubung ke Biteship, jadi tidak ada pengiriman untuk dibatalkan.'];
+            }
+
+            $response = Http::withToken($this->apiKey)
+                ->timeout($this->timeout)
+                ->post("{$this->baseUrl}/orders/{$order->biteship_order_id}/cancel", [
+                    'cancellation_reason' => $reason,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (! isset($data['success'])) {
+                    $data['success'] = true;
+                }
+
+                return $data;
+            }
+
+            Log::warning('Biteship cancelOrder failed: '.$response->body());
+
+            $errorMessage = $response->json('error')
+                ?? $response->json('message')
+                ?? 'Gagal membatalkan pesanan di Biteship (HTTP Status '.$response->status().')';
+
+            return ['error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('Biteship cancelOrder error: '.$e->getMessage());
+
+            return ['error' => $e->getMessage()];
         }
     }
 
@@ -378,10 +445,12 @@ class BiteshipService
                 return true;
             }
 
-            Log::warning('Biteship deleteLocation failed: ' . $response->body());
+            Log::warning('Biteship deleteLocation failed: '.$response->body());
+
             return false;
         } catch (\Exception $e) {
-            Log::error('Biteship deleteLocation error: ' . $e->getMessage());
+            Log::error('Biteship deleteLocation error: '.$e->getMessage());
+
             return false;
         }
     }

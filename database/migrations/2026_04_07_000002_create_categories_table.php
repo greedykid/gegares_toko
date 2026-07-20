@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('image')->nullable();
+            $table->string('name', 60);
+            $table->string('slug', 80)->unique();
+            $table->string('image', 255)->nullable(); // stored file path
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
