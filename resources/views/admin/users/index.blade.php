@@ -199,7 +199,10 @@
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showModal=false"></div>
         <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 z-10 border border-slate-200 dark:border-slate-800 transition-all duration-300" x-transition>
             <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 transition-colors" x-text="editMode ? 'Edit Pengguna' : 'Tambah Pengguna'"></h3>
-            <form :action="editMode ? '{{ url('admin/users') }}/'+form.id : '{{ route('admin.users.store') }}'" method="POST" class="space-y-4">
+            {{-- The update URL is derived from the named route so it uses the
+                 Indonesian resource path (/admin/pengguna/{id}); hardcoding
+                 /admin/users/ here previously 404'd on save. --}}
+            <form :action="editMode ? '{{ route('admin.users.update', ['user' => '__ID__']) }}'.replace('__ID__', form.id) : '{{ route('admin.users.store') }}'" method="POST" class="space-y-4">
                 @csrf
                 <template x-if="editMode"><input type="hidden" name="_method" value="PUT"></template>
                 <div><label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 transition-colors">Nama</label><input type="text" name="name" x-model="form.name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all"></div>
