@@ -15,8 +15,18 @@ class CheckProfileCompletion
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && !auth()->user()->phone) {
-            if (!$request->is('settings/complete-profile*') && !$request->is('logout')) {
+        if (auth()->check() && ! auth()->user()->phone) {
+            // Match by ROUTE NAME, not URL path: the URLs are Indonesian
+            // (/pengaturan/lengkapi-profil, /keluar) while the names stay English.
+            // Matching the old English paths let the complete-profile page fail
+            // its own whitelist and redirect to itself — an infinite loop.
+            $allowed = $request->routeIs(
+                'settings.complete-profile',
+                'settings.update-complete-profile',
+                'logout',
+            );
+
+            if (! $allowed) {
                 return redirect()->route('settings.complete-profile');
             }
         }
