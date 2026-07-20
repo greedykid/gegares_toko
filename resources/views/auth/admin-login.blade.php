@@ -53,7 +53,7 @@
                         </div>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus
                                class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all text-sm"
-                               placeholder="admin@gegares.com">
+                               placeholder="admin@gegares.shop">
                     </div>
                 </div>
 
