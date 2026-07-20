@@ -181,12 +181,12 @@
                 @elseif($product->isLowStock())
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                         <span class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Sisa {{ $product->stock }} item — segera habis!</span>
+                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Stok menipis — segera habis!</span>
                     </div>
                 @else
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
                         <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Stok tersedia ({{ $product->stock }})</span>
+                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Stok tersedia</span>
                     </div>
                 @endif
             </div>
