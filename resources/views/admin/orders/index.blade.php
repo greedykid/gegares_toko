@@ -676,18 +676,11 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <template x-if="selectedOrder?.status === 'paid'">
-                        <button type="button" 
-                                @click="submitProcessShipping(selectedOrder.id)"
-                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-indigo-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 flex items-center gap-1.5 sm:gap-2">
-                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0 1 21.485 12 59.77 59.77 0 0 1 3.27 20.876L5.999 12zm0 0h7.5" /></svg>
-                            Proses ke Biteship
-                        </button>
-                    </template>
-
-                    {{-- NEW: Retry Search Button if Courier Not Found --}}
+                    {{-- Courier booking is automatic once payment settles, so the manual
+                         "Proses ke Biteship" button was removed. The retry below stays
+                         as an admin escape hatch when a courier cannot be found. --}}
                     <template x-if="selectedOrder?.status === 'processing' && trackingData?.status === 'courier_not_found'">
-                        <button type="button" 
+                        <button type="button"
                                 @click="submitProcessShipping(selectedOrder.id)"
                                 class="px-3 py-1.5 sm:px-5 sm:py-2 bg-emerald-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 flex items-center gap-1.5 sm:gap-2">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>

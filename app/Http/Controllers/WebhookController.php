@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\BookBiteshipOrder;
 use App\Models\Order;
+use App\Services\BiteshipService;
 use App\Services\PakasirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -133,19 +135,26 @@ class WebhookController extends Controller
                 Cache::put($retryKey, $newRetries, now()->addDay());
                 Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Re-allocation attempt #{$newRetries} initiated.");
 
-                // Reset tracking details and set status back to paid (which triggers the booted Eloquent listener to request a new driver)
+                // Clear the failed booking and keep the order in "processing", then
+                // re-dispatch the courier booking job to request a fresh driver.
                 $order->update([
                     'biteship_order_id' => null,
                     'courier_tracking_id' => null,
                     'tracking_number' => null,
-                    'status' => 'paid',
+                    'status' => 'processing',
                 ]);
-            } else {
-                Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Exceeded max reallocation attempts (2). Leaving status as paid for manual administrator action.");
 
-                // Set status to paid but do NOT clear biteship_order_id so it doesn't trigger re-allocation again
-                if ($order->status !== 'paid') {
-                    $order->update(['status' => 'paid']);
+                // Test guard: don't hit the real Biteship API unless a mock is bound.
+                if (! (app()->runningUnitTests() && ! app()->bound(BiteshipService::class))) {
+                    BookBiteshipOrder::dispatch($order->id);
+                }
+            } else {
+                Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Exceeded max reallocation attempts (2). Leaving status as processing for manual administrator action.");
+
+                // Keep the order in processing but do NOT clear biteship_order_id so
+                // it does not trigger re-allocation again.
+                if ($order->status !== 'processing') {
+                    $order->update(['status' => 'processing']);
                 }
             }
 

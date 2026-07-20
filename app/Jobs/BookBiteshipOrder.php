@@ -33,8 +33,8 @@ class BookBiteshipOrder implements ShouldQueue
         // Defensive re-checks: the job can run after the paid transition was
         // rolled back, after a concurrent worker already booked the order, or
         // after an admin booked it manually. Only auto-book a still-unbooked,
-        // paid order.
-        if (! $order || $order->status !== 'paid' || ! empty($order->biteship_order_id)) {
+        // already-paid order (status is "processing" by this point).
+        if (! $order || $order->payment_status !== 'paid' || ! empty($order->biteship_order_id)) {
             return;
         }
 
@@ -51,16 +51,21 @@ class BookBiteshipOrder implements ShouldQueue
             $result = $biteship->createOrder($order);
 
             if ($result && ($result['success'] ?? false)) {
-                // withoutEvents: the status→processing write must not re-fire the
-                // paid listener that dispatched this job.
                 Order::withoutEvents(function () use ($order, $result) {
                     $order->syncOriginal();
-                    $order->update([
-                        'status' => 'processing',
+                    $updates = [
                         'biteship_order_id' => $result['id'] ?? $order->biteship_order_id,
                         'courier_tracking_id' => $result['courier']['tracking_id'] ?? $result['courier_tracking_id'] ?? $order->courier_tracking_id,
                         'tracking_number' => $result['courier']['waybill_id'] ?? $order->tracking_number,
-                    ]);
+                    ];
+
+                    // Keep the order in "processing" while it awaits pickup, but
+                    // never move a more-advanced order (shipped/completed) back.
+                    if (in_array($order->status, ['paid', 'processing'], true)) {
+                        $updates['status'] = 'processing';
+                    }
+
+                    $order->update($updates);
                 });
                 Log::info("Biteship Auto-Process: Order #{$order->order_number} successfully processed to Biteship.");
             } else {

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
@@ -19,7 +20,7 @@ class PakasirPaymentTest extends TestCase
     public function test_checkout_creates_order_and_generates_pakasir_link(): void
     {
         $user = User::factory()->create([
-            'phone' => '081234567890'
+            'phone' => '081234567890',
         ]);
 
         $category = Category::create([
@@ -51,7 +52,7 @@ class PakasirPaymentTest extends TestCase
         ]);
 
         // Mock Cart
-        $cartKey = $product->id . '_0';
+        $cartKey = $product->id.'_0';
         $cartData = [
             $cartKey => [
                 'id' => $cartKey,
@@ -64,9 +65,9 @@ class PakasirPaymentTest extends TestCase
                 'slug' => $product->slug,
                 'quantity' => 2,
                 'stock' => $product->stock,
-            ]
+            ],
         ];
-        
+
         $this->actingAs($user)
             ->withSession(['cart' => $cartData]);
 
@@ -92,9 +93,9 @@ class PakasirPaymentTest extends TestCase
         $this->assertNotNull($order->pakasir_link);
         $this->assertNotNull($order->pakasir_order_id);
         $this->assertStringContainsString('https://app.pakasir.com/pay/gegares/', $order->pakasir_link);
-        
-        $expectedOrderId = 'GGR-' . date('Ymd') . '-' . strtolower(substr($order->order_number, -6));
-        $this->assertStringContainsString('order_id=' . $expectedOrderId, $order->pakasir_link);
+
+        $expectedOrderId = 'GGR-'.date('Ymd').'-'.strtolower(substr($order->order_number, -6));
+        $this->assertStringContainsString('order_id='.$expectedOrderId, $order->pakasir_link);
 
         // Clear cart session verification
         $this->assertEmpty(Session::get('cart'));
@@ -103,7 +104,7 @@ class PakasirPaymentTest extends TestCase
     public function test_webhook_successfully_updates_payment_status_and_decrements_stock(): void
     {
         $user = User::factory()->create([
-            'phone' => '081234567890'
+            'phone' => '081234567890',
         ]);
 
         $category = Category::create([
@@ -182,21 +183,23 @@ class PakasirPaymentTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson(['status' => 'ok']);
 
-        // Verify database updates
+        // Verify database updates. Payment now moves the order straight to
+        // "processing" so the customer never sees an intermediate "paid" state.
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
         $this->assertEquals('paid', $order->payment_status);
         $this->assertEquals('qris', $order->payment_method);
-        
+
         $product->refresh();
         // Initial stock was 50, purchased 2, should be 48
         $this->assertEquals(48, $product->stock);
     }
 
-    public function test_order_status_paid_triggers_biteship_creation(): void
+    public function test_settling_payment_moves_order_to_processing_and_books_biteship(): void
     {
-        // Mock the BiteshipService
-        $mockBiteship = $this->createMock(\App\Services\BiteshipService::class);
+        // Mock the BiteshipService — the booking job (dispatched by markOrderPaid)
+        // runs inline because the test queue is synchronous.
+        $mockBiteship = $this->createMock(BiteshipService::class);
         $mockBiteship->expects($this->once())
             ->method('createOrder')
             ->willReturn([
@@ -204,11 +207,11 @@ class PakasirPaymentTest extends TestCase
                 'id' => 'biteship-order-123',
                 'courier_tracking_id' => 'ttce-track-123',
                 'courier' => [
-                    'waybill_id' => 'WYB-track-123'
-                ]
+                    'waybill_id' => 'WYB-track-123',
+                ],
             ]);
 
-        $this->app->instance(\App\Services\BiteshipService::class, $mockBiteship);
+        $this->app->instance(BiteshipService::class, $mockBiteship);
 
         $user = User::factory()->create();
         $address = Address::create([
@@ -221,6 +224,8 @@ class PakasirPaymentTest extends TestCase
             'province' => 'DKI Jakarta',
             'postal_code' => '12810',
             'is_primary' => true,
+            'latitude' => -6.2243,
+            'longitude' => 106.8432,
         ]);
 
         $order = Order::create([
@@ -237,12 +242,30 @@ class PakasirPaymentTest extends TestCase
             'shipping_service' => 'reg',
         ]);
 
-        // Manually update status to 'paid' to trigger event
-        $order->update(['status' => 'paid']);
+        // Settle payment through the real webhook path (re-verified via the API).
+        config(['pakasir.api_key' => 'test-api-key']);
+        Http::fake([
+            'app.pakasir.com/api/transactiondetail*' => Http::response([
+                'transaction' => [
+                    'status' => 'completed',
+                    'amount' => 29000,
+                    'payment_method' => 'qris',
+                    'completed_at' => '2026-06-15 12:00:00',
+                ],
+            ], 200),
+        ]);
 
-        // Check if order is updated to 'processing' and has biteship data
+        $this->postJson(route('webhook.pakasir'), [
+            'order_id' => 'GGR-TEST-0002',
+            'status' => 'completed',
+            'amount' => 29000,
+        ])->assertStatus(200);
+
+        // Order goes straight to processing, and the background job has filled in
+        // the Biteship tracking identifiers.
         $order->refresh();
         $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
         $this->assertEquals('biteship-order-123', $order->biteship_order_id);
         $this->assertEquals('ttce-track-123', $order->courier_tracking_id);
         $this->assertEquals('WYB-track-123', $order->tracking_number);
