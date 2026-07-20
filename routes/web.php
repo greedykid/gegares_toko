@@ -1,21 +1,23 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\AdminLoginController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\WebhookController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,8 +38,8 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 
 Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
 Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/tentang', fn() => view('pages.about'))->name('about');
-Route::get('/kontak', fn() => view('pages.contact'))->name('contact');
+Route::get('/tentang', fn () => view('pages.about'))->name('about');
+Route::get('/kontak', fn () => view('pages.contact'))->name('contact');
 
 // ─── Auth Routes (Guest) ───
 Route::middleware('guest')->group(function () {
@@ -47,10 +49,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/daftar', [RegisterController::class, 'register'])->middleware('throttle:5,1');
 
     // Forgot Password Routes
-    Route::get('/lupa-kata-sandi', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-    Route::post('/lupa-kata-sandi', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-    Route::get('/atur-ulang-kata-sandi/{token}', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/atur-ulang-kata-sandi', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'reset'])->name('password.update');
+    Route::get('/lupa-kata-sandi', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/lupa-kata-sandi', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/atur-ulang-kata-sandi/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/atur-ulang-kata-sandi', [ForgotPasswordController::class, 'reset'])->name('password.update');
 });
 
 // ─── Admin Auth ───
@@ -72,7 +74,7 @@ Route::middleware(['auth', 'check_phone'])->group(function () {
     Route::get('/pesanan/{order}/status', [OrderController::class, 'checkStatus'])->name('orders.status');
     Route::post('/pesanan/{order}/selesai', [OrderController::class, 'complete'])->name('orders.complete');
 
-    Route::get('/favorit', fn() => redirect('/#wishlist'))->name('wishlist');
+    Route::get('/favorit', fn () => redirect('/#wishlist'))->name('wishlist');
 
     // Profile Settings
     Route::get('/pengaturan', [ProfileController::class, 'index'])->name('settings.index');
@@ -108,6 +110,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
 
     // Declared before the resource so /pesanan/{order} cannot swallow these.
     Route::post('/pesanan/{order}/proses-pengiriman', [AdminOrderController::class, 'processShipping'])->name('orders.process-shipping');
+    Route::post('/pesanan/{order}/batalkan-pengiriman', [AdminOrderController::class, 'cancelShipping'])->name('orders.cancel-shipping');
     Route::get('/pesanan/{order}/lacak', [AdminOrderController::class, 'getTracking'])->name('orders.tracking');
     Route::get('/pesanan/ekspor/csv', [AdminOrderController::class, 'exportCsv'])->name('orders.export.csv');
     Route::get('/pesanan/laporan/cetak', [AdminOrderController::class, 'report'])->name('orders.report');
@@ -126,7 +129,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
         ->parameters(['pengguna' => 'user']);
 
     // ─── Promo ───
-    Route::resource('/kupon', \App\Http\Controllers\Admin\CouponController::class)
+    Route::resource('/kupon', CouponController::class)
         ->except(['create', 'edit', 'show'])
         ->names('coupons')
         ->parameters(['kupon' => 'coupon']);
@@ -173,4 +176,4 @@ Route::get('/admin/dashboard', fn () => $legacy('/admin/dasbor'));
 Route::post('/webhook/midtrans', [WebhookController::class, 'midtrans'])->name('webhook.midtrans');
 Route::post('/webhook/pakasir', [WebhookController::class, 'pakasir'])->name('webhook.pakasir');
 Route::post('/webhook/biteship', [WebhookController::class, 'biteship'])->name('webhook.biteship');
-Route::get('/webhook/biteship', fn() => 'Biteship Webhook is active. Waiting for POST data from Biteship.');
+Route::get('/webhook/biteship', fn () => 'Biteship Webhook is active. Waiting for POST data from Biteship.');

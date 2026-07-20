@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -13,10 +16,10 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // 1. Set Defaults for Dates if not provided
-        if (!$request->has('from_date')) {
+        if (! $request->has('from_date')) {
             $request->merge(['from_date' => now()->subMonth()->format('Y-m-d')]);
         }
-        if (!$request->has('to_date')) {
+        if (! $request->has('to_date')) {
             $request->merge(['to_date' => now()->format('Y-m-d')]);
         }
 
@@ -42,7 +45,7 @@ class OrderController extends Controller
 
     public function exportCsv(Request $request)
     {
-        $filename = "laporan-pesanan-" . now()->format('Y-m-d-His') . ".csv";
+        $filename = 'laporan-pesanan-'.now()->format('Y-m-d-His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
@@ -50,14 +53,14 @@ class OrderController extends Controller
 
         $query = $this->getOrderQuery($request)->with(['user', 'items']);
 
-        $callback = function() use ($query) {
+        $callback = function () use ($query) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['No. Pesanan', 'Tanggal', 'Pelanggan', 'Email', 'Items', 'Subtotal', 'Ongkir', 'Diskon', 'Total', 'Status', 'Pembayaran']);
 
-            $query->chunk(100, function($orders) use ($file) {
+            $query->chunk(100, function ($orders) use ($file) {
                 foreach ($orders as $order) {
-                    $items = $order->items->map(function($item) {
-                        return $item->product_name . ($item->variant_name ? " [{$item->variant_name}]" : "") . " (x{$item->quantity})";
+                    $items = $order->items->map(function ($item) {
+                        return $item->product_name.($item->variant_name ? " [{$item->variant_name}]" : '')." (x{$item->quantity})";
                     })->implode('; ');
 
                     fputcsv($file, [
@@ -66,12 +69,12 @@ class OrderController extends Controller
                         $order->user->name ?? '-',
                         $order->user->email ?? '-',
                         $items,
-                        (float)$order->subtotal,
-                        (float)$order->shipping_cost,
-                        (float)($order->discount_amount ?? 0),
-                        (float)$order->total,
+                        (float) $order->subtotal,
+                        (float) $order->shipping_cost,
+                        (float) ($order->discount_amount ?? 0),
+                        (float) $order->total,
                         $order->status_label,
-                        $order->payment_status
+                        $order->payment_status,
                     ]);
                 }
             });
@@ -86,7 +89,7 @@ class OrderController extends Controller
         $orders = $this->getOrderQuery($request)
             ->with(['user', 'items.product', 'address'])
             ->get();
-            
+
         $totalRevenue = $orders->where('status', 'completed')->sum('total');
 
         return view('admin.orders.report', compact('orders', 'totalRevenue'));
@@ -99,12 +102,12 @@ class OrderController extends Controller
 
         // Allowed sort columns
         $allowedSorts = ['order_number', 'total', 'status', 'payment_status', 'created_at'];
-        if (!in_array($sort, $allowedSorts)) {
+        if (! in_array($sort, $allowedSorts)) {
             $sort = 'created_at';
         }
 
         // Allowed direction
-        if (!in_array($direction, ['asc', 'desc'])) {
+        if (! in_array($direction, ['asc', 'desc'])) {
             $direction = 'desc';
         }
 
@@ -114,10 +117,10 @@ class OrderController extends Controller
 
         if ($request->filled('search')) {
             $q = $request->search;
-            $userIds = \App\Models\User::where('name', 'LIKE', "%$q%")->pluck('id');
-            $query->where(function($query) use ($q, $userIds) {
+            $userIds = User::where('name', 'LIKE', "%$q%")->pluck('id');
+            $query->where(function ($query) use ($q, $userIds) {
                 $query->where('order_number', 'LIKE', "%$q%")
-                      ->orWhereIn('user_id', $userIds);
+                    ->orWhereIn('user_id', $userIds);
             });
         }
 
@@ -132,11 +135,11 @@ class OrderController extends Controller
         // Use a range on the raw timestamp instead of whereDate() so the
         // created_at index can be used (whereDate wraps the column in DATE()).
         if ($request->filled('from_date')) {
-            $query->where('created_at', '>=', $request->from_date . ' 00:00:00');
+            $query->where('created_at', '>=', $request->from_date.' 00:00:00');
         }
 
         if ($request->filled('to_date')) {
-            $query->where('created_at', '<=', $request->to_date . ' 23:59:59');
+            $query->where('created_at', '<=', $request->to_date.' 23:59:59');
         }
 
         if ($sort === 'created_at') {
@@ -151,6 +154,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['items.product', 'user', 'address']);
+
         return view('admin.orders.show', compact('order'));
     }
 
@@ -165,9 +169,10 @@ class OrderController extends Controller
 
         return back()->with('success', 'Status pesanan berhasil diperbarui.');
     }
+
     public function processShipping(Order $order, BiteshipService $biteship)
     {
-        if (!in_array($order->status, ['paid', 'processing'])) {
+        if (! in_array($order->status, ['paid', 'processing'])) {
             return back()->with('error', 'Hanya pesanan dengan status "Dibayar" yang dapat diproses ke Biteship.');
         }
 
@@ -183,7 +188,55 @@ class OrderController extends Controller
         }
 
         $errorMessage = $result['error'] ?? 'Gagal memproses pesanan ke Biteship. Silakan coba lagi.';
+
         return back()->with('error', $errorMessage);
+    }
+
+    public function cancelShipping(Request $request, Order $order, BiteshipService $biteship)
+    {
+        // Only orders still in fulfilment can be cancelled — a delivered or
+        // already-cancelled order cannot.
+        if (! in_array($order->status, ['processing', 'shipped'])) {
+            return back()->with('error', 'Hanya pesanan yang sedang diproses atau dikirim yang dapat dibatalkan.');
+        }
+
+        $reason = trim((string) $request->input('cancellation_reason')) ?: 'Dibatalkan oleh admin';
+
+        // If the shipment was booked with Biteship, cancel it there first and
+        // only flip the local status when the courier side confirms.
+        if (! empty($order->biteship_order_id)) {
+            $result = $biteship->cancelOrder($order, $reason);
+
+            if (! ($result['success'] ?? false)) {
+                return back()->with('error', $result['error'] ?? 'Gagal membatalkan pengiriman di Biteship. Silakan coba lagi.');
+            }
+        }
+
+        // Return the deducted stock only when the goods have NOT left yet, i.e.
+        // the order is still "processing". A "shipped" order is already on its
+        // way to the customer, so its stock must stay deducted. Captured before
+        // the status flips.
+        $shouldRestock = $order->status === 'processing';
+
+        DB::transaction(function () use ($order, $shouldRestock) {
+            if ($shouldRestock) {
+                foreach ($order->items as $item) {
+                    if ($item->product_variant_id) {
+                        $item->variant()->increment('stock', $item->quantity);
+                    } else {
+                        $item->product()->increment('stock', $item->quantity);
+                    }
+                }
+            }
+
+            $order->update(['status' => 'cancelled']);
+        });
+
+        $message = $shouldRestock
+            ? 'Pesanan berhasil dibatalkan dan stok dikembalikan.'
+            : 'Pesanan berhasil dibatalkan.';
+
+        return back()->with('success', $message);
     }
 
     public function getTracking(Order $order, BiteshipService $biteship)
@@ -191,12 +244,12 @@ class OrderController extends Controller
         // Try real API first if tracking number exists
         if ($order->tracking_number) {
             $tracking = $biteship->trackShipment($order->tracking_number, strtolower($order->shipping_courier));
-            
-            Log::info("Biteship Tracking for #{$order->order_number}: " . json_encode($tracking));
+
+            Log::info("Biteship Tracking for #{$order->order_number}: ".json_encode($tracking));
 
             if ($tracking && isset($tracking['success']) && $tracking['success']) {
                 $status = $tracking['status'] ?? 'allocated';
-                
+
                 // Auto-sync local order status based on Biteship status
                 if (in_array($status, ['picking_up', 'picked_up', 'dropping_off', 'out_for_delivery', 'on_the_way', 'in_transit', 'dispatched'])) {
                     if ($order->status !== 'shipped') {
@@ -208,11 +261,11 @@ class OrderController extends Controller
                     }
                 }
 
-                $history = collect($tracking['history'] ?? [])->map(function($h) {
+                $history = collect($tracking['history'] ?? [])->map(function ($h) {
                     return [
                         'status' => $h['status'],
                         'note' => $this->translateBiteshipNote($h['note'] ?? 'Status diperbarui'),
-                        'time' => \Illuminate\Support\Carbon::parse($h['updated_at'] ?? $h['time'] ?? now())->translatedFormat('d M, H:i')
+                        'time' => Carbon::parse($h['updated_at'] ?? $h['time'] ?? now())->translatedFormat('d M, H:i'),
                     ];
                 })->toArray();
 
@@ -225,10 +278,10 @@ class OrderController extends Controller
                         'phone' => $tracking['courier']['phone'] ?? '-',
                         'plate_number' => $tracking['courier']['plate_number'] ?? 'GGR-TRK',
                         'photo' => $tracking['courier']['photo'] ?? 'https://i.pravatar.cc/150?u=biteship',
-                        'type' => $tracking['courier']['type'] ?? ($order->shipping_courier . ' ' . $order->shipping_service)
+                        'type' => $tracking['courier']['type'] ?? ($order->shipping_courier.' '.$order->shipping_service),
                     ],
                     'link' => $order->tracking_url,
-                    'history' => array_reverse($history)
+                    'history' => array_reverse($history),
                 ]);
             }
         }
@@ -277,10 +330,10 @@ class OrderController extends Controller
                     'phone' => '081234567890',
                     'plate_number' => 'B 3546 UIL',
                     'photo' => 'https://i.pravatar.cc/150?u=budi',
-                    'type' => 'Gojek Instant'
+                    'type' => 'Gojek Instant',
                 ],
                 'link' => $order->tracking_url,
-                'history' => $history
+                'history' => $history,
             ]);
         }
 
@@ -308,7 +361,9 @@ class OrderController extends Controller
 
     private function translateBiteshipNote($note)
     {
-        if (!$note) return '';
+        if (! $note) {
+            return '';
+        }
 
         $mappings = [
             // Confirmed / Allocated
@@ -334,11 +389,11 @@ class OrderController extends Controller
             // In Transit / Dropping off
             'Item is on the way to customer.' => 'Paket sedang dalam perjalanan menuju alamat tujuan.',
             'Courier is dropping off item to destination' => 'Kurir sedang mengantar pesanan ke tujuan',
-            
+
             // Hold / Issue
             'Your shipment is on hold at the moment.' => 'Pengiriman Anda sedang ditangguhkan sementara.',
             'Order is on hold for a moment due to shipment issue' => 'Pesanan ditangguhkan sementara karena kendala pengiriman',
-            
+
             // Delivered
             'Item has been delivered.' => 'Pesanan telah sampai di tujuan.',
             'Order has been delivered' => 'Pesanan telah sampai di tujuan',
