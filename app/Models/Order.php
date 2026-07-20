@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Jobs\BookBiteshipOrder;
-use App\Services\BiteshipService;
 use App\Support\StorefrontCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,22 +39,10 @@ class Order extends Model
         static::saved($flushCache);
         static::deleted($flushCache);
 
-        static::updated(function ($order) {
-            // When an order becomes paid and is not yet booked, hand the Biteship
-            // booking to a queued job. This deliberately does NOT call the API
-            // here: the paid transition happens inside PakasirService::
-            // markOrderPaid()'s DB transaction + row lock, so a synchronous HTTP
-            // call would hold the lock for the whole round-trip. The job runs on
-            // a worker once the transaction has committed. See BookBiteshipOrder.
-            if ($order->wasChanged('status') && $order->status === 'paid' && empty($order->biteship_order_id)) {
-                // Prevent real API calls during tests unless the service is explicitly mocked/bound in the container.
-                if (app()->runningUnitTests() && ! app()->bound(BiteshipService::class)) {
-                    return;
-                }
-
-                BookBiteshipOrder::dispatch($order->id);
-            }
-        });
+        // Courier booking is dispatched explicitly by PakasirService::markOrderPaid()
+        // (and re-dispatched by the Biteship webhook on re-allocation), not from a
+        // status model event — the visible order status is set to "processing" the
+        // moment payment settles, and the background job only fills in tracking IDs.
     }
 
     public function getTrackingUrlAttribute(): string

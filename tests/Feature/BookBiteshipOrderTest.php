@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -41,8 +42,9 @@ class BookBiteshipOrderTest extends TestCase
     }
 
     /**
-     * Create an order, defaulting to a paid-but-unbooked order (the state the
-     * job is meant to act on). Overrides let each test tweak status/booking.
+     * Create an order, defaulting to a paid + processing but unbooked order — the
+     * state the job acts on now that payment moves an order straight to processing.
+     * Overrides let each test tweak status/payment/booking.
      */
     private function makeOrder(array $overrides = []): Order
     {
@@ -53,12 +55,34 @@ class BookBiteshipOrderTest extends TestCase
             'subtotal' => 20000.00,
             'shipping_cost' => 9000.00,
             'total' => 29000.00,
-            'status' => 'paid',
+            'status' => 'processing',
             'payment_status' => 'paid',
             'payment_method' => 'qris',
             'shipping_courier' => 'grab',
             'shipping_service' => 'same_day',
         ], $overrides));
+    }
+
+    /** Drive the real payment path: fake the Pakasir API, then hit the webhook. */
+    private function settleViaWebhook(Order $order): void
+    {
+        config(['pakasir.api_key' => 'test-key']);
+        Http::fake([
+            'app.pakasir.com/api/transactiondetail*' => Http::response([
+                'transaction' => [
+                    'status' => 'completed',
+                    'amount' => (int) $order->total,
+                    'payment_method' => 'qris',
+                    'completed_at' => '2026-06-15 12:00:00',
+                ],
+            ], 200),
+        ]);
+
+        $this->postJson(route('webhook.pakasir'), [
+            'order_id' => $order->order_number,
+            'status' => 'completed',
+            'amount' => (int) $order->total,
+        ])->assertOk();
     }
 
     /** A BiteshipService mock whose createOrder returns a successful booking. */
@@ -142,12 +166,12 @@ class BookBiteshipOrderTest extends TestCase
         (new BookBiteshipOrder($order->id))->handle($biteship);
 
         $order->refresh();
-        // Left as paid for manual admin action; never re-booked.
-        $this->assertEquals('paid', $order->status);
+        // Left in processing for manual admin action; never re-booked.
+        $this->assertEquals('processing', $order->status);
         $this->assertNull($order->biteship_order_id);
     }
 
-    public function test_it_leaves_the_order_paid_when_booking_fails(): void
+    public function test_it_leaves_the_order_processing_when_booking_fails(): void
     {
         $order = $this->makeOrder();
 
@@ -160,7 +184,7 @@ class BookBiteshipOrderTest extends TestCase
         (new BookBiteshipOrder($order->id))->handle($biteship);
 
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
         $this->assertNull($order->biteship_order_id);
     }
 
@@ -175,39 +199,44 @@ class BookBiteshipOrderTest extends TestCase
         (new BookBiteshipOrder($order->id))->handle($biteship);
 
         $order->refresh();
-        $this->assertEquals('paid', $order->status);
+        $this->assertEquals('processing', $order->status);
         $this->assertNull($order->biteship_order_id);
     }
 
-    public function test_it_is_dispatched_when_an_order_becomes_paid(): void
+    public function test_it_is_dispatched_when_payment_settles(): void
     {
         Queue::fake();
 
-        // Bind the service so the model event's test guard allows dispatch.
+        // Bind the service so markOrderPaid's test guard allows dispatch.
         $this->app->instance(BiteshipService::class, $this->createMock(BiteshipService::class));
 
         $order = $this->makeOrder(['status' => 'pending', 'payment_status' => 'unpaid']);
 
-        $order->update(['status' => 'paid']);
+        $this->settleViaWebhook($order);
 
+        $order->refresh();
+        $this->assertEquals('processing', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
         Queue::assertPushed(BookBiteshipOrder::class, fn (BookBiteshipOrder $job) => $job->orderId === $order->id);
     }
 
-    public function test_it_is_not_dispatched_for_an_already_booked_order(): void
+    public function test_it_is_not_dispatched_when_the_order_is_already_booked(): void
     {
         Queue::fake();
 
         $this->app->instance(BiteshipService::class, $this->createMock(BiteshipService::class));
 
-        // Already carries a Biteship id, so becoming paid must not re-book it.
+        // Already carries a Biteship id, so settling payment must not re-book it.
         $order = $this->makeOrder([
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'biteship_order_id' => 'existing-biteship-id',
         ]);
 
-        $order->update(['status' => 'paid']);
+        $this->settleViaWebhook($order);
 
+        $order->refresh();
+        $this->assertEquals('processing', $order->status);
         Queue::assertNotPushed(BookBiteshipOrder::class);
     }
 }

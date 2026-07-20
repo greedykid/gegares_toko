@@ -15,6 +15,7 @@ class BiteshipWebhookTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Address $address;
 
     protected function setUp(): void
@@ -64,9 +65,9 @@ class BiteshipWebhookTest extends TestCase
                 'order_id' => 'biteship-123',
                 'status' => 'delivered',
                 'courier' => [
-                    'waybill_id' => 'WYB-123'
-                ]
-            ]
+                    'waybill_id' => 'WYB-123',
+                ],
+            ],
         ]);
 
         $response->assertStatus(200);
@@ -125,8 +126,8 @@ class BiteshipWebhookTest extends TestCase
                 'id' => 'biteship-order-new',
                 'courier_tracking_id' => 'ttce-track-new',
                 'courier' => [
-                    'waybill_id' => 'WYB-track-new'
-                ]
+                    'waybill_id' => 'WYB-track-new',
+                ],
             ]);
 
         $this->app->instance(BiteshipService::class, $mockBiteship);
@@ -154,9 +155,9 @@ class BiteshipWebhookTest extends TestCase
                 'order_id' => 'biteship-old-id',
                 'status' => 'rejected',
                 'courier' => [
-                    'waybill_id' => 'WYB-old'
-                ]
-            ]
+                    'waybill_id' => 'WYB-old',
+                ],
+            ],
         ]);
 
         $response->assertStatus(200);
@@ -171,7 +172,7 @@ class BiteshipWebhookTest extends TestCase
         $this->assertEquals('ttce-track-new', $order->courier_tracking_id);
 
         // Cache retry should be 1
-        $this->assertEquals(1, Cache::get('biteship_reallocation_retries_' . $order->id));
+        $this->assertEquals(1, Cache::get('biteship_reallocation_retries_'.$order->id));
     }
 
     /**
@@ -202,7 +203,7 @@ class BiteshipWebhookTest extends TestCase
         ]);
 
         // Manually set cache reallocation retries to 2 (limit exceeded)
-        Cache::put('biteship_reallocation_retries_' . $order->id, 2, 3600);
+        Cache::put('biteship_reallocation_retries_'.$order->id, 2, 3600);
 
         // Send a courier_not_found status
         $response = $this->postJson(route('webhook.biteship'), [
@@ -210,15 +211,16 @@ class BiteshipWebhookTest extends TestCase
             'data' => [
                 'order_id' => 'biteship-old-id',
                 'status' => 'courier_not_found',
-            ]
+            ],
         ]);
 
         $response->assertStatus(200);
 
         $order->refresh();
 
-        // The status changes to paid, but tracking details are NOT cleared, and no new booking was made
-        $this->assertEquals('paid', $order->status);
+        // Stays in processing for manual admin action; tracking details are NOT
+        // cleared, and no new booking was made.
+        $this->assertEquals('processing', $order->status);
         $this->assertEquals('biteship-old-id', $order->biteship_order_id);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\BookBiteshipOrder;
 use App\Models\Order;
 use App\Notifications\OrderPaidNotification;
 use Illuminate\Support\Carbon;
@@ -274,7 +275,12 @@ class PakasirService
             }
 
             $locked->update([
-                'status' => 'paid',
+                // Go straight to "processing": once payment is confirmed the order
+                // is being fulfilled, so the customer sees "Diproses" immediately.
+                // Courier booking runs in the background (BookBiteshipOrder) and
+                // only fills in tracking IDs — it no longer drives the visible
+                // status, so the status is deterministic the moment payment lands.
+                'status' => 'processing',
                 'payment_status' => 'paid',
                 'payment_method' => $paymentMethod,
                 // Pakasir sends `completed_at` without an offset, so it must be read
@@ -293,14 +299,24 @@ class PakasirService
 
         $order->refresh();
 
-        // Notify the customer their payment succeeded (queued, non-blocking).
-        // Only fires for the call that actually performed the paid transition,
-        // so concurrent webhook/sync requests never send a duplicate email.
-        if ($didTransition && $order->user) {
-            try {
-                $order->user->notify(new OrderPaidNotification($order));
-            } catch (\Throwable $e) {
-                Log::error('OrderPaid notification failed: '.$e->getMessage());
+        if ($didTransition) {
+            // Notify the customer their payment succeeded (queued, non-blocking).
+            // Only fires for the call that actually performed the paid transition,
+            // so concurrent webhook/sync requests never send a duplicate email.
+            if ($order->user) {
+                try {
+                    $order->user->notify(new OrderPaidNotification($order));
+                } catch (\Throwable $e) {
+                    Log::error('OrderPaid notification failed: '.$e->getMessage());
+                }
+            }
+
+            // Book the courier in the background, outside this transaction/lock.
+            // The test guard keeps the suite from hitting the real Biteship API
+            // unless a mock is bound (queue is sync under tests).
+            if (empty($order->biteship_order_id)
+                && ! (app()->runningUnitTests() && ! app()->bound(BiteshipService::class))) {
+                BookBiteshipOrder::dispatch($order->id);
             }
         }
     }
