@@ -229,7 +229,9 @@
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showModal = false"></div>
         <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 z-10 border border-slate-200 dark:border-slate-800" x-transition>
             <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4" x-text="editMode ? 'Edit Kategori' : 'Tambah Kategori'"></h3>
-            <form :action="editMode ? '{{ url('admin/categories') }}/' + form.slug : '{{ route('admin.categories.store') }}'" method="POST" enctype="multipart/form-data" class="space-y-4">
+            {{-- Update URL from the named route so it uses the Indonesian path
+                 (/admin/kategori/{slug}); the hardcoded English one 404'd. --}}
+            <form :action="editMode ? '{{ route('admin.categories.update', ['category' => '__SLUG__']) }}'.replace('__SLUG__', form.slug) : '{{ route('admin.categories.store') }}'" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <template x-if="editMode"><input type="hidden" name="_method" value="PUT"></template>
                 <div>
