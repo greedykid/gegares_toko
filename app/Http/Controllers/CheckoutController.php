@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CheckoutException;
 use App\Exceptions\PaymentGatewayException;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
 {
@@ -35,10 +37,17 @@ class CheckoutController extends Controller
     public function store(Request $request, CartService $cartService, OrderService $orderService)
     {
         $request->validate([
-            'address_id' => 'required|exists:addresses,id',
+            // Scoped to the signed-in customer: an unscoped exists() would let
+            // anyone attach someone else's address (and read it back on the
+            // order page).
+            'address_id' => [
+                'required',
+                Rule::exists('addresses', 'id')
+                    ->where('user_id', auth()->id())
+                    ->whereNull('deleted_at'),
+            ],
             'shipping_courier' => 'required|string',
             'shipping_service' => 'required|string',
-            'shipping_cost' => 'required|numeric|min:0',
             'payment_method' => 'required|string|in:pakasir',
             'notes' => 'nullable|string',
         ]);
@@ -53,14 +62,16 @@ class CheckoutController extends Controller
         }
 
         try {
+            // No shipping_cost is passed: OrderService re-quotes it from Biteship.
             ['order' => $order] = $orderService->createFromCart(auth()->user(), [
                 'address_id' => $request->address_id,
                 'shipping_courier' => $request->shipping_courier,
                 'shipping_service' => $request->shipping_service,
-                'shipping_cost' => $request->shipping_cost,
                 'payment_method' => $request->payment_method,
                 'notes' => $request->notes,
             ]);
+        } catch (CheckoutException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (PaymentGatewayException $e) {
             return back()->with('error', 'Gagal membuat transaksi pembayaran Pakasir. Silakan coba lagi.');
         }

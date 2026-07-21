@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exceptions\CheckoutException;
 use App\Exceptions\PaymentGatewayException;
 use App\Models\Order;
 use App\Models\Product;
@@ -455,14 +456,19 @@ class Chatbot extends Component
         // Delegate to the shared service so this chatbot flow and the web
         // checkout build orders identically (and atomically) — see OrderService.
         try {
+            // $cost only labelled the button — this is a public Livewire method,
+            // so the price is re-quoted server-side inside OrderService.
             ['order' => $order, 'paymentUrl' => $paymentUrl] = app(OrderService::class)
                 ->createFromCart($user, [
                     'address_id' => $address->id,
                     'shipping_courier' => $courier,
                     'shipping_service' => $service,
-                    'shipping_cost' => $cost,
                     'notes' => 'Dipesan otomatis via AI Chatbot',
                 ]);
+        } catch (CheckoutException $e) {
+            $this->addBotMessage('Maaf Kak, pesanan belum bisa diproses: '.$e->getMessage());
+
+            return;
         } catch (PaymentGatewayException $e) {
             $this->addBotMessage('Maaf Kak, terjadi kendala saat menghubungi payment gateway Pakasir. Silakan coba kembali beberapa saat lagi.');
 
@@ -477,7 +483,7 @@ class Chatbot extends Component
         // Append success message with payment link
         $this->chatHistory[] = [
             'role' => 'assistant',
-            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp ".number_format($cost, 0, ',', '.').") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
+            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp ".number_format((float) $order->shipping_cost, 0, ',', '.').") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
             'time' => now()->format('H:i'),
             'buttons' => [
                 [
