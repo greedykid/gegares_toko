@@ -49,7 +49,13 @@ class PakasirPaymentTest extends TestCase
             'province' => 'DKI Jakarta',
             'postal_code' => '12810',
             'is_primary' => true,
+            'area_id' => 'IDNP6IDNC148IDND836',
+            'latitude' => -6.2243,
+            'longitude' => 106.8432,
         ]);
+
+        // Shipping is quoted server-side, so a rate has to be available.
+        $this->fakeShippingRate('jne', 'reg', 9000);
 
         // Mock Cart
         $cartKey = $product->id.'_0';

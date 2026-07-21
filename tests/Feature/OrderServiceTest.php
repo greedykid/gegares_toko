@@ -51,6 +51,10 @@ class OrderServiceTest extends TestCase
             'province' => 'DKI Jakarta',
             'postal_code' => '12810',
             'is_primary' => true,
+            // Needed for the server-side shipping quote.
+            'area_id' => 'IDNP6IDNC148IDND836',
+            'latitude' => -6.2243,
+            'longitude' => 106.8432,
         ]);
 
         return [$user, $address];
@@ -75,12 +79,12 @@ class OrderServiceTest extends TestCase
         [$user, $address] = $this->makeUserWithAddress();
         $product = $this->makeProduct();
         $this->seedCart($product, 2);
+        $this->fakeShippingRate('jne', 'reg', 9000);
 
         $result = app(OrderService::class)->createFromCart($user, [
             'address_id' => $address->id,
             'shipping_courier' => 'jne',
             'shipping_service' => 'reg',
-            'shipping_cost' => 9000,
             'notes' => 'Tolong bungkus rapi',
         ]);
 
@@ -123,11 +127,12 @@ class OrderServiceTest extends TestCase
             'value' => 10.0,
         ]);
 
+        $this->fakeShippingRate('jne', 'reg', 5000);
+
         $order = app(OrderService::class)->createFromCart($user, [
             'address_id' => $address->id,
             'shipping_courier' => 'jne',
             'shipping_service' => 'reg',
-            'shipping_cost' => 5000,
         ])['order'];
 
         // 10% of 20.000 = 2.000 discount → total = 20.000 - 2.000 + 5.000 = 23.000
@@ -143,6 +148,8 @@ class OrderServiceTest extends TestCase
         $product = $this->makeProduct();
         $this->seedCart($product, 2);
 
+        $this->fakeShippingRate('jne', 'reg', 9000);
+
         // Force the gateway to fail so we can assert the order is rolled back.
         $mock = $this->createMock(PakasirService::class);
         $mock->method('createPaymentUrl')->willReturn(null);
@@ -153,7 +160,6 @@ class OrderServiceTest extends TestCase
                 'address_id' => $address->id,
                 'shipping_courier' => 'jne',
                 'shipping_service' => 'reg',
-                'shipping_cost' => 9000,
             ]);
             $this->fail('Expected PaymentGatewayException was not thrown.');
         } catch (PaymentGatewayException $e) {

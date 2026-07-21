@@ -2,10 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Models\Address;
-use App\Models\Order;
-use App\Models\User;
 use App\Livewire\Chatbot;
+use App\Models\Address;
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\User;
+use App\Services\GeminiService;
+use App\Services\PakasirService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -66,10 +70,10 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             ->call('checkRecentPaidOrders')
             ->assertSet('isOpen', true)
             ->assertSee('Pembayaran untuk pesanan dengan nomor order'); // Will still see it from history, but it shouldn't add a new duplicate message
-        
+
         // Let's verify history only contains one announcement
         $history = session('gegares_chat_history', []);
-        $announcements = array_filter($history, function($entry) {
+        $announcements = array_filter($history, function ($entry) {
             return isset($entry['content']) && str_contains($entry['content'], 'Pembayaran untuk pesanan dengan nomor order');
         });
         $this->assertCount(1, $announcements);
@@ -78,14 +82,14 @@ class ChatbotPaidOrderNotificationTest extends TestCase
     public function test_it_handles_buy_intent_and_adds_product_to_cart()
     {
         $user = User::factory()->create();
-        
-        $category = \App\Models\Category::create([
+
+        $category = Category::create([
             'name' => 'Snack',
             'slug' => 'snack',
             'is_active' => true,
         ]);
 
-        $product = \App\Models\Product::create([
+        $product = Product::create([
             'category_id' => $category->id,
             'name' => 'Klepon',
             'slug' => 'klepon',
@@ -95,12 +99,12 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             'is_featured' => true,
         ]);
 
-        $mockGemini = $this->createMock(\App\Services\GeminiService::class);
+        $mockGemini = $this->createMock(GeminiService::class);
         $mockGemini->expects($this->once())
             ->method('chat')
             ->willReturn("Tentu, saya akan memesankan Klepon untuk Kakak.\n---BUY---Klepon|4");
 
-        $this->app->instance(\App\Services\GeminiService::class, $mockGemini);
+        $this->app->instance(GeminiService::class, $mockGemini);
 
         $this->actingAs($user);
 
@@ -133,15 +137,21 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             'province' => 'DKI Jakarta',
             'postal_code' => '12810',
             'is_primary' => true,
+            'area_id' => 'IDNP6IDNC148IDND836',
+            'latitude' => -6.2243,
+            'longitude' => 106.8432,
         ]);
 
-        $category = \App\Models\Category::create([
+        // Shipping is quoted server-side, so a rate has to be available.
+        $this->fakeShippingRate('jne', 'reg', 9000);
+
+        $category = Category::create([
             'name' => 'Snack',
             'slug' => 'snack',
             'is_active' => true,
         ]);
 
-        $product = \App\Models\Product::create([
+        $product = Product::create([
             'category_id' => $category->id,
             'name' => 'Klepon',
             'slug' => 'klepon',
@@ -152,14 +162,14 @@ class ChatbotPaidOrderNotificationTest extends TestCase
         ]);
 
         // Mock PakasirService
-        $mockPakasir = $this->createMock(\App\Services\PakasirService::class);
+        $mockPakasir = $this->createMock(PakasirService::class);
         $mockPakasir->expects($this->once())
             ->method('createPaymentUrl')
-            ->willReturn("https://app.pakasir.com/pay/gegares/49000?order_id=GGR-MOCK-CHECKOUT");
-        $this->app->instance(\App\Services\PakasirService::class, $mockPakasir);
+            ->willReturn('https://app.pakasir.com/pay/gegares/49000?order_id=GGR-MOCK-CHECKOUT');
+        $this->app->instance(PakasirService::class, $mockPakasir);
 
         // Put product in user's cart session
-        $cartKey = $product->id . '_0';
+        $cartKey = $product->id.'_0';
         $cartData = [
             $cartKey => [
                 'id' => $cartKey,
@@ -172,7 +182,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
                 'slug' => $product->slug,
                 'quantity' => 4,
                 'stock' => $product->stock,
-            ]
+            ],
         ];
 
         $this->actingAs($user)
@@ -202,14 +212,14 @@ class ChatbotPaidOrderNotificationTest extends TestCase
     public function test_it_handles_checkout_directly_action_without_address()
     {
         $user = User::factory()->create();
-        
-        $category = \App\Models\Category::create([
+
+        $category = Category::create([
             'name' => 'Snack',
             'slug' => 'snack',
             'is_active' => true,
         ]);
 
-        $product = \App\Models\Product::create([
+        $product = Product::create([
             'category_id' => $category->id,
             'name' => 'Klepon',
             'slug' => 'klepon',
@@ -220,7 +230,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
         ]);
 
         // Put product in user's cart session
-        $cartKey = $product->id . '_0';
+        $cartKey = $product->id.'_0';
         $cartData = [
             $cartKey => [
                 'id' => $cartKey,
@@ -233,7 +243,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
                 'slug' => $product->slug,
                 'quantity' => 4,
                 'stock' => $product->stock,
-            ]
+            ],
         ];
 
         $this->actingAs($user)
@@ -271,17 +281,17 @@ class ChatbotPaidOrderNotificationTest extends TestCase
                 'content' => 'Saya sudah memasukkan Klepon',
                 'time' => '05:01',
                 'suggestions' => ['Lacak pengiriman'], // suggestions key present!
-            ]
+            ],
         ];
 
         // 2. Mock Gemini chat method
-        $mockGemini = $this->createMock(\App\Services\GeminiService::class);
+        $mockGemini = $this->createMock(GeminiService::class);
         $mockGemini->expects($this->once())
             ->method('chat')
             ->with(
                 $this->equalTo('saya sudah bayar'),
                 $this->anything(),
-                $this->callback(function($historyPassed) {
+                $this->callback(function ($historyPassed) {
                     // History should contain the user message and the assistant message (which had suggestions)
                     return count($historyPassed) === 2
                         && $historyPassed[0]['role'] === 'user'
@@ -290,9 +300,9 @@ class ChatbotPaidOrderNotificationTest extends TestCase
                         && $historyPassed[1]['content'] === 'Saya sudah memasukkan Klepon';
                 })
             )
-            ->willReturn("Terima kasih Kak! Pembayaran Anda sudah kami terima.");
+            ->willReturn('Terima kasih Kak! Pembayaran Anda sudah kami terima.');
 
-        $this->app->instance(\App\Services\GeminiService::class, $mockGemini);
+        $this->app->instance(GeminiService::class, $mockGemini);
 
         $hash = hash_hmac('sha256', serialize($history), config('app.key'));
 
@@ -353,7 +363,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->get(route('orders.payment', $order) . '?chatbot_open=1');
+        $response = $this->get(route('orders.payment', $order).'?chatbot_open=1');
 
         $response->assertSee('belum selesai atau belum kami terima');
         $response->assertSee('Bayar Sekarang (Pakasir)');
@@ -459,5 +469,3 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             ->assertSet('isOpen', false);
     }
 }
-
-
