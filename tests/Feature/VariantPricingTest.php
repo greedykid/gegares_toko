@@ -70,6 +70,28 @@ class VariantPricingTest extends TestCase
         $this->assertEquals(24000, $cart->getSubtotal());
     }
 
+    public function test_a_product_with_variants_can_still_be_bought_at_its_base_price(): void
+    {
+        // Variants are optional: not picking one buys the plain unit.
+        $product = $this->makeProduct(12000);
+        ProductVariant::create([
+            'product_id' => $product->id,
+            'name' => '1 Porsi (isi 10)',
+            'price' => 30000,
+            'stock' => 100,
+        ]);
+
+        $cart = app(CartService::class);
+        $result = $cart->add($product->id, 2); // no variant id
+
+        $this->assertTrue($result['success']);
+
+        $item = collect($cart->getItems())->first();
+        $this->assertNull($item['variant_id']);
+        $this->assertEquals(12000, $item['price']);
+        $this->assertEquals(24000, $cart->getSubtotal());
+    }
+
     public function test_buying_without_a_variant_still_uses_the_base_price(): void
     {
         $product = $this->makeProduct(12000);

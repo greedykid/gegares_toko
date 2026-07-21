@@ -160,10 +160,16 @@
             loading: false,
 
             get max() {
-                if (this.variants.length > 0) {
-                    return this.selectedVariantId ? this.variants.find(v => v.id === this.selectedVariantId).stock : 0;
+                {{-- Variants are optional: with none picked the customer buys the
+                     base product at its own unit price and stock. --}}
+                if (this.selectedVariantId) {
+                    const v = this.variants.find(v => v.id === this.selectedVariantId);
+                    return v ? v.stock : 0;
                 }
                 return this.baseMax;
+            },
+            get hasBuyableVariant() {
+                return this.variants.some(v => v.stock > 0);
             },
             get currentPrice() {
                 {{-- A variant price REPLACES the base price; blank means 'same as base'. --}}
@@ -177,10 +183,7 @@
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(this.currentPrice);
             },
             get canAddToCart() {
-                if (this.variants.length > 0) {
-                    return this.selectedVariantId !== null && this.max > 0;
-                }
-                return this.baseMax > 0;
+                return this.max > 0;
             }
         }">
             {{-- Category --}}
@@ -253,10 +256,13 @@
 
                 <template x-if="variants.length > 0">
                     <div class="pt-2">
-                        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Pilih Variasi</h3>
+                        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">
+                            Pilih Variasi <span class="normal-case tracking-normal font-medium text-slate-400 dark:text-slate-500">(opsional — kosongkan untuk harga satuan)</span>
+                        </h3>
                         <div class="flex flex-wrap gap-2.5">
                             <template x-for="variant in variants" :key="variant.id">
-                                <button @click="if(variant.stock > 0) { selectedVariantId = variant.id; qty = 1; }"
+                                {{-- Clicking the active chip clears it, so the customer can go back to the base price. --}}
+                                <button @click="if(variant.stock > 0) { selectedVariantId = (selectedVariantId === variant.id ? null : variant.id); qty = 1; }"
                                         type="button"
                                         :disabled="variant.stock <= 0"
                                         :class="[
@@ -334,12 +340,14 @@
                         </div>
                     </div>
                 </template>
-                <template x-if="!canAddToCart && variants.length > 0 && !selectedVariantId">
+                {{-- Base stock is gone but a variant is still buyable. --}}
+                <template x-if="!canAddToCart && !selectedVariantId && hasBuyableVariant">
                     <button disabled class="w-full py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold rounded-xl cursor-not-allowed">
                         Pilih Variasi Terlebih Dahulu
                     </button>
                 </template>
-                <template x-if="!canAddToCart && baseMax <= 0 && variants.length === 0">
+                {{-- Nothing buyable at all — base and every variant are out. --}}
+                <template x-if="!canAddToCart && !hasBuyableVariant">
                     {{-- Out of stock: offer a WhatsApp pre-order instead of a dead button. --}}
                     <div class="space-y-2">
                         <a href="{{ $preorderUrl }}" target="_blank" rel="noopener"
