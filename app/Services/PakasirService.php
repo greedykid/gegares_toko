@@ -259,6 +259,28 @@ class PakasirService
                 return false; // Already processed by a concurrent request.
             }
 
+            // The Pakasir link lives on the order and never expires, so a customer
+            // can still pay one that was auto-cancelled days ago. Record the money
+            // — it really did arrive — but do NOT revive the order: no stock is
+            // taken and no courier is booked. It now reads as cancelled + paid,
+            // which is exactly the "owes a refund" state.
+            if ($locked->status === 'cancelled') {
+                $marker = 'PERLU REFUND: pembayaran diterima setelah pesanan dibatalkan';
+
+                $locked->update([
+                    'payment_status' => 'paid',
+                    'payment_method' => $paymentMethod,
+                    'paid_at' => $this->resolvePaidAt($completedAt),
+                    'admin_note' => str_contains($locked->admin_note ?? '', $marker)
+                        ? $locked->admin_note
+                        : ($locked->admin_note ? $locked->admin_note.' | ' : '').$marker.'.',
+                ]);
+
+                Log::warning("Pakasir: payment received for cancelled Order #{$locked->order_number}; recorded for refund, order left cancelled.");
+
+                return false;
+            }
+
             // Deduct stock first (atomic SQL decrement) while still inside the lock.
             // The `stock >= quantity` guard means two orders racing for the last
             // unit can never drive stock negative: whichever loses the race matches
@@ -286,15 +308,7 @@ class PakasirService
                 'status' => 'processing',
                 'payment_status' => 'paid',
                 'payment_method' => $paymentMethod,
-                // Pakasir sends `completed_at` without an offset, so it must be read
-                // against its own zone and then shifted into the app timezone.
-                // The shift is not optional: Eloquent stores whatever wall-clock the
-                // Carbon carries, so a UTC 05:00 would be written as "05:00" and read
-                // back as 05:00 WIB — the payment would look 7 hours early.
-                'paid_at' => $completedAt
-                    ? Carbon::parse($completedAt, config('pakasir.timezone', 'UTC'))
-                        ->setTimezone(config('app.timezone'))
-                    : now(),
+                'paid_at' => $this->resolvePaidAt($completedAt),
             ];
 
             // Flag the shortfall on the order itself, not just in the log: the
@@ -334,6 +348,21 @@ class PakasirService
                 BookBiteshipOrder::dispatch($order->id);
             }
         }
+    }
+
+    /**
+     * Pakasir sends `completed_at` without an offset, so it must be read against
+     * its own zone and then shifted into the app timezone. The shift is not
+     * optional: Eloquent stores whatever wall-clock the Carbon carries, so a UTC
+     * 05:00 would be written as "05:00" and read back as 05:00 WIB — the payment
+     * would look 7 hours early.
+     */
+    protected function resolvePaidAt(?string $completedAt): Carbon
+    {
+        return $completedAt
+            ? Carbon::parse($completedAt, config('pakasir.timezone', 'UTC'))
+                ->setTimezone(config('app.timezone'))
+            : now();
     }
 
     /**

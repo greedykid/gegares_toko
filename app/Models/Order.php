@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\StorefrontCache;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +17,7 @@ class Order extends Model
         'user_id', 'order_number', 'biteship_order_id', 'courier_tracking_id', 'address_id', 'coupon_id', 'discount_amount',
         'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',
         'pakasir_order_id', 'shipping_courier', 'shipping_service',
-        'tracking_number', 'notes', 'admin_note', 'source', 'paid_at',
+        'tracking_number', 'notes', 'admin_note', 'source', 'paid_at', 'refunded_at',
     ];
 
     /**
@@ -26,6 +27,25 @@ class Order extends Model
     public function isFromChatbot(): bool
     {
         return $this->source === 'chatbot';
+    }
+
+    /**
+     * The customer paid but the order was cancelled, and nobody has recorded a
+     * refund yet — so the shop is still holding their money.
+     */
+    public function needsRefund(): bool
+    {
+        return $this->status === 'cancelled'
+            && $this->payment_status === 'paid'
+            && $this->refunded_at === null;
+    }
+
+    /** Cancelled orders that still owe the customer their money back. */
+    public function scopeNeedsRefund(Builder $query): Builder
+    {
+        return $query->where('status', 'cancelled')
+            ->where('payment_status', 'paid')
+            ->whereNull('refunded_at');
     }
 
     protected $appends = ['status_label', 'status_color', 'tracking_url'];
@@ -38,6 +58,7 @@ class Order extends Model
             'shipping_cost' => 'decimal:2',
             'total' => 'decimal:2',
             'paid_at' => 'datetime',
+            'refunded_at' => 'datetime',
         ];
     }
 

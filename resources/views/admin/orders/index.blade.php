@@ -27,6 +27,12 @@
         form.action = '{{ route('admin.orders.process-shipping', ['order' => '__ID__']) }}'.replace('__ID__', orderId);
         form.submit();
     },
+    submitMarkRefunded(orderId) {
+        if (!confirm('Tandai pesanan ini sudah direfund? Pastikan dana benar-benar sudah dikembalikan ke pelanggan.')) return;
+        const form = document.getElementById('mark-refunded-form');
+        form.action = '{{ route('admin.orders.mark-refunded', ['order' => '__ID__']) }}'.replace('__ID__', orderId);
+        form.submit();
+    },
     submitCancelOrder(orderId) {
         if (!confirm('Batalkan pesanan ini? Jika sudah dibooking, pengiriman di Biteship juga dibatalkan. Tindakan ini tidak bisa dibatalkan.')) return;
         const reason = prompt('Alasan pembatalan (opsional):', 'Dibatalkan oleh admin') || 'Dibatalkan oleh admin';
@@ -721,6 +727,17 @@
                         </button>
                     </template>
 
+                    {{-- Cancelled but already paid: the shop is still holding the
+                         customer's money until someone records the refund. --}}
+                    <template x-if="selectedOrder?.status === 'cancelled' && selectedOrder?.payment_status === 'paid' && !selectedOrder?.refunded_at">
+                        <button type="button"
+                                @click="submitMarkRefunded(selectedOrder.id)"
+                                class="flex-1 sm:flex-none justify-center whitespace-nowrap px-3 py-2 sm:px-5 bg-amber-500 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-amber-600 transition-all shadow-sm shadow-amber-200 flex items-center gap-1.5 sm:gap-2">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" /></svg>
+                            Tandai Sudah Direfund
+                        </button>
+                    </template>
+
                     {{-- Cancel: the one real courier action Biteship's API exposes.
                          Only orders still in fulfilment (processing/shipped) can be cancelled. --}}
                     <template x-if="['processing', 'shipped'].includes(selectedOrder?.status)">
@@ -747,6 +764,11 @@
     <form id="cancel-order-form" method="POST" style="display: none;">
         @csrf
         <input type="hidden" name="cancellation_reason" value="">
+    </form>
+
+    {{-- Hidden form for recording a refund --}}
+    <form id="mark-refunded-form" method="POST" style="display: none;">
+        @csrf @method('PATCH')
     </form>
 </div>
 @endsection
