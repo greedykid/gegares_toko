@@ -148,7 +148,41 @@
         </div>
 
         {{-- ═══ Product Info ═══ --}}
-        <div class="lg:py-2">
+        {{-- Alpine state sits on the whole info column so the price block near the
+             top can react to the variant chosen further down. --}}
+        <div class="lg:py-2" x-data="{
+            qty: 1,
+            {{-- 0 when the admin switched the product off, so the toggle really blocks buying --}}
+            baseMax: {{ $product->isOutOfStock() ? 0 : $product->stock }},
+            basePrice: {{ $product->price }},
+            variants: {{ $product->variants->toJson() }},
+            selectedVariantId: null,
+            loading: false,
+
+            get max() {
+                if (this.variants.length > 0) {
+                    return this.selectedVariantId ? this.variants.find(v => v.id === this.selectedVariantId).stock : 0;
+                }
+                return this.baseMax;
+            },
+            get currentPrice() {
+                {{-- A variant price REPLACES the base price; blank means 'same as base'. --}}
+                if (this.variants.length > 0 && this.selectedVariantId) {
+                    const v = this.variants.find(v => v.id === this.selectedVariantId);
+                    return Number(v.price) > 0 ? Number(v.price) : this.basePrice;
+                }
+                return this.basePrice;
+            },
+            get currentPriceLabel() {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(this.currentPrice);
+            },
+            get canAddToCart() {
+                if (this.variants.length > 0) {
+                    return this.selectedVariantId !== null && this.max > 0;
+                }
+                return this.baseMax > 0;
+            }
+        }">
             {{-- Category --}}
             <a href="{{ route('products.index', ['category' => $product->category->slug ?? '']) }}"
                class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-[11px] font-bold rounded-lg uppercase tracking-wide hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors">
@@ -178,7 +212,8 @@
 
             {{-- Price Block --}}
             <div class="flex items-end gap-3">
-                <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ $product->formatted_price }}</span>
+                {{-- Follows the selected variant; the server value shows until Alpine boots. --}}
+                <span class="text-3xl font-black text-slate-900 dark:text-slate-100" x-text="currentPriceLabel">{{ $product->formatted_price }}</span>
                 <span class="text-sm text-slate-400 dark:text-slate-500 font-medium mb-1">/ pcs</span>
             </div>
 
@@ -214,35 +249,7 @@
             <div class="my-6 border-t border-slate-100 dark:border-slate-800/50"></div>
 
             {{-- Add to Cart --}}
-            <div class="space-y-4" x-data="{ 
-                qty: 1, 
-                {{-- 0 when the admin switched the product off, so the toggle really blocks buying --}}
-                baseMax: {{ $product->isOutOfStock() ? 0 : $product->stock }},
-                basePrice: {{ $product->price }},
-                variants: {{ $product->variants->toJson() }},
-                selectedVariantId: null,
-                loading: false,
-                
-                get max() {
-                    if (this.variants.length > 0) {
-                        return this.selectedVariantId ? this.variants.find(v => v.id === this.selectedVariantId).stock : 0;
-                    }
-                    return this.baseMax;
-                },
-                get currentPrice() {
-                    if (this.variants.length > 0 && this.selectedVariantId) {
-                        const v = this.variants.find(v => v.id === this.selectedVariantId);
-                        return this.basePrice + (Number(v.price) || 0);
-                    }
-                    return this.basePrice;
-                },
-                get canAddToCart() {
-                    if (this.variants.length > 0) {
-                        return this.selectedVariantId !== null && this.max > 0;
-                    }
-                    return this.baseMax > 0;
-                }
-            }">
+            <div class="space-y-4">
 
                 <template x-if="variants.length > 0">
                     <div class="pt-2">
@@ -257,7 +264,8 @@
                                             selectedVariantId === variant.id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 font-bold shadow-sm ring-1 ring-primary-500' : (variant.stock > 0 ? 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-primary-300 dark:hover:border-primary-700' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed')
                                         ]">
                                     <span x-text="variant.name" class="font-semibold block"></span>
-                                    <span x-show="variant.price" class="text-[10px] mt-0.5 font-medium" :class="selectedVariantId === variant.id ? '' : 'text-emerald-600 dark:text-emerald-400'" x-text="'+ Rp ' + new Intl.NumberFormat('id-ID').format(variant.price)"></span>
+                                    {{-- The variant's own price, not a surcharge. --}}
+                                    <span x-show="Number(variant.price) > 0" class="text-[10px] mt-0.5 font-medium" :class="selectedVariantId === variant.id ? '' : 'text-emerald-600 dark:text-emerald-400'" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(variant.price)"></span>
                                     <span x-show="variant.stock <= 0" class="text-[10px] mt-0.5 text-red-500 font-bold">Habis</span>
                                 </button>
                             </template>
