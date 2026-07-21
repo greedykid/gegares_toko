@@ -539,12 +539,22 @@
                         </div>
                     </div>
 
-                    {{-- NEW: Order Notes --}}
+                    {{-- Customer's own note --}}
                     <template x-if="selectedOrder?.notes">
                         <div class="space-y-2">
-                            <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Catatan Pesanan</h4>
+                            <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Catatan Pelanggan</h4>
                             <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm transition-colors">
                                 <p class="text-[11px] text-slate-650 dark:text-slate-350 leading-relaxed italic" x-text="`'${selectedOrder.notes}'`"></p>
+                            </div>
+                        </div>
+                    </template>
+
+                    {{-- System trail: written by the app only, so it can be trusted. --}}
+                    <template x-if="selectedOrder?.admin_note">
+                        <div class="space-y-2">
+                            <h4 class="text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase tracking-widest transition-colors">Catatan Sistem</h4>
+                            <div class="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 shadow-sm transition-colors">
+                                <p class="text-[11px] font-semibold text-amber-700 dark:text-amber-400 leading-relaxed" x-text="selectedOrder.admin_note"></p>
                             </div>
                         </div>
                     </template>

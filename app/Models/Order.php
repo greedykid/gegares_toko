@@ -16,8 +16,17 @@ class Order extends Model
         'user_id', 'order_number', 'biteship_order_id', 'courier_tracking_id', 'address_id', 'coupon_id', 'discount_amount',
         'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',
         'pakasir_order_id', 'shipping_courier', 'shipping_service',
-        'tracking_number', 'notes', 'paid_at',
+        'tracking_number', 'notes', 'admin_note', 'source', 'paid_at',
     ];
+
+    /**
+     * Where the order came from. Read this instead of pattern-matching `notes`,
+     * which the customer writes and could therefore forge.
+     */
+    public function isFromChatbot(): bool
+    {
+        return $this->source === 'chatbot';
+    }
 
     protected $appends = ['status_label', 'status_color', 'tracking_url'];
 

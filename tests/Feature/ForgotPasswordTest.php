@@ -3,12 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\QueuedResetPassword as ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
-use App\Notifications\QueuedResetPassword as ResetPasswordNotification;
 use Tests\TestCase;
 
 class ForgotPasswordTest extends TestCase

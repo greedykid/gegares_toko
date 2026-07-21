@@ -45,7 +45,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             'payment_method' => 'qris',
             'shipping_courier' => 'jne',
             'shipping_service' => 'reg',
-            'notes' => 'Dipesan otomatis via AI Chatbot',
+            'source' => 'chatbot',
             'paid_at' => now(),
         ]);
 
@@ -401,7 +401,7 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             'shipping_courier' => 'jne',
             'shipping_service' => 'reg',
             'pakasir_link' => 'https://app.pakasir.com/pay/gegares/29000',
-            'notes' => 'Dipesan otomatis via AI Chatbot',
+            'source' => 'chatbot',
         ]);
 
         $this->actingAs($user);

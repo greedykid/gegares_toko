@@ -120,8 +120,10 @@ class StockIntegrityTest extends TestCase
         $order->refresh();
         $this->assertEquals('paid', $order->payment_status);
         $this->assertEquals(1, $product->fresh()->stock, 'Stock must not go negative.');
-        $this->assertStringContainsString('PERLU DICEK', $order->notes);
-        $this->assertStringContainsString('Klepon x2', $order->notes);
+        // The warning lives in admin_note, not in the customer's own note.
+        $this->assertStringContainsString('PERLU DICEK', $order->admin_note);
+        $this->assertStringContainsString('Klepon x2', $order->admin_note);
+        $this->assertNull($order->notes, 'The customer note must stay untouched.');
     }
 
     public function test_payment_leaves_no_warning_when_stock_is_sufficient(): void

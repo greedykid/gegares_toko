@@ -75,7 +75,7 @@ class OrderService
             $params['shipping_service'],
         );
 
-        [$coupon, $discount] = $this->resolveCoupon($subtotal);
+        [$coupon, $discount] = $this->resolveCoupon($user, $subtotal);
 
         $total = max(0, $subtotal + $shippingCost - $discount);
 
@@ -97,6 +97,8 @@ class OrderService
                 'shipping_courier' => $params['shipping_courier'],
                 'shipping_service' => $params['shipping_service'],
                 'notes' => $params['notes'] ?? null,
+                // System marker, kept out of the customer-written note.
+                'source' => $params['source'] ?? 'web',
             ]);
 
             if ($coupon) {
@@ -228,7 +230,7 @@ class OrderService
      *
      * @return array{0: ?Coupon, 1: float}
      */
-    protected function resolveCoupon(float $subtotal): array
+    protected function resolveCoupon(User $user, float $subtotal): array
     {
         $applied = $this->cart->getCoupon();
 
@@ -244,6 +246,19 @@ class OrderService
 
         if ($subtotal < (float) $coupon->min_purchase) {
             throw new CheckoutException('Total belanja belum memenuhi minimal pemakaian kupon ini.');
+        }
+
+        // usage_limit caps redemptions overall; this caps them per customer, so a
+        // single person cannot spend the same promo on every order.
+        if ($coupon->usage_limit_per_user !== null) {
+            $usedByCustomer = Order::where('user_id', $user->id)
+                ->where('coupon_id', $coupon->id)
+                ->where('status', '!=', 'cancelled')
+                ->count();
+
+            if ($usedByCustomer >= $coupon->usage_limit_per_user) {
+                throw new CheckoutException('Anda sudah mencapai batas pemakaian kupon ini.');
+            }
         }
 
         $discount = $coupon->type === 'percent'

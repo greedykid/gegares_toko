@@ -31,7 +31,8 @@ class AutoCancelOrders extends Command
                     $order->update([
                         'status' => 'cancelled',
                         'payment_status' => 'expired',
-                        'notes' => ($order->notes ? $order->notes.' | ' : '')."Otomatis dibatalkan setelah {$hours} jam tanpa pembayaran.",
+                        // System trail goes to admin_note; `notes` stays the customer's.
+                        'admin_note' => ($order->admin_note ? $order->admin_note.' | ' : '')."Otomatis dibatalkan setelah {$hours} jam tanpa pembayaran.",
                     ]);
 
                     $cancelledCount++;

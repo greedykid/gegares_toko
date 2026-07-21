@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\ManageAddresses;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\BiteshipService;
-use App\Livewire\ManageAddresses;
-use Livewire\Livewire;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ManageAddressesTest extends TestCase
@@ -23,11 +23,11 @@ class ManageAddressesTest extends TestCase
             ->method('deleteLocation')
             ->with('loc-12345')
             ->willReturn(true);
-        
+
         $this->app->instance(BiteshipService::class, $mockBiteship);
 
         $user = User::factory()->create();
-        
+
         $address = Address::create([
             'user_id' => $user->id,
             'label' => 'Rumah Utama',
@@ -83,11 +83,11 @@ class ManageAddressesTest extends TestCase
             ->method('deleteLocation')
             ->with('loc-12345')
             ->willReturn(true);
-        
+
         $this->app->instance(BiteshipService::class, $mockBiteship);
 
         $user = User::factory()->create();
-        
+
         $address = Address::create([
             'user_id' => $user->id,
             'label' => 'Rumah Kedua',
