@@ -182,6 +182,14 @@
             get currentPriceLabel() {
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(this.currentPrice);
             },
+            get currentUnitLabel() {
+                {{-- The price is per selected variant ("1 Porsi (isi 10)"), or per piece. --}}
+                if (this.selectedVariantId) {
+                    const v = this.variants.find(v => v.id === this.selectedVariantId);
+                    if (v) return '/ ' + v.name;
+                }
+                return '/ pcs';
+            },
             get canAddToCart() {
                 return this.max > 0;
             }
@@ -217,7 +225,7 @@
             <div class="flex items-end gap-3">
                 {{-- Follows the selected variant; the server value shows until Alpine boots. --}}
                 <span class="text-3xl font-black text-slate-900 dark:text-slate-100" x-text="currentPriceLabel">{{ $product->formatted_price }}</span>
-                <span class="text-sm text-slate-400 dark:text-slate-500 font-medium mb-1">/ pcs</span>
+                <span class="text-sm text-slate-400 dark:text-slate-500 font-medium mb-1" x-text="currentUnitLabel">/ pcs</span>
             </div>
 
             {{-- Stock Status --}}
