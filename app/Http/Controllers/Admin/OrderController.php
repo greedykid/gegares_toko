@@ -173,7 +173,7 @@ class OrderController extends Controller
     public function processShipping(Order $order, BiteshipService $biteship)
     {
         if (! in_array($order->status, ['paid', 'processing'])) {
-            return back()->with('error', 'Hanya pesanan dengan status "Dibayar" yang dapat diproses ke Biteship.');
+            return back()->with('error', 'Hanya pesanan yang sudah dibayar atau sedang diproses yang dapat dibooking ke Biteship.');
         }
 
         $result = $biteship->createOrder($order);
