@@ -248,6 +248,90 @@ class CheckoutIntegrityTest extends TestCase
         $this->assertEquals(0, Order::count());
     }
 
+    public function test_a_coupon_can_be_capped_per_customer(): void
+    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
+        $product = $this->makeProduct();
+        $this->fakeShippingRate('jne', 'reg', 9000);
+
+        $coupon = Coupon::create([
+            'code' => 'SEKALI',
+            'type' => 'fixed',
+            'value' => 5000,
+            'min_purchase' => 0,
+            'is_active' => true,
+            'usage_limit_per_user' => 1,
+            'used_count' => 0,
+        ]);
+
+        $session = [
+            'cart' => $this->cartFor($product),
+            'coupon' => ['id' => $coupon->id, 'code' => $coupon->code, 'type' => 'fixed', 'value' => 5000.0],
+        ];
+
+        // First order redeems it.
+        $this->actingAs($user)
+            ->withSession($session)
+            ->post(route('checkout.store'), [
+                'address_id' => $address->id,
+                'shipping_courier' => 'jne',
+                'shipping_service' => 'reg',
+                'payment_method' => 'pakasir',
+            ]);
+
+        $this->assertEquals(1, Order::count());
+
+        // The same customer tries again with the same coupon.
+        $this->actingAs($user)
+            ->withSession($session)
+            ->post(route('checkout.store'), [
+                'address_id' => $address->id,
+                'shipping_courier' => 'jne',
+                'shipping_service' => 'reg',
+                'payment_method' => 'pakasir',
+            ])
+            ->assertSessionHas('error');
+
+        $this->assertEquals(1, Order::count(), 'The per-customer cap was not enforced.');
+    }
+
+    public function test_a_coupon_without_a_per_customer_cap_stays_reusable(): void
+    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
+        $product = $this->makeProduct();
+        $this->fakeShippingRate('jne', 'reg', 9000);
+
+        // usage_limit_per_user null: existing promos keep their old behaviour.
+        $coupon = Coupon::create([
+            'code' => 'BEBAS',
+            'type' => 'fixed',
+            'value' => 5000,
+            'min_purchase' => 0,
+            'is_active' => true,
+            'used_count' => 0,
+        ]);
+
+        $session = [
+            'cart' => $this->cartFor($product),
+            'coupon' => ['id' => $coupon->id, 'code' => $coupon->code, 'type' => 'fixed', 'value' => 5000.0],
+        ];
+
+        foreach ([1, 2] as $expectedCount) {
+            $this->actingAs($user)
+                ->withSession($session)
+                ->post(route('checkout.store'), [
+                    'address_id' => $address->id,
+                    'shipping_courier' => 'jne',
+                    'shipping_service' => 'reg',
+                    'payment_method' => 'pakasir',
+                ]);
+
+            $this->assertEquals($expectedCount, Order::count());
+        }
+    }
+
     public function test_a_stale_cart_price_is_replaced_by_the_current_one(): void
     {
         $user = $this->makeUser();

@@ -23,7 +23,7 @@ class PakasirService
             $orderId = $this->getPakasirOrderId($order->order_number);
 
             // Redirect user back to our payment page when done
-            $isChatbotOrder = str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot');
+            $isChatbotOrder = $order->isFromChatbot();
             $redirectUrl = route('orders.payment', $order).($isChatbotOrder ? '?chatbot_open=1' : '');
 
             // Construct the Pakasir hosted payment URL (restricted to QRIS channel only)
@@ -301,8 +301,10 @@ class PakasirService
             // customer has paid for goods the shop may not physically have, and
             // the admin needs to see that when opening the order.
             if ($shortfalls !== []) {
+                // Written to admin_note, never to `notes` — that column belongs to
+                // the customer, who could otherwise forge this same warning.
                 $warning = 'PERLU DICEK: stok tidak mencukupi saat pembayaran ('.implode(', ', $shortfalls).').';
-                $updates['notes'] = ($locked->notes ? $locked->notes.' | ' : '').$warning;
+                $updates['admin_note'] = ($locked->admin_note ? $locked->admin_note.' | ' : '').$warning;
             }
 
             $locked->update($updates);

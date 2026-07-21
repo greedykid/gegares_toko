@@ -84,7 +84,7 @@ class Chatbot extends Component
                 $order = Order::find($routeOrder);
             }
 
-            if ($order && str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot')) {
+            if ($order && $order->isFromChatbot()) {
                 $isChatbotOrder = true;
             }
         }
@@ -147,7 +147,7 @@ class Chatbot extends Component
         $recentPaidOrders = Order::where('user_id', Auth::id())
             ->where('payment_status', 'paid')
             ->where('paid_at', '>=', now()->subHours(2))
-            ->where('notes', 'LIKE', '%Dipesan otomatis via AI Chatbot%')
+            ->where('source', 'chatbot')
             ->get();
 
         if ($recentPaidOrders->isEmpty()) {
@@ -221,7 +221,7 @@ class Chatbot extends Component
         }
 
         // Only announce for chatbot orders, unless chatbot_open query param is explicitly 1
-        $isChatbotOrder = str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot');
+        $isChatbotOrder = $order->isFromChatbot();
         if (! $isChatbotOrder && request()->query('chatbot_open') !== '1') {
             return;
         }
@@ -463,7 +463,7 @@ class Chatbot extends Component
                     'address_id' => $address->id,
                     'shipping_courier' => $courier,
                     'shipping_service' => $service,
-                    'notes' => 'Dipesan otomatis via AI Chatbot',
+                    'source' => 'chatbot',
                 ]);
         } catch (CheckoutException $e) {
             $this->addBotMessage('Maaf Kak, pesanan belum bisa diproses: '.$e->getMessage());
