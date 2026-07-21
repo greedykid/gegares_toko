@@ -504,7 +504,10 @@
                 <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 transition-colors" x-text="editMode ? 'Edit Produk' : 'Tambah Produk'"></h3>
             </div>
 
-            <form :action="editMode ? '{{ url('admin/products') }}/'+form.slug : '{{ route('admin.products.store') }}'" method="POST" enctype="multipart/form-data" class="flex flex-col min-h-0 overflow-hidden">
+            {{-- The update URL comes from the named route so it uses the Indonesian
+                 resource path (/admin/produk/{slug}); hardcoding /admin/products/
+                 here previously 404'd on save. Products are bound by slug. --}}
+            <form :action="editMode ? '{{ route('admin.products.update', ['product' => '__SLUG__']) }}'.replace('__SLUG__', form.slug) : '{{ route('admin.products.store') }}'" method="POST" enctype="multipart/form-data" class="flex flex-col min-h-0 overflow-hidden">
                 @csrf
                 <template x-if="editMode"><input type="hidden" name="_method" value="PUT"></template>
                 
