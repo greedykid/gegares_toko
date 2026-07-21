@@ -159,12 +159,53 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    public function update(Request $request, Order $order)
+    /**
+     * Which status an order may move to next. Terminal states stay terminal, and
+     * an order cannot walk backwards (completed → pending, cancelled → shipped).
+     */
+    private const STATUS_TRANSITIONS = [
+        'pending' => ['awaiting_payment', 'paid', 'processing', 'cancelled'],
+        'awaiting_payment' => ['paid', 'processing', 'cancelled'],
+        'paid' => ['processing', 'shipped', 'cancelled'],
+        'processing' => ['shipped', 'completed', 'cancelled'],
+        'shipped' => ['completed', 'cancelled'],
+        'completed' => [],
+        'cancelled' => [],
+    ];
+
+    public function update(Request $request, Order $order, BiteshipService $biteship)
     {
         $data = $request->validate([
             'status' => 'required|in:pending,awaiting_payment,paid,processing,shipped,completed,cancelled',
             'tracking_number' => 'nullable|string',
         ]);
+
+        $target = $data['status'];
+
+        if ($target !== $order->status
+            && ! in_array($target, self::STATUS_TRANSITIONS[$order->status] ?? [], true)) {
+            return back()->with(
+                'error',
+                "Status tidak dapat diubah dari \"{$order->status_label}\" ke status tersebut."
+            );
+        }
+
+        // Cancelling from the dropdown must do everything the Batalkan Pesanan
+        // button does — otherwise the courier still collects a cancelled order
+        // and its stock is never returned.
+        if ($target === 'cancelled') {
+            [$ok, $message] = $this->applyCancellation($order, $biteship, 'Dibatalkan oleh admin');
+
+            if (! $ok) {
+                return back()->with('error', $message);
+            }
+
+            if ($request->filled('tracking_number')) {
+                $order->update(['tracking_number' => $data['tracking_number']]);
+            }
+
+            return back()->with('success', $message);
+        }
 
         $order->update($data);
 
@@ -195,13 +236,29 @@ class OrderController extends Controller
 
     public function cancelShipping(Request $request, Order $order, BiteshipService $biteship)
     {
-        // Only orders still in fulfilment can be cancelled — a delivered or
-        // already-cancelled order cannot.
-        if (! in_array($order->status, ['processing', 'shipped'])) {
-            return back()->with('error', 'Hanya pesanan yang sedang diproses atau dikirim yang dapat dibatalkan.');
+        $reason = trim((string) $request->input('cancellation_reason')) ?: 'Dibatalkan oleh admin';
+
+        [$ok, $message] = $this->applyCancellation($order, $biteship, $reason);
+
+        return back()->with($ok ? 'success' : 'error', $message);
+    }
+
+    /**
+     * The one way an order gets cancelled, whichever button the admin pressed:
+     * cancel the shipment at Biteship first, return stock only if the goods have
+     * not left yet, and flip the status atomically.
+     *
+     * @return array{0: bool, 1: string} success flag and the message to show
+     */
+    private function applyCancellation(Order $order, BiteshipService $biteship, string $reason): array
+    {
+        if ($order->status === 'cancelled') {
+            return [false, 'Pesanan ini sudah dibatalkan.'];
         }
 
-        $reason = trim((string) $request->input('cancellation_reason')) ?: 'Dibatalkan oleh admin';
+        if ($order->status === 'completed') {
+            return [false, 'Pesanan yang sudah selesai tidak dapat dibatalkan.'];
+        }
 
         // If the shipment was booked with Biteship, cancel it there first and
         // only flip the local status when the courier side confirms.
@@ -209,15 +266,15 @@ class OrderController extends Controller
             $result = $biteship->cancelOrder($order, $reason);
 
             if (! ($result['success'] ?? false)) {
-                return back()->with('error', $result['error'] ?? 'Gagal membatalkan pengiriman di Biteship. Silakan coba lagi.');
+                return [false, $result['error'] ?? 'Gagal membatalkan pengiriman di Biteship. Silakan coba lagi.'];
             }
         }
 
-        // Return the deducted stock only when the goods have NOT left yet, i.e.
-        // the order is still "processing". A "shipped" order is already on its
-        // way to the customer, so its stock must stay deducted. Captured before
-        // the status flips.
-        $shouldRestock = $order->status === 'processing';
+        // Stock only ever leaves on payment, and a shipped order has physically
+        // gone — so it comes back exactly when the order was paid and is still
+        // being prepared. Captured before the status flips.
+        $shouldRestock = $order->payment_status === 'paid' && $order->status === 'processing';
+        $owesRefund = $order->payment_status === 'paid';
 
         DB::transaction(function () use ($order, $shouldRestock) {
             if ($shouldRestock) {
@@ -233,11 +290,23 @@ class OrderController extends Controller
             $order->update(['status' => 'cancelled']);
         });
 
-        $message = $shouldRestock
-            ? 'Pesanan berhasil dibatalkan dan stok dikembalikan.'
-            : 'Pesanan berhasil dibatalkan.';
+        $message = 'Pesanan berhasil dibatalkan';
+        $message .= $shouldRestock ? ' dan stok dikembalikan' : '';
+        $message .= $owesRefund ? '. Pesanan ini sudah dibayar — tandai sudah direfund setelah dana dikembalikan.' : '.';
 
-        return back()->with('success', $message);
+        return [true, $message];
+    }
+
+    /** Record that the customer has had their money back. */
+    public function markRefunded(Order $order)
+    {
+        if (! $order->needsRefund()) {
+            return back()->with('error', 'Pesanan ini tidak menunggu pengembalian dana.');
+        }
+
+        $order->update(['refunded_at' => now()]);
+
+        return back()->with('success', 'Pesanan ditandai sudah direfund.');
     }
 
     public function getTracking(Order $order, BiteshipService $biteship)

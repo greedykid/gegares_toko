@@ -21,12 +21,10 @@ class CartService
     {
         $coupon = Coupon::where('code', strtoupper(trim($code)))->first();
 
-        if (! $coupon) {
-            return ['success' => false, 'message' => 'Kode promo tidak valid.'];
-        }
-
-        if (! $coupon->isValid()) {
-            return ['success' => false, 'message' => 'Kupon sudah tidak berlaku atau kuota habis.'];
+        // One message for both "no such code" and "code exists but is not usable".
+        // Telling them apart turned this into an oracle for guessing valid codes.
+        if (! $coupon || ! $coupon->isValid()) {
+            return ['success' => false, 'message' => 'Kode promo tidak valid atau sudah tidak berlaku.'];
         }
 
         if ($this->getSubtotal() < (float) $coupon->min_purchase) {

@@ -112,6 +112,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
     // Declared before the resource so /pesanan/{order} cannot swallow these.
     Route::post('/pesanan/{order}/proses-pengiriman', [AdminOrderController::class, 'processShipping'])->name('orders.process-shipping');
     Route::post('/pesanan/{order}/batalkan-pengiriman', [AdminOrderController::class, 'cancelShipping'])->name('orders.cancel-shipping');
+    Route::patch('/pesanan/{order}/tandai-refund', [AdminOrderController::class, 'markRefunded'])->name('orders.mark-refunded');
     Route::get('/pesanan/{order}/lacak', [AdminOrderController::class, 'getTracking'])->name('orders.tracking');
     Route::get('/pesanan/ekspor/csv', [AdminOrderController::class, 'exportCsv'])->name('orders.export.csv');
     Route::get('/pesanan/laporan/cetak', [AdminOrderController::class, 'report'])->name('orders.report');

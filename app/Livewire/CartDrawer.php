@@ -3,17 +3,25 @@
 namespace App\Livewire;
 
 use App\Services\CartService;
-use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class CartDrawer extends Component
 {
     public bool $open = false;
+
     public array $items = [];
+
     public float $subtotal = 0;
+
     public string $couponCode = '';
+
     public ?array $coupon = null;
+
     public float $discount = 0;
+
     public float $total = 0;
 
     public function mount(): void
@@ -24,7 +32,7 @@ class CartDrawer extends Component
     #[On('toggle-cart')]
     public function toggle(): void
     {
-        $this->open = !$this->open;
+        $this->open = ! $this->open;
         $this->refreshCart();
     }
 
@@ -48,8 +56,26 @@ class CartDrawer extends Component
             'couponCode.min' => 'Kode kupon terlalu pendek.',
         ]);
 
+        // Guessing promo codes is cheap otherwise: they are short and this is a
+        // public Livewire action that can be called in a loop.
+        $rateKey = 'coupon-attempt-'.(Auth::id() ?? session()->getId());
+
+        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+            $this->dispatch('toast', type: 'error', message: 'Terlalu banyak percobaan kode promo. Coba lagi dalam semenit.');
+
+            return;
+        }
+
+        RateLimiter::hit($rateKey, 60);
+
         $cartService = app(CartService::class);
         $result = $cartService->applyCoupon($this->couponCode);
+
+        // A successful redemption clears the budget so a real customer who
+        // mistyped a few times is not left waiting.
+        if ($result['success']) {
+            RateLimiter::clear($rateKey);
+        }
 
         if ($result['success']) {
             $this->couponCode = '';
