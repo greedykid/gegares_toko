@@ -109,10 +109,12 @@ class CartService
             $newQty = $maxStock;
         }
 
-        $price = $product->price;
-        if ($variant && $variant->price) {
-            $price += $variant->price;
-        }
+        // A variant's price REPLACES the base price — it is the price of that
+        // portion, not a surcharge. Leaving it blank in the admin form (the
+        // field reads "Sama") means the variant costs the same as the base.
+        $price = $variant && $variant->price > 0
+            ? (float) $variant->price
+            : (float) $product->price;
 
         $cart[$cartKey] = [
             'id' => $cartKey,
