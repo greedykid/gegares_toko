@@ -21,7 +21,7 @@ class ImageOptimizerTest extends TestCase
             imagefill($image, 0, 0, imagecolorallocate($image, 10, 200, 40));
         }
 
-        $path = tempnam(sys_get_temp_dir(), 'img') . '.png';
+        $path = tempnam(sys_get_temp_dir(), 'img').'.png';
         imagepng($image, $path);
         imagedestroy($image);
 
@@ -33,7 +33,7 @@ class ImageOptimizerTest extends TestCase
         Storage::fake('public');
 
         $source = $this->makePng(2048, 2048);
-        $optimizer = new ImageOptimizer();
+        $optimizer = new ImageOptimizer;
 
         $path = $optimizer->store(new UploadedFile($source, 'big.png', 'image/png', null, true), 'products');
 
@@ -50,7 +50,7 @@ class ImageOptimizerTest extends TestCase
 
         $source = $this->makePng(2048, 2048);
 
-        $path = (new ImageOptimizer())->store(new UploadedFile($source, 'big.png', 'image/png', null, true), 'categories');
+        $path = (new ImageOptimizer)->store(new UploadedFile($source, 'big.png', 'image/png', null, true), 'categories');
 
         $size = getimagesizefromstring(Storage::disk('public')->get($path));
         $this->assertSame(400, max($size[0], $size[1]));
@@ -62,7 +62,7 @@ class ImageOptimizerTest extends TestCase
 
         $source = $this->makePng(120, 90);
 
-        $path = (new ImageOptimizer())->store(new UploadedFile($source, 'small.png', 'image/png', null, true), 'products');
+        $path = (new ImageOptimizer)->store(new UploadedFile($source, 'small.png', 'image/png', null, true), 'products');
 
         $size = getimagesizefromstring(Storage::disk('public')->get($path));
         $this->assertSame([120, 90], [$size[0], $size[1]]);
@@ -74,7 +74,7 @@ class ImageOptimizerTest extends TestCase
 
         $source = $this->makePng(1200, 1200, transparent: true);
 
-        $path = (new ImageOptimizer())->store(new UploadedFile($source, 'logo.png', 'image/png', null, true), 'settings/payment_logos');
+        $path = (new ImageOptimizer)->store(new UploadedFile($source, 'logo.png', 'image/png', null, true), 'settings/payment_logos');
 
         $image = imagecreatefromstring(Storage::disk('public')->get($path));
         $alpha = (imagecolorat($image, 5, 5) >> 24) & 0x7F;
@@ -87,7 +87,7 @@ class ImageOptimizerTest extends TestCase
     {
         Storage::fake('public');
 
-        $path = (new ImageOptimizer())->store(
+        $path = (new ImageOptimizer)->store(
             UploadedFile::fake()->createWithContent('notes.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>'),
             'products'
         );
@@ -101,11 +101,11 @@ class ImageOptimizerTest extends TestCase
         $source = $this->makePng(2048, 2048);
         $before = filesize($source);
 
-        $after = (new ImageOptimizer())->optimizeInPlace($source, 400);
+        $after = (new ImageOptimizer)->optimizeInPlace($source, 400);
 
         $this->assertNotNull($after);
         $this->assertLessThan($before, $after);
-        $this->assertSame(400, (new ImageOptimizer())->longestEdge($source));
+        $this->assertSame(400, (new ImageOptimizer)->longestEdge($source));
         $this->assertSame('png', pathinfo($source, PATHINFO_EXTENSION));
 
         @unlink($source);
@@ -121,16 +121,16 @@ class ImageOptimizerTest extends TestCase
             imagefilledrectangle($image, $x, 0, $x + 3, 1024, imagecolorallocate($image, $x % 255, (2 * $x) % 255, 90));
         }
 
-        $path = tempnam(sys_get_temp_dir(), 'img') . '.png';
+        $path = tempnam(sys_get_temp_dir(), 'img').'.png';
         imagejpeg($image, $path, 90);
         imagedestroy($image);
 
         $before = filesize($path);
-        $after = (new ImageOptimizer())->optimizeInPlace($path, 800);
+        $after = (new ImageOptimizer)->optimizeInPlace($path, 800);
 
         $this->assertNotNull($after, 'A misnamed JPEG must still be optimized.');
         $this->assertLessThan($before, $after);
-        $this->assertSame(800, (new ImageOptimizer())->longestEdge($path));
+        $this->assertSame(800, (new ImageOptimizer)->longestEdge($path));
         $this->assertSame('image/jpeg', getimagesize($path)['mime'], 'It must stay a JPEG, not become a bloated PNG.');
 
         @unlink($path);
@@ -142,7 +142,7 @@ class ImageOptimizerTest extends TestCase
         // which would flatten a transparent payment logo to black.
         $source = $this->makePng(200, 200, transparent: true);
 
-        (new ImageOptimizer())->optimizeInPlace($source, 400);
+        (new ImageOptimizer)->optimizeInPlace($source, 400);
 
         $image = imagecreatefromstring(file_get_contents($source));
         $alpha = (imagecolorat($image, 5, 5) >> 24) & 0x7F;
@@ -155,7 +155,7 @@ class ImageOptimizerTest extends TestCase
 
     public function test_optimize_in_place_is_idempotent_and_never_grows_a_file(): void
     {
-        $optimizer = new ImageOptimizer();
+        $optimizer = new ImageOptimizer;
         $source = $this->makePng(900, 900);
         $original = filesize($source);
 
@@ -183,13 +183,13 @@ class ImageOptimizerTest extends TestCase
         for ($x = 0; $x < 600; $x += 3) {
             imagefilledrectangle($image, $x, 0, $x + 2, 600, imagecolorallocate($image, $x % 255, 120, (3 * $x) % 255));
         }
-        $path = tempnam(sys_get_temp_dir(), 'img') . '.webp';
+        $path = tempnam(sys_get_temp_dir(), 'img').'.webp';
         imagewebp($image, $path, 82);
         imagedestroy($image);
 
         $bytes = file_get_contents($path);
 
-        $result = (new ImageOptimizer())->optimizeInPlace($path, 800);
+        $result = (new ImageOptimizer)->optimizeInPlace($path, 800);
 
         $this->assertNull($result, 'An in-budget lossy image must be left alone.');
         $this->assertSame($bytes, file_get_contents($path), 'File must be byte-identical after a no-op pass.');

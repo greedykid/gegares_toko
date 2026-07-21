@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('coupons')) {
+        if (! Schema::hasTable('coupons')) {
             Schema::create('coupons', function (Blueprint $table) {
                 $table->id();
                 $table->string('code', 20)->unique(); // promo code, e.g. GRATISONGKIR2026

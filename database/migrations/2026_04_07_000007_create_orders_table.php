@@ -21,11 +21,11 @@ return new class extends Migration
             $table->decimal('total', 12, 2);
             $table->enum('status', [
                 'pending', 'awaiting_payment', 'paid',
-                'processing', 'shipped', 'completed', 'cancelled'
+                'processing', 'shipped', 'completed', 'cancelled',
             ])->default('pending');
             $table->foreignId('coupon_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('payment_status', [
-                'unpaid', 'pending', 'paid', 'failed', 'expired'
+                'unpaid', 'pending', 'paid', 'failed', 'expired',
             ])->default('unpaid');
             $table->string('payment_method', 30)->nullable(); // qris / pakasir
             $table->string('pakasir_link', 512)->nullable(); // hosted payment URL (with encoded redirect)

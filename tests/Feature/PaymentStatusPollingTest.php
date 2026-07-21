@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\User;
-use App\Services\PakasirService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -110,7 +109,7 @@ class PaymentStatusPollingTest extends TestCase
         $user = User::factory()->create(['phone' => '081234567890']);
         $order = $this->makeOrder($user);
 
-        Cache::forget('pakasir_sync_limit_' . $order->id);
+        Cache::forget('pakasir_sync_limit_'.$order->id);
 
         $this->actingAs($user)
             ->getJson(route('orders.status', $order))
