@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Coupon;
 use App\Models\Product;
 use Illuminate\Support\Facades\Session;
 
 class CartService
 {
     protected string $sessionKey = 'cart';
+
     protected string $couponKey = 'coupon';
 
     public function getItems(): array
@@ -17,25 +19,25 @@ class CartService
 
     public function applyCoupon(string $code): array
     {
-        $coupon = \App\Models\Coupon::where('code', strtoupper(trim($code)))->first();
+        $coupon = Coupon::where('code', strtoupper(trim($code)))->first();
 
-        if (!$coupon) {
+        if (! $coupon) {
             return ['success' => false, 'message' => 'Kode promo tidak valid.'];
         }
 
-        if (!$coupon->isValid()) {
+        if (! $coupon->isValid()) {
             return ['success' => false, 'message' => 'Kupon sudah tidak berlaku atau kuota habis.'];
         }
 
-        if ($this->getSubtotal() < (float)$coupon->min_purchase) {
-            return ['success' => false, 'message' => 'Minimal belanja untuk kupon ini adalah Rp ' . number_format($coupon->min_purchase, 0, ',', '.')];
+        if ($this->getSubtotal() < (float) $coupon->min_purchase) {
+            return ['success' => false, 'message' => 'Minimal belanja untuk kupon ini adalah Rp '.number_format($coupon->min_purchase, 0, ',', '.')];
         }
 
         Session::put($this->couponKey, [
             'id' => $coupon->id,
             'code' => $coupon->code,
             'type' => $coupon->type,
-            'value' => (float)$coupon->value,
+            'value' => (float) $coupon->value,
         ]);
 
         return ['success' => true, 'message' => 'Kupon berhasil diterapkan!'];
@@ -54,15 +56,17 @@ class CartService
     public function getDiscountAmount(): float
     {
         $coupon = $this->getCoupon();
-        if (!$coupon) return 0;
+        if (! $coupon) {
+            return 0;
+        }
 
         $subtotal = $this->getSubtotal();
-        
+
         if ($coupon['type'] === 'percent') {
             return ($subtotal * $coupon['value']) / 100;
         }
 
-        return min((float)$coupon['value'], $subtotal);
+        return min((float) $coupon['value'], $subtotal);
     }
 
     public function getTotal(): float
@@ -75,10 +79,16 @@ class CartService
         $product = Product::with('variants')->findOrFail($productId);
         $cart = $this->getItems();
 
+        // The admin's availability switch overrides everything, including any
+        // stock still sitting on a variant.
+        if (! $product->is_available) {
+            return ['success' => false, 'message' => 'Produk sedang tidak tersedia.'];
+        }
+
         $variant = null;
         if ($variantId) {
             $variant = $product->variants->firstWhere('id', $variantId);
-            if (!$variant) {
+            if (! $variant) {
                 return ['success' => false, 'message' => 'Variasi tidak ditemukan.'];
             }
             if ($variant->stock <= 0) {
@@ -90,10 +100,10 @@ class CartService
             }
         }
 
-        $cartKey = $productId . '_' . ($variantId ?? '0');
+        $cartKey = $productId.'_'.($variantId ?? '0');
         $existingQty = $cart[$cartKey]['quantity'] ?? 0;
         $maxStock = $variant ? $variant->stock : $product->stock;
-        
+
         $newQty = $existingQty + $quantity;
         if ($newQty > $maxStock) {
             $newQty = $maxStock;
@@ -180,27 +190,34 @@ class CartService
         foreach ($cart as $cartKey => $item) {
             $product = $products->get($item['product_id']);
 
-            if (!$product) {
+            if (! $product) {
                 $errors[] = "Produk '{$item['name']}' sudah tidak tersedia.";
                 unset($cart[$cartKey]);
+
                 continue;
             }
 
-            $maxStock = $product->stock;
-            if (!empty($item['variant_id'])) {
+            // A product switched off by the admin counts as unavailable no matter
+            // what its counters say.
+            $available = (bool) $product->is_available;
+
+            $maxStock = $available ? $product->stock : 0;
+            if (! empty($item['variant_id'])) {
                 $variant = $product->variants->firstWhere('id', $item['variant_id']);
-                if (!$variant) {
+                if (! $variant) {
                     $errors[] = "Variasi untuk '{$item['name']}' sudah tidak tersedia.";
                     unset($cart[$cartKey]);
+
                     continue;
                 }
-                $maxStock = $variant->stock;
+                $maxStock = $available ? $variant->stock : 0;
             }
 
             if ($maxStock <= 0) {
-                $variantName = isset($item['variant_name']) ? " (Varian: {$item['variant_name']})" : "";
+                $variantName = isset($item['variant_name']) ? " (Varian: {$item['variant_name']})" : '';
                 $errors[] = "Stok '{$product->name}'{$variantName} sudah habis.";
                 unset($cart[$cartKey]);
+
                 continue;
             }
 

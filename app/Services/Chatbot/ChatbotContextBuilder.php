@@ -6,6 +6,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\StoreSetting;
 use App\Services\CartService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -181,23 +182,23 @@ FORMAT RESPONS:
     public function couponsContext(): string
     {
         $coupons = Coupon::where('is_active', true)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('start_date')->orWhere('start_date', '<=', now());
             })
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('end_date')->orWhere('end_date', '>=', now());
             })
             ->get();
 
         if ($coupons->isEmpty()) {
-            return "Saat ini tidak ada kupon diskon aktif.";
+            return 'Saat ini tidak ada kupon diskon aktif.';
         }
 
         $context = "Daftar kupon diskon yang tersedia:\n";
         foreach ($coupons as $coupon) {
-            $valueStr = $coupon->type === 'percent' ? "{$coupon->value}%" : "Rp " . number_format($coupon->value, 0, ',', '.');
-            $minPurchaseStr = $coupon->min_purchase > 0 ? " (Min. Belanja: Rp " . number_format($coupon->min_purchase, 0, ',', '.') . ")" : "";
-            $expiryStr = $coupon->end_date ? " - Berakhir pada: " . $coupon->end_date->format('d M Y') : "";
+            $valueStr = $coupon->type === 'percent' ? "{$coupon->value}%" : 'Rp '.number_format($coupon->value, 0, ',', '.');
+            $minPurchaseStr = $coupon->min_purchase > 0 ? ' (Min. Belanja: Rp '.number_format($coupon->min_purchase, 0, ',', '.').')' : '';
+            $expiryStr = $coupon->end_date ? ' - Berakhir pada: '.$coupon->end_date->format('d M Y') : '';
 
             $context .= "- Kode: **{$coupon->code}** | Diskon: {$valueStr}{$minPurchaseStr}{$expiryStr}\n";
         }
@@ -231,21 +232,21 @@ FORMAT RESPONS:
 
     public function cartContext(): string
     {
-        if (!Auth::check()) {
-            return "User belum login, keranjang belum bisa diakses.";
+        if (! Auth::check()) {
+            return 'User belum login, keranjang belum bisa diakses.';
         }
 
         $cartService = app(CartService::class);
         $items = $cartService->getItems();
 
         if (empty($items)) {
-            return "Keranjang belanja user saat ini KOSONG.";
+            return 'Keranjang belanja user saat ini KOSONG.';
         }
 
         $context = "Isi keranjang user saat ini:\n";
         foreach ($items as $item) {
             $name = $item['name'] ?? 'Produk';
-            $variant = !empty($item['variant_name']) ? " ({$item['variant_name']})" : '';
+            $variant = ! empty($item['variant_name']) ? " ({$item['variant_name']})" : '';
             $qty = $item['quantity'] ?? 1;
             $price = number_format((float) ($item['price'] ?? 0), 0, ',', '.');
             $context .= "- {$name}{$variant}: {$qty} porsi @ Rp {$price}\n";
@@ -264,14 +265,14 @@ FORMAT RESPONS:
 
     public function orderContext(): string
     {
-        if (!Auth::check()) {
-            return "User belum login. Jika user bertanya tentang pesanan, minta mereka login terlebih dahulu dengan sopan.";
+        if (! Auth::check()) {
+            return 'User belum login. Jika user bertanya tentang pesanan, minta mereka login terlebih dahulu dengan sopan.';
         }
 
         $orders = Order::where('user_id', Auth::id())->latest()->take(5)->get();
 
         if ($orders->isEmpty()) {
-            return "User sudah login (nama: " . Auth::user()->name . "), tetapi belum memiliki riwayat pesanan.";
+            return 'User sudah login (nama: '.Auth::user()->name.'), tetapi belum memiliki riwayat pesanan.';
         }
 
         $context = "Daftar pesanan terbaru user ({$orders->count()} pesanan):\n";
@@ -287,6 +288,7 @@ FORMAT RESPONS:
                 $context .= "  ↳ Item: {$itemNames}\n";
             }
         }
+
         return $context;
     }
 
@@ -304,7 +306,7 @@ FORMAT RESPONS:
             Cache::remember(
                 'store_settings',
                 86400,
-                fn () => (\App\Models\StoreSetting::first() ?? new \App\Models\StoreSetting())->toArray()
+                fn () => (StoreSetting::first() ?? new StoreSetting)->toArray()
             )
         );
 
@@ -355,13 +357,13 @@ CARA PESAN:
 
     public function storageTips(): string
     {
-        return "- Lemper/Lontong: Tahan 1 hari suhu ruang, 3 hari kulkas. Kukus ulang 5-10 menit sebelum sajikan.
+        return '- Lemper/Lontong: Tahan 1 hari suhu ruang, 3 hari kulkas. Kukus ulang 5-10 menit sebelum sajikan.
 - Gorengan (Risoles/Pastel): Tahan 1 hari. Panaskan di oven/air fryer agar renyah. Jangan microwave lama.
 - Kue Basah (Nagasari/Putu): Segera konsumsi. Simpan kulkas maks 2 hari.
 - Getuk/Kue Kelapa: Harus segera habis karena kelapa mudah basi.
 - Klepon: Tahan 6-8 jam suhu ruang. Jangan masukkan kulkas karena akan mengeras.
 - Onde-onde: Tahan 1-2 hari. Panaskan di oven/wajan agar kembali crispy.
-- Serabi: Tahan 1 hari suhu ruang. Hangatkan di wajan datar.";
+- Serabi: Tahan 1 hari suhu ruang. Hangatkan di wajan datar.';
     }
 
     /**
@@ -373,16 +375,17 @@ CARA PESAN:
         // Product names change rarely; cache the grounding whitelist so it is not
         // rebuilt on every chat message.
         return Cache::remember('chatbot.whitelist', 300, function () {
-            $products = Product::whereHas('category', fn($q) => $q->where('is_active', true))->pluck('name');
+            $products = Product::whereHas('category', fn ($q) => $q->where('is_active', true))->pluck('name');
 
             if ($products->isEmpty()) {
-                return "(Katalog kosong)";
+                return '(Katalog kosong)';
             }
 
-            $list = "";
+            $list = '';
             foreach ($products as $i => $name) {
-                $list .= ($i + 1) . ". {$name}\n";
+                $list .= ($i + 1).". {$name}\n";
             }
+
             return $list;
         });
     }
@@ -394,31 +397,32 @@ CARA PESAN:
         // short staleness window here is safe.
         return Cache::remember('chatbot.catalog', 1800, function () {
             $products = Product::with('category')
-                ->whereHas('category', function($q) {
+                ->whereHas('category', function ($q) {
                     $q->where('is_active', true);
                 })
                 ->take(200)
                 ->get();
 
             if ($products->isEmpty()) {
-                return "Katalog sedang kosong.";
+                return 'Katalog sedang kosong.';
             }
 
-            $catalog = "";
-            $grouped = $products->groupBy(fn($p) => $p->category->name ?? 'Lainnya');
+            $catalog = '';
+            $grouped = $products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya');
 
             foreach ($grouped as $categoryName => $categoryProducts) {
                 $catalog .= "\n## Kategori: {$categoryName}\n";
                 foreach ($categoryProducts as $p) {
                     $ratingAvg = $p->rating_avg;
                     $ratingCount = $p->rating_count;
-                    $ratingStr = $ratingCount > 0 ? sprintf("⭐ %.1f (%d ulasan)", $ratingAvg, $ratingCount) : "Belum ada ulasan";
-                    $stockStatus = $p->stock <= 0 ? '❌ HABIS' : ($p->stock < 5 ? "⚠️ Sisa {$p->stock}" : "✅ Tersedia ({$p->stock})");
+                    $ratingStr = $ratingCount > 0 ? sprintf('⭐ %.1f (%d ulasan)', $ratingAvg, $ratingCount) : 'Belum ada ulasan';
+                    // Availability only — never quote a number to the customer.
+                    $stockStatus = $p->isOutOfStock() ? '❌ HABIS' : ($p->isLowStock() ? '⚠️ Menipis' : '✅ Tersedia');
                     $featured = $p->is_featured ? ' 🔥 FEATURED' : '';
                     $desc = mb_substr($p->description ?? '', 0, 200);
 
                     $catalog .= "- **{$p->name}**: {$p->formatted_price} | Stok: {$stockStatus} | Rating: {$ratingStr}{$featured}\n";
-                    if (!empty($desc)) {
+                    if (! empty($desc)) {
                         $catalog .= "  Deskripsi: {$desc}\n";
                     }
                 }
@@ -435,7 +439,7 @@ CARA PESAN:
     {
         return Cache::remember('chatbot.bestsellers', 3600, function () {
             $bestSellers = OrderItem::query()
-                ->whereHas('order', function($q) {
+                ->whereHas('order', function ($q) {
                     $q->where('payment_status', 'paid');
                 })
                 ->selectRaw('product_name, product_id, SUM(quantity) as total_qty')
@@ -445,7 +449,7 @@ CARA PESAN:
                 ->get();
 
             if ($bestSellers->isEmpty()) {
-                return "Belum ada data penjualan.";
+                return 'Belum ada data penjualan.';
             }
 
             // Batch-load prices for all best-sellers in one query (avoids N+1) selecting only needed columns.
@@ -454,11 +458,11 @@ CARA PESAN:
                 ->get()
                 ->keyBy('id');
 
-            $list = "";
+            $list = '';
             $rank = 1;
             foreach ($bestSellers as $item) {
                 $product = $prices->get($item->product_id);
-                $price = $product ? 'Rp ' . number_format((float)$product->price, 0, ',', '.') : 'N/A';
+                $price = $product ? 'Rp '.number_format((float) $product->price, 0, ',', '.') : 'N/A';
                 $list .= "{$rank}. **{$item->product_name}** — Terjual {$item->total_qty} porsi ({$price})\n";
                 $rank++;
             }

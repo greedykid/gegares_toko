@@ -17,6 +17,7 @@ class StorefrontCache
         'chatbot.catalog',
         'chatbot.whitelist',
         'chatbot.bestsellers',
+        'products.for_matching',
         'search.fuzzy.products',
         'search.fuzzy.categories',
     ];

@@ -216,7 +216,8 @@
             {{-- Add to Cart --}}
             <div class="space-y-4" x-data="{ 
                 qty: 1, 
-                baseMax: {{ $product->stock }}, 
+                {{-- 0 when the admin switched the product off, so the toggle really blocks buying --}}
+                baseMax: {{ $product->isOutOfStock() ? 0 : $product->stock }},
                 basePrice: {{ $product->price }},
                 variants: {{ $product->variants->toJson() }},
                 selectedVariantId: null,
