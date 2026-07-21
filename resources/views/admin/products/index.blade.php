@@ -411,8 +411,25 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-right font-bold text-slate-900 dark:text-slate-100">{{ $product->formatted_price }}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold {{ $product->stock == 0 ? 'bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 border border-red-200/50 dark:border-red-950/30' : ($product->stock < 5 ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-650 dark:text-amber-400 border border-amber-200/50 dark:border-amber-950/30' : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-950/30') }}">{{ $product->stock }}</span>
+                        <td class="px-6 py-4">
+                            {{-- Availability switch (what customers see) plus the stock
+                                 counter, which keeps running behind the scenes. --}}
+                            <div class="flex flex-col items-center gap-1.5">
+                                <form method="POST" action="{{ route('admin.products.toggle-availability', $product) }}" class="inline-flex items-center gap-2">
+                                    @csrf @method('PATCH')
+                                    <label class="relative inline-flex items-center cursor-pointer group" title="{{ $product->is_available ? 'Tandai habis' : 'Tandai tersedia' }}">
+                                        <input type="checkbox" class="sr-only peer" {{ $product->is_available ? 'checked' : '' }} onchange="this.closest('form').submit()">
+                                        <div class="w-9 h-5 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 dark:peer-checked:bg-emerald-600 group-hover:shadow-sm"></div>
+                                    </label>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $product->is_available ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400' }}">
+                                        {{ $product->is_available ? 'Tersedia' : 'Habis' }}
+                                    </span>
+                                </form>
+
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold {{ $product->isOutOfStock() ? 'bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 border border-red-200/50 dark:border-red-950/30' : ($product->isLowStock() ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-650 dark:text-amber-400 border border-amber-200/50 dark:border-amber-950/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700') }}">
+                                    Stok: {{ $product->stock }}
+                                </span>
+                            </div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center">

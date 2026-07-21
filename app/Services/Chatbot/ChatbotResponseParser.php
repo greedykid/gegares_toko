@@ -25,7 +25,7 @@ class ChatbotResponseParser
         $textMessages = array_filter($chatHistory, function ($chat) {
             // Only include text messages, skip images
             return isset($chat['content'])
-                && (!isset($chat['type']) || $chat['type'] === 'text');
+                && (! isset($chat['type']) || $chat['type'] === 'text');
         });
 
         // Take last N messages
@@ -54,7 +54,7 @@ class ChatbotResponseParser
             $aiText = trim($parts[0]);
             if (isset($parts[1])) {
                 $rawSuggestions = array_map('trim', explode('|', trim($parts[1])));
-                $suggestions = array_filter($rawSuggestions, fn($s) => !empty($s) && mb_strlen($s) < 60);
+                $suggestions = array_filter($rawSuggestions, fn ($s) => ! empty($s) && mb_strlen($s) < 60);
                 $suggestions = array_slice($suggestions, 0, 3); // Max 3 suggestions
             }
         }
@@ -93,7 +93,7 @@ class ChatbotResponseParser
      */
     public function stripProductTags(string $aiText): string
     {
-        return preg_replace("/\[\[(.*?)\]\]/", "**$1**", $aiText);
+        return preg_replace("/\[\[(.*?)\]\]/", '**$1**', $aiText);
     }
 
     /**
@@ -102,20 +102,20 @@ class ChatbotResponseParser
      */
     public function matchProducts(string $aiText): array
     {
-        $cachedProducts = Cache::remember('products.for_matching', 300, function() {
-            return Product::select('id', 'name', 'price', 'stock', 'image', 'slug')->get()->toArray();
+        $cachedProducts = Cache::remember('products.for_matching', 300, function () {
+            return Product::select('id', 'name', 'price', 'stock', 'is_available', 'image', 'slug')->get()->toArray();
         });
 
         $matchedProducts = [];
         foreach ($cachedProducts as $p) {
             // Only match if the AI strictly used the [[Product Name]] format
-            if (preg_match("/\[\[" . preg_quote($p['name'], '/') . "\]\]/i", $aiText)) {
+            if (preg_match("/\[\[".preg_quote($p['name'], '/')."\]\]/i", $aiText)) {
                 $matchedProducts[] = $p;
             }
         }
 
         $foundProducts = [];
-        if (!empty($matchedProducts)) {
+        if (! empty($matchedProducts)) {
             $wishlistedIds = [];
             if (Auth::check()) {
                 $wishlistedIds = Wishlist::where('user_id', Auth::id())
@@ -128,9 +128,11 @@ class ChatbotResponseParser
                 $foundProducts[] = [
                     'id' => $p['id'],
                     'name' => $p['name'],
-                    'price' => 'Rp ' . number_format((float)$p['price'], 0, ',', '.'),
-                    'stock' => $p['stock'],
-                    'image' => $p['image'] ? asset('storage/' . $p['image']) : null,
+                    'price' => 'Rp '.number_format((float) $p['price'], 0, ',', '.'),
+                    // A product switched off by the admin reads as out of stock,
+                    // so the chat card shows "Habis" instead of a buy button.
+                    'stock' => $p['is_available'] ? $p['stock'] : 0,
+                    'image' => $p['image'] ? asset('storage/'.$p['image']) : null,
                     'url' => route('products.show', $p['slug']),
                     'inWishlist' => in_array($p['id'], $wishlistedIds),
                 ];
@@ -149,7 +151,7 @@ class ChatbotResponseParser
         $foundOrders = [];
         if (Auth::check()) {
             preg_match_all('/#GGR-([Y0-9A-Z-]+)/', $aiText, $matches);
-            if (!empty($matches[0])) {
+            if (! empty($matches[0])) {
                 foreach (array_unique($matches[0]) as $orderNum) {
                     $cleanNum = ltrim($orderNum, '#');
                     $order = Order::where('order_number', $cleanNum)
@@ -186,6 +188,7 @@ class ChatbotResponseParser
             $trimmedLine = trim($line);
             if (empty($trimmedLine)) {
                 $cleanLines[] = $line;
+
                 continue;
             }
 
@@ -210,7 +213,7 @@ class ChatbotResponseParser
                 }
             }
 
-            if (!$isRedundant) {
+            if (! $isRedundant) {
                 $cleanLines[] = $line;
             }
         }
@@ -218,6 +221,7 @@ class ChatbotResponseParser
         // Clean up excessive blank lines
         $result = trim(implode("\n", $cleanLines));
         $result = preg_replace("/\n{3,}/", "\n\n", $result);
+
         return $result;
     }
 

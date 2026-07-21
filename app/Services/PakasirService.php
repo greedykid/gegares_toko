@@ -263,6 +263,8 @@ class PakasirService
             // The `stock >= quantity` guard means two orders racing for the last
             // unit can never drive stock negative: whichever loses the race matches
             // zero rows and is logged instead of silently overselling.
+            $shortfalls = [];
+
             foreach ($locked->items as $item) {
                 $relation = $item->product_variant_id ? $item->variant() : $item->product();
 
@@ -271,10 +273,11 @@ class PakasirService
 
                 if ($affected === 0) {
                     Log::warning("Stock oversell prevented for Order #{$locked->order_number}: '{$item->product_name}' requested {$item->quantity} but insufficient stock remains.");
+                    $shortfalls[] = $item->product_name.' x'.$item->quantity;
                 }
             }
 
-            $locked->update([
+            $updates = [
                 // Go straight to "processing": once payment is confirmed the order
                 // is being fulfilled, so the customer sees "Diproses" immediately.
                 // Courier booking runs in the background (BookBiteshipOrder) and
@@ -292,7 +295,17 @@ class PakasirService
                     ? Carbon::parse($completedAt, config('pakasir.timezone', 'UTC'))
                         ->setTimezone(config('app.timezone'))
                     : now(),
-            ]);
+            ];
+
+            // Flag the shortfall on the order itself, not just in the log: the
+            // customer has paid for goods the shop may not physically have, and
+            // the admin needs to see that when opening the order.
+            if ($shortfalls !== []) {
+                $warning = 'PERLU DICEK: stok tidak mencukupi saat pembayaran ('.implode(', ', $shortfalls).').';
+                $updates['notes'] = ($locked->notes ? $locked->notes.' | ' : '').$warning;
+            }
+
+            $locked->update($updates);
 
             return true;
         });

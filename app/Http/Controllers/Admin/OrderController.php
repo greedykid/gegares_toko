@@ -111,9 +111,10 @@ class OrderController extends Controller
             $direction = 'desc';
         }
 
-        // Items are only needed by CSV export / printable report (added there),
-        // not by the list view — so keep the base list query lean.
-        $query = Order::with(['user', 'address']);
+        // The list view embeds each order as JSON for the detail modal, and that
+        // modal lists the purchased items — so items must be eager loaded here.
+        // It is one extra query for the whole page, not one per order.
+        $query = Order::with(['user', 'address', 'items']);
 
         if ($request->filled('search')) {
             $q = $request->search;

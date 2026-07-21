@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,33 +19,40 @@ class ProductController extends Controller
 
         // Allowed sort columns
         $allowedSorts = ['name', 'description', 'category_id', 'price', 'stock', 'is_featured', 'created_at'];
-        if (!in_array($sort, $allowedSorts)) {
+        if (! in_array($sort, $allowedSorts)) {
             $sort = 'created_at';
         }
 
         // Allowed direction
-        if (!in_array($direction, ['asc', 'desc'])) {
+        if (! in_array($direction, ['asc', 'desc'])) {
             $direction = 'desc';
         }
 
         $query = Product::with(['category', 'images', 'variants']);
 
         // Filtering
-        $query->when($request->search, function($q, $search) {
+        $query->when($request->search, function ($q, $search) {
             return $q->where('name', 'like', '%'.$search.'%');
         });
 
-        $query->when($request->category, function($q, $cat) {
+        $query->when($request->category, function ($q, $cat) {
             return $q->where('category_id', $cat);
         });
 
-        $query->when($request->stock_status, function($q, $status) {
-            if ($status == 'out_of_stock') return $q->where('stock', 0);
-            if ($status == 'low_stock') return $q->where('stock', '>', 0)->where('stock', '<', 5);
-            if ($status == 'in_stock') return $q->where('stock', '>=', 5);
+        // "Habis" covers both a zero counter and a product switched off manually.
+        $query->when($request->stock_status, function ($q, $status) {
+            if ($status == 'out_of_stock') {
+                return $q->where(fn ($sub) => $sub->where('is_available', false)->orWhere('stock', '<=', 0));
+            }
+            if ($status == 'low_stock') {
+                return $q->lowStock();
+            }
+            if ($status == 'in_stock') {
+                return $q->where('is_available', true)->where('stock', '>=', 5);
+            }
         });
 
-        $query->when($request->is_featured !== null && $request->is_featured !== '', function($q) use ($request) {
+        $query->when($request->is_featured !== null && $request->is_featured !== '', function ($q) use ($request) {
             return $q->where('is_featured', $request->is_featured);
         });
 
@@ -56,13 +64,13 @@ class ProductController extends Controller
 
         $products = $query->paginate(15)->appends($request->query());
         $categories = Category::all();
-        
-        $productStats = Product::selectRaw("
+
+        $productStats = Product::selectRaw('
             count(*) as total,
             sum(case when is_featured = 1 then 1 else 0 end) as featured,
-            sum(case when stock = 0 then 1 else 0 end) as out_of_stock,
-            sum(case when stock > 0 and stock < 5 then 1 else 0 end) as low_stock
-        ")->first();
+            sum(case when is_available = 0 or stock <= 0 then 1 else 0 end) as out_of_stock,
+            sum(case when is_available = 1 and stock > 0 and stock < 5 then 1 else 0 end) as low_stock
+        ')->first();
 
         $totalProducts = $productStats->total ?? 0;
         $featuredProducts = $productStats->featured ?? 0;
@@ -70,11 +78,11 @@ class ProductController extends Controller
         $lowStock = $productStats->low_stock ?? 0;
 
         return view('admin.products.index', compact(
-            'products', 
-            'categories', 
-            'totalProducts', 
-            'featuredProducts', 
-            'outOfStock', 
+            'products',
+            'categories',
+            'totalProducts',
+            'featuredProducts',
+            'outOfStock',
             'lowStock'
         ));
     }
@@ -108,7 +116,7 @@ class ProductController extends Controller
 
         if ($request->filled('variants')) {
             foreach ($request->variants as $variant) {
-                if (!empty($variant['name'])) {
+                if (! empty($variant['name'])) {
                     $product->variants()->create([
                         'name' => $variant['name'],
                         'price' => $variant['price'] ?? null,
@@ -121,11 +129,13 @@ class ProductController extends Controller
         if ($request->hasFile('gallery')) {
             $uploadedFiles = array_values(array_filter($request->file('gallery')));
             foreach ($uploadedFiles as $index => $file) {
-                if ($index >= 6) break; // Max 6 gallery
+                if ($index >= 6) {
+                    break;
+                } // Max 6 gallery
                 $path = app(ImageOptimizer::class)->store($file, 'products/gallery');
                 $product->images()->create([
                     'image_path' => $path,
-                    'sort_order' => $index
+                    'sort_order' => $index,
                 ]);
             }
         }
@@ -170,7 +180,7 @@ class ProductController extends Controller
 
         // Handle removals
         if ($request->filled('removed_gallery_ids')) {
-            \App\Models\ProductImage::whereIn('id', $request->removed_gallery_ids)
+            ProductImage::whereIn('id', $request->removed_gallery_ids)
                 ->where('product_id', $product->id)
                 ->delete();
         }
@@ -182,8 +192,8 @@ class ProductController extends Controller
         // Handle variant updates and creation
         if ($request->filled('variants')) {
             foreach ($request->variants as $variant) {
-                if (!empty($variant['name'])) {
-                    if (!empty($variant['id'])) {
+                if (! empty($variant['name'])) {
+                    if (! empty($variant['id'])) {
                         // Update
                         $product->variants()->where('id', $variant['id'])->update([
                             'name' => $variant['name'],
@@ -211,11 +221,13 @@ class ProductController extends Controller
             if ($maxAllowedNew > 0) {
                 $uploadedFiles = array_values(array_filter($request->file('gallery')));
                 foreach ($uploadedFiles as $index => $file) {
-                    if ($index >= $maxAllowedNew) break;
+                    if ($index >= $maxAllowedNew) {
+                        break;
+                    }
                     $path = app(ImageOptimizer::class)->store($file, 'products/gallery');
                     $product->images()->create([
                         'image_path' => $path,
-                        'sort_order' => $maxSortOrder + 1 + $index
+                        'sort_order' => $maxSortOrder + 1 + $index,
                     ]);
                 }
             }
@@ -227,12 +239,30 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
+
         return back()->with('success', 'Produk berhasil dihapus.');
     }
 
     public function toggleFeatured(Product $product)
     {
-        $product->update(['is_featured' => !$product->is_featured]);
+        $product->update(['is_featured' => ! $product->is_featured]);
+
         return back()->with('success', 'Status produk unggulan berhasil diubah.');
+    }
+
+    /**
+     * Flip a product between "Tersedia" and "Habis" without touching its stock
+     * count, so the counter stays intact for when it goes back on the menu.
+     */
+    public function toggleAvailability(Product $product)
+    {
+        $product->update(['is_available' => ! $product->is_available]);
+
+        return back()->with(
+            'success',
+            $product->is_available
+                ? 'Produk ditandai TERSEDIA.'
+                : 'Produk ditandai HABIS dan tidak bisa dipesan pelanggan.'
+        );
     }
 }

@@ -100,6 +100,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
         ->parameters(['kategori' => 'category']);
 
     Route::patch('/produk/{product}/ubah-unggulan', [AdminProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
+    Route::patch('/produk/{product}/ubah-ketersediaan', [AdminProductController::class, 'toggleAvailability'])->name('products.toggle-availability');
     Route::resource('/produk', AdminProductController::class)
         ->except(['create', 'edit'])
         ->names('products')

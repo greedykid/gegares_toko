@@ -2,26 +2,39 @@
 
 namespace App\Livewire;
 
-use App\Models\Product;
+use App\Exceptions\PaymentGatewayException;
 use App\Models\Order;
-use App\Services\GeminiService;
+use App\Models\Product;
+use App\Models\Wishlist;
+use App\Services\BiteshipService;
+use App\Services\CartService;
 use App\Services\Chatbot\ChatbotContextBuilder;
 use App\Services\Chatbot\ChatbotGuard;
 use App\Services\Chatbot\ChatbotResponseParser;
+use App\Services\GeminiService;
+use App\Services\OrderService;
+use App\Services\SecurityService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Livewire\Attributes\On;
-use Illuminate\Support\Facades\Auth;
 
 class Chatbot extends Component
 {
     use WithFileUploads;
 
     public bool $isOpen = false;
+
     public string $message = '';
+
     public string $honeyPot = ''; // Honeypot field for bot detection
+
     public array $chatHistory = [];
+
     public $image;
+
     public bool $isTyping = false;
 
     public function mount()
@@ -29,7 +42,8 @@ class Chatbot extends Component
         // 1. Check if IP is banned
         if ($this->checkBanStatus()) {
             $this->isOpen = true; // Auto-open to show the ban message
-            $this->addBotMessage("Sistem keamanan mendeteksi aktivitas mencurigakan dari alamat IP Anda. Akses chatbot telah dibatasi untuk sementara demi menjaga keamanan sistem kami.");
+            $this->addBotMessage('Sistem keamanan mendeteksi aktivitas mencurigakan dari alamat IP Anda. Akses chatbot telah dibatasi untuk sementara demi menjaga keamanan sistem kami.');
+
             return;
         }
 
@@ -88,7 +102,7 @@ class Chatbot extends Component
 
     protected function getRateLimitKey()
     {
-        return 'chatbot-' . session()->getId();
+        return 'chatbot-'.session()->getId();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -113,7 +127,7 @@ class Chatbot extends Component
 
     public function toggleChat()
     {
-        $this->isOpen = !$this->isOpen;
+        $this->isOpen = ! $this->isOpen;
         session(['gegares_chat_open' => $this->isOpen]);
 
         if ($this->isOpen) {
@@ -124,7 +138,7 @@ class Chatbot extends Component
 
     public function checkRecentPaidOrders()
     {
-        if (!$this->isOpen || !Auth::check()) {
+        if (! $this->isOpen || ! Auth::check()) {
             return;
         }
 
@@ -169,13 +183,13 @@ class Chatbot extends Component
                         'label' => 'Lihat Riwayat Pesanan',
                         'url' => route('orders.index'),
                         'style' => 'secondary',
-                    ]
+                    ],
                 ],
                 'suggestions' => [
                     'Lacak pengiriman',
                     'Jam operasional & lokasi toko',
-                    'Hubungi CS via WhatsApp'
-                ]
+                    'Hubungi CS via WhatsApp',
+                ],
             ];
         }
 
@@ -188,7 +202,7 @@ class Chatbot extends Component
 
     public function checkRedirectedOrder()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return;
         }
 
@@ -201,22 +215,22 @@ class Chatbot extends Component
             $order = Order::find($routeOrder);
         }
 
-        if (!$order || (int) $order->user_id !== (int) Auth::id()) {
+        if (! $order || (int) $order->user_id !== (int) Auth::id()) {
             return;
         }
 
         // Only announce for chatbot orders, unless chatbot_open query param is explicitly 1
         $isChatbotOrder = str_contains($order->notes ?? '', 'Dipesan otomatis via AI Chatbot');
-        if (!$isChatbotOrder && request()->query('chatbot_open') !== '1') {
+        if (! $isChatbotOrder && request()->query('chatbot_open') !== '1') {
             return;
         }
 
         if ($order->payment_status === 'paid') {
-            if (!$isChatbotOrder) {
+            if (! $isChatbotOrder) {
                 return;
             }
             $acknowledged = session('gegares_acknowledged_paid_orders', []);
-            if (!in_array($order->id, $acknowledged)) {
+            if (! in_array($order->id, $acknowledged)) {
                 $acknowledged[] = $order->id;
                 session(['gegares_acknowledged_paid_orders' => $acknowledged]);
 
@@ -236,20 +250,20 @@ class Chatbot extends Component
                             'label' => 'Lihat Riwayat Pesanan',
                             'url' => route('orders.index'),
                             'style' => 'secondary',
-                        ]
+                        ],
                     ],
                     'suggestions' => [
                         'Lacak pengiriman',
                         'Jam operasional & lokasi toko',
-                        'Hubungi CS via WhatsApp'
-                    ]
+                        'Hubungi CS via WhatsApp',
+                    ],
                 ];
                 $this->persist();
                 $this->dispatch('bot-replied');
             }
         } else {
             $acknowledgedUnpaid = session('gegares_acknowledged_unpaid_orders', []);
-            if (!in_array($order->id, $acknowledgedUnpaid)) {
+            if (! in_array($order->id, $acknowledgedUnpaid)) {
                 $acknowledgedUnpaid[] = $order->id;
                 session(['gegares_acknowledged_unpaid_orders' => $acknowledgedUnpaid]);
 
@@ -277,8 +291,8 @@ class Chatbot extends Component
                     'suggestions' => [
                         'Cek status pesanan saya',
                         'Cara bayar pesanan',
-                        'Hubungi CS via WhatsApp'
-                    ]
+                        'Hubungi CS via WhatsApp',
+                    ],
                 ];
                 $this->persist();
                 $this->dispatch('bot-replied');
@@ -288,42 +302,45 @@ class Chatbot extends Component
 
     public function checkoutDirectly()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return $this->redirectRoute('login');
         }
 
-        $cartService = app(\App\Services\CartService::class);
+        $cartService = app(CartService::class);
         $cartItems = $cartService->getItems();
 
         if (empty($cartItems)) {
-            $this->addBotMessage("Keranjang belanja Kakak masih kosong. Silakan tambahkan produk terlebih dahulu.");
+            $this->addBotMessage('Keranjang belanja Kakak masih kosong. Silakan tambahkan produk terlebih dahulu.');
+
             return;
         }
 
         $errors = $cartService->validateStock();
-        if (!empty($errors)) {
-            $this->addBotMessage("Waduh Kak, ada kendala stok: " . implode(' ', $errors));
+        if (! empty($errors)) {
+            $this->addBotMessage('Waduh Kak, ada kendala stok: '.implode(' ', $errors));
+
             return;
         }
 
         $user = Auth::user();
         $address = $user->addresses()->orderByDesc('is_primary')->first();
 
-        if (!$address) {
+        if (! $address) {
             $this->chatHistory[] = [
                 'role' => 'assistant',
-                'content' => "Waduh Kak, Kakak belum menambahkan alamat pengiriman. Silakan tambahkan alamat terlebih dahulu di menu Pengaturan Alamat agar kami dapat memproses pesanan Kakak.",
+                'content' => 'Waduh Kak, Kakak belum menambahkan alamat pengiriman. Silakan tambahkan alamat terlebih dahulu di menu Pengaturan Alamat agar kami dapat memproses pesanan Kakak.',
                 'time' => now()->format('H:i'),
                 'buttons' => [
                     [
                         'label' => 'Tambah Alamat Sekarang',
-                        'url' => route('settings.index') . '#addresses',
+                        'url' => route('settings.index').'#addresses',
                         'style' => 'primary',
-                    ]
-                ]
+                    ],
+                ],
             ];
             $this->persist();
             $this->dispatch('bot-replied');
+
             return;
         }
 
@@ -332,7 +349,7 @@ class Chatbot extends Component
         $hasRates = false;
 
         if ($address->area_id) {
-            $biteshipService = app(\App\Services\BiteshipService::class);
+            $biteshipService = app(BiteshipService::class);
             try {
                 $rates = $biteshipService->getShippingRates(
                     $address->area_id,
@@ -342,15 +359,15 @@ class Chatbot extends Component
                     $address->longitude ? (float) $address->longitude : null
                 );
 
-                if (!empty($rates)) {
+                if (! empty($rates)) {
                     $hasRates = true;
                     // Limit to top 4 options
                     $limitedRates = array_slice($rates, 0, 4);
                     foreach ($limitedRates as $rate) {
                         $courierName = strtoupper($rate['courier_code']);
                         $serviceName = $rate['courier_service_name'] ?? 'Regular';
-                        $priceFormatted = "Rp " . number_format($rate['price'], 0, ',', '.');
-                        $duration = isset($rate['duration']) ? " ({$rate['duration']})" : "";
+                        $priceFormatted = 'Rp '.number_format($rate['price'], 0, ',', '.');
+                        $duration = isset($rate['duration']) ? " ({$rate['duration']})" : '';
 
                         $buttons[] = [
                             'label' => "{$courierName} {$serviceName} - {$priceFormatted}{$duration}",
@@ -360,12 +377,12 @@ class Chatbot extends Component
                     }
                 }
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Chatbot direct checkout shipping estimation failed: ' . $e->getMessage());
+                Log::error('Chatbot direct checkout shipping estimation failed: '.$e->getMessage());
             }
         }
 
         // Fallback option if Biteship fails or empty
-        if (!$hasRates) {
+        if (! $hasRates) {
             $buttons[] = [
                 'label' => 'JNE Reguler - Rp 9.000',
                 'action' => "placeDirectOrder('jne', 'reg', 9000)",
@@ -394,13 +411,15 @@ class Chatbot extends Component
 
     public function placeDirectOrder(string $courier, string $service, int $cost)
     {
-        if ($this->checkBanStatus()) return;
-        if (!Auth::check()) {
+        if ($this->checkBanStatus()) {
+            return;
+        }
+        if (! Auth::check()) {
             return $this->redirectRoute('login');
         }
 
         // Remove the courier selection message from history to keep it clean
-        if (!empty($this->chatHistory)) {
+        if (! empty($this->chatHistory)) {
             $lastIndex = count($this->chatHistory) - 1;
             if (isset($this->chatHistory[$lastIndex]['content'])
                 && str_contains($this->chatHistory[$lastIndex]['content'], 'Silakan pilih kurir pengiriman')) {
@@ -408,32 +427,35 @@ class Chatbot extends Component
             }
         }
 
-        $cartService = app(\App\Services\CartService::class);
+        $cartService = app(CartService::class);
         $cartItems = $cartService->getItems();
 
         if (empty($cartItems)) {
-            $this->addBotMessage("Keranjang belanja Kakak masih kosong. Silakan tambahkan produk terlebih dahulu.");
+            $this->addBotMessage('Keranjang belanja Kakak masih kosong. Silakan tambahkan produk terlebih dahulu.');
+
             return;
         }
 
         $errors = $cartService->validateStock();
-        if (!empty($errors)) {
-            $this->addBotMessage("Waduh Kak, ada kendala stok: " . implode(' ', $errors));
+        if (! empty($errors)) {
+            $this->addBotMessage('Waduh Kak, ada kendala stok: '.implode(' ', $errors));
+
             return;
         }
 
         $user = Auth::user();
         $address = $user->addresses()->orderByDesc('is_primary')->first();
 
-        if (!$address) {
-            $this->addBotMessage("Waduh Kak, Kakak belum menambahkan alamat pengiriman.");
+        if (! $address) {
+            $this->addBotMessage('Waduh Kak, Kakak belum menambahkan alamat pengiriman.');
+
             return;
         }
 
         // Delegate to the shared service so this chatbot flow and the web
         // checkout build orders identically (and atomically) — see OrderService.
         try {
-            ['order' => $order, 'paymentUrl' => $paymentUrl] = app(\App\Services\OrderService::class)
+            ['order' => $order, 'paymentUrl' => $paymentUrl] = app(OrderService::class)
                 ->createFromCart($user, [
                     'address_id' => $address->id,
                     'shipping_courier' => $courier,
@@ -441,20 +463,21 @@ class Chatbot extends Component
                     'shipping_cost' => $cost,
                     'notes' => 'Dipesan otomatis via AI Chatbot',
                 ]);
-        } catch (\App\Exceptions\PaymentGatewayException $e) {
-            $this->addBotMessage("Maaf Kak, terjadi kendala saat menghubungi payment gateway Pakasir. Silakan coba kembali beberapa saat lagi.");
+        } catch (PaymentGatewayException $e) {
+            $this->addBotMessage('Maaf Kak, terjadi kendala saat menghubungi payment gateway Pakasir. Silakan coba kembali beberapa saat lagi.');
+
             return;
         }
 
         // Dispatch events
         $this->dispatch('cart-updated');
         $this->dispatch('wishlist-updated');
-        $this->dispatch('toast', type: 'success', message: "Pesanan berhasil dibuat!");
+        $this->dispatch('toast', type: 'success', message: 'Pesanan berhasil dibuat!');
 
         // Append success message with payment link
         $this->chatHistory[] = [
             'role' => 'assistant',
-            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp " . number_format($cost, 0, ',', '.') . ") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
+            'content' => "Hore! Pesanan Kakak dengan nomor order **#{$order->order_number}** senilai **{$order->formatted_total}** (sudah termasuk ongkos kirim {$order->shipping_courier} {$order->shipping_service} senilai Rp ".number_format($cost, 0, ',', '.').") telah berhasil dibuat.\n\nSilakan klik tombol **Bayar Sekarang** di bawah ini untuk menyelesaikan pembayaran di Pakasir ya Kak!",
             'time' => now()->format('H:i'),
             'buttons' => [
                 [
@@ -466,12 +489,12 @@ class Chatbot extends Component
                     'label' => 'Lihat Detail Pesanan',
                     'url' => route('orders.show', $order->id),
                     'style' => 'secondary',
-                ]
+                ],
             ],
             'suggestions' => [
                 'Cek status pesanan saya',
-                'Jam operasional & lokasi toko'
-            ]
+                'Jam operasional & lokasi toko',
+            ],
         ];
 
         $this->persist();
@@ -497,8 +520,8 @@ class Chatbot extends Component
                     'Cek status pesanan saya',
                     'Jam operasional & lokasi toko',
                     'Cara pesan & metode bayar',
-                ]
-            ]
+                ],
+            ],
         ];
         $this->persist();
     }
@@ -528,21 +551,25 @@ class Chatbot extends Component
 
     public function updatedImage()
     {
-        if ($this->checkBanStatus()) return;
+        if ($this->checkBanStatus()) {
+            return;
+        }
         // 1. Honeypot check
-        if (!empty($this->honeyPot)) {
+        if (! empty($this->honeyPot)) {
             $this->logSecurityEvent('honeypot_trip', 'medium', 'Image Upload Attempt');
+
             return;
         }
 
         // 2. Rate limiting (15 per minute)
-        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($this->getRateLimitKey(), 15)) {
-            $this->logSecurityEvent('rate_limit', 'low', 'Image: ' . $this->image?->getClientOriginalName());
-            $this->addBotMessage("Waduh, pelan-pelan Kak. Gegares Assistant butuh waktu sebentar untuk memproses gambar Kakak.");
+        if (RateLimiter::tooManyAttempts($this->getRateLimitKey(), 15)) {
+            $this->logSecurityEvent('rate_limit', 'low', 'Image: '.$this->image?->getClientOriginalName());
+            $this->addBotMessage('Waduh, pelan-pelan Kak. Gegares Assistant butuh waktu sebentar untuk memproses gambar Kakak.');
             $this->image = null;
+
             return;
         }
-        \Illuminate\Support\Facades\RateLimiter::hit($this->getRateLimitKey(), 60);
+        RateLimiter::hit($this->getRateLimitKey(), 60);
 
         $this->validate([
             'image' => 'image|max:2048', // 2MB Max
@@ -576,11 +603,11 @@ class Chatbot extends Component
 
         if ($result === 'MODERATION_BLOCK') {
             $this->logSecurityEvent('moderation_block', 'high', 'Image analysis content blocked');
-            $this->addBotMessage("Maaf, gambar tersebut tidak dapat diproses karena melanggar kebijakan konten kami.");
+            $this->addBotMessage('Maaf, gambar tersebut tidak dapat diproses karena melanggar kebijakan konten kami.');
         } elseif ($result) {
             $this->processAiResult($result, 'image_analysis');
         } else {
-            $this->addBotMessage("Maaf, saya tidak bisa mengenali gambar tersebut. Coba foto yang lebih jelas ya!");
+            $this->addBotMessage('Maaf, saya tidak bisa mengenali gambar tersebut. Coba foto yang lebih jelas ya!');
         }
 
         $this->isTyping = false;
@@ -599,36 +626,43 @@ class Chatbot extends Component
 
     public function sendMessage()
     {
-        if ($this->checkBanStatus()) return;
+        if ($this->checkBanStatus()) {
+            return;
+        }
         // 1. Honeypot check
-        if (!empty($this->honeyPot)) {
-            $this->logSecurityEvent('honeypot_trip', 'medium', 'Text: ' . $this->message);
+        if (! empty($this->honeyPot)) {
+            $this->logSecurityEvent('honeypot_trip', 'medium', 'Text: '.$this->message);
+
             return;
         }
 
         $userMsg = trim($this->message);
-        if ($userMsg === '') return;
+        if ($userMsg === '') {
+            return;
+        }
 
         // 2. Input Length Validation
         if (mb_strlen($userMsg) > 500) {
-            $this->logSecurityEvent('input_overflow', 'low', substr($userMsg, 0, 100) . '...');
-            $this->addBotMessage("Maaf Kak, pesannya terlalu panjang. Maksimal 500 karakter saja ya agar Gegares bisa memprosesnya dengan baik.");
+            $this->logSecurityEvent('input_overflow', 'low', substr($userMsg, 0, 100).'...');
+            $this->addBotMessage('Maaf Kak, pesannya terlalu panjang. Maksimal 500 karakter saja ya agar Gegares bisa memprosesnya dengan baik.');
+
             return;
         }
 
         // 3. Rate limiting (15 per minute)
-        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($this->getRateLimitKey(), 15)) {
+        if (RateLimiter::tooManyAttempts($this->getRateLimitKey(), 15)) {
             $this->logSecurityEvent('rate_limit', 'low', $userMsg);
-            $this->addBotMessage("Waduh, pelan-pelan Kak. Gegares Assistant butuh napas sebentar untuk menjawab semua pesan Kakak.");
+            $this->addBotMessage('Waduh, pelan-pelan Kak. Gegares Assistant butuh napas sebentar untuk menjawab semua pesan Kakak.');
+
             return;
         }
-        \Illuminate\Support\Facades\RateLimiter::hit($this->getRateLimitKey(), 60);
+        RateLimiter::hit($this->getRateLimitKey(), 60);
 
         $this->message = '';
 
         // Sanitize & Mask PII before storing
-        $cleanMsg = \App\Services\SecurityService::sanitizeMarkdown($userMsg);
-        $maskedMsg = \App\Services\SecurityService::maskPII($cleanMsg);
+        $cleanMsg = SecurityService::sanitizeMarkdown($userMsg);
+        $maskedMsg = SecurityService::maskPII($cleanMsg);
 
         $this->chatHistory[] = [
             'role' => 'user',
@@ -670,11 +704,11 @@ class Chatbot extends Component
 
         if ($response === 'MODERATION_BLOCK') {
             $this->logSecurityEvent('moderation_block', 'high', $userMsg);
-            $this->addBotMessage("Maaf, permintaan Anda tidak dapat diproses karena alasan keamanan konten.");
+            $this->addBotMessage('Maaf, permintaan Anda tidak dapat diproses karena alasan keamanan konten.');
         } elseif ($response) {
             $this->processAiResult($response, 'text_chat');
         } else {
-            $this->addBotMessage("Maaf, saya tidak bisa memproses permintaan Anda saat ini.");
+            $this->addBotMessage('Maaf, saya tidak bisa memproses permintaan Anda saat ini.');
         }
 
         $this->isTyping = false;
@@ -693,7 +727,7 @@ class Chatbot extends Component
             'time' => now()->format('H:i'),
         ];
 
-        if (!empty($suggestions)) {
+        if (! empty($suggestions)) {
             $entry['suggestions'] = $suggestions;
         }
 
@@ -715,7 +749,7 @@ class Chatbot extends Component
         // ── 0.6. Fulfil buy intents. Adding to the cart dispatches UI events, so
         //         this side effect stays in the component (not the pure parser). ──
         $foundButtons = [];
-        if (!empty($buyRequests)) {
+        if (! empty($buyRequests)) {
             ['text' => $aiText, 'buttons' => $foundButtons] = $this->handleBuyRequests($buyRequests, $aiText);
         }
 
@@ -734,7 +768,7 @@ class Chatbot extends Component
         $foundOrders = $parser->matchOrders($aiText);
 
         // ── 3. Post-Process: Clean redundant text if cards are found ──
-        if (!empty($foundProducts) || !empty($foundOrders)) {
+        if (! empty($foundProducts) || ! empty($foundOrders)) {
             $aiText = $parser->cleanRedundantText($aiText, $foundProducts, $foundOrders);
         }
 
@@ -745,16 +779,16 @@ class Chatbot extends Component
             'time' => now()->format('H:i'),
         ];
 
-        if (!empty($foundProducts)) {
+        if (! empty($foundProducts)) {
             $entry['products'] = $foundProducts;
         }
-        if (!empty($foundOrders)) {
+        if (! empty($foundOrders)) {
             $entry['orders'] = $foundOrders;
         }
-        if (!empty($foundButtons)) {
+        if (! empty($foundButtons)) {
             $entry['buttons'] = $foundButtons;
         }
-        if (!empty($suggestions)) {
+        if (! empty($suggestions)) {
             $entry['suggestions'] = $suggestions;
         }
 
@@ -768,15 +802,15 @@ class Chatbot extends Component
      * build the confirmation copy + checkout buttons. Kept in the component
      * because it dispatches cart/toast UI events.
      *
-     * @param array<int, array{name: string, qty: int}> $buyRequests
+     * @param  array<int, array{name: string, qty: int}>  $buyRequests
      * @return array{text: string, buttons: array}
      */
     protected function handleBuyRequests(array $buyRequests, string $aiText): array
     {
         $foundButtons = [];
 
-        if (!Auth::check()) {
-            $aiText = "Maaf Kak, untuk memproses pemesanan, silakan login ke akun Kakak terlebih dahulu agar kami dapat menyiapkan keranjang belanja Anda.";
+        if (! Auth::check()) {
+            $aiText = 'Maaf Kak, untuk memproses pemesanan, silakan login ke akun Kakak terlebih dahulu agar kami dapat menyiapkan keranjang belanja Anda.';
             $foundButtons[] = [
                 'label' => 'Login Sekarang',
                 'url' => route('login'),
@@ -786,19 +820,21 @@ class Chatbot extends Component
             return ['text' => $aiText, 'buttons' => $foundButtons];
         }
 
-        $cartService = app(\App\Services\CartService::class);
+        $cartService = app(CartService::class);
         $added = [];      // ['name' => ..., 'qty' => ...]
         $failed = [];     // human-readable failure reasons
 
         foreach ($buyRequests as $req) {
             $product = Product::where('name', $req['name'])->first();
 
-            if (!$product) {
+            if (! $product) {
                 $failed[] = "**{$req['name']}** tidak ditemukan di katalog";
+
                 continue;
             }
-            if ($product->stock <= 0) {
+            if ($product->isOutOfStock()) {
                 $failed[] = "**{$product->name}** sedang habis";
+
                 continue;
             }
 
@@ -806,11 +842,11 @@ class Chatbot extends Component
             if ($result['success'] ?? false) {
                 $added[] = ['name' => $product->name, 'qty' => $req['qty']];
             } else {
-                $failed[] = "**{$product->name}** (" . ($result['message'] ?? 'stok tidak mencukupi') . ")";
+                $failed[] = "**{$product->name}** (".($result['message'] ?? 'stok tidak mencukupi').')';
             }
         }
 
-        if (!empty($added)) {
+        if (! empty($added)) {
             // Refresh UI state once after all items are added.
             $this->dispatch('cart-updated');
             $this->dispatch('wishlist-updated');
@@ -821,12 +857,12 @@ class Chatbot extends Component
                 $one = $added[0];
                 $aiText = "Saya sudah berhasil memasukkan **{$one['qty']} porsi {$one['name']}** ke keranjang belanja Kakak. Silakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
             } else {
-                $lines = array_map(fn($a) => "• {$a['qty']} porsi {$a['name']}", $added);
-                $aiText = "Siap Kak! Saya sudah memasukkan produk berikut ke keranjang belanja Kakak:\n" . implode("\n", $lines) . "\n\nSilakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
+                $lines = array_map(fn ($a) => "• {$a['qty']} porsi {$a['name']}", $added);
+                $aiText = "Siap Kak! Saya sudah memasukkan produk berikut ke keranjang belanja Kakak:\n".implode("\n", $lines)."\n\nSilakan klik tombol di bawah ini untuk memproses pembayaran langsung dari chatbot!";
             }
 
-            if (!empty($failed)) {
-                $aiText .= "\n\nNamun ada yang tidak bisa ditambahkan: " . implode(', ', $failed) . ".";
+            if (! empty($failed)) {
+                $aiText .= "\n\nNamun ada yang tidak bisa ditambahkan: ".implode(', ', $failed).'.';
             }
 
             $foundButtons[] = [
@@ -841,7 +877,7 @@ class Chatbot extends Component
             ];
         } else {
             // Nothing could be added.
-            $aiText = "Maaf Kak, pesanan belum bisa diproses: " . implode(', ', $failed) . ".";
+            $aiText = 'Maaf Kak, pesanan belum bisa diproses: '.implode(', ', $failed).'.';
         }
 
         return ['text' => $aiText, 'buttons' => $foundButtons];
@@ -853,7 +889,7 @@ class Chatbot extends Component
 
     public function addToCart(int $productId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return $this->redirectRoute('login');
         }
 
@@ -862,11 +898,11 @@ class Chatbot extends Component
 
     public function toggleWishlist(int $productId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return $this->redirectRoute('login');
         }
 
-        $wishlist = \App\Models\Wishlist::where('user_id', Auth::id())
+        $wishlist = Wishlist::where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->first();
 
@@ -879,7 +915,7 @@ class Chatbot extends Component
             $this->dispatch('toast', type: 'info', message: "{$productName} dihapus dari wishlist");
             $inWishlist = false;
         } else {
-            \App\Models\Wishlist::create([
+            Wishlist::create([
                 'user_id' => Auth::id(),
                 'product_id' => $productId,
             ]);
@@ -888,9 +924,9 @@ class Chatbot extends Component
         }
 
         // Sync local chat history state for this product
-        foreach($this->chatHistory as &$chat) {
+        foreach ($this->chatHistory as &$chat) {
             if (isset($chat['products'])) {
-                foreach($chat['products'] as &$p) {
+                foreach ($chat['products'] as &$p) {
                     if ($p['id'] == $productId) {
                         $p['inWishlist'] = $inWishlist;
                     }
