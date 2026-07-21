@@ -616,19 +616,21 @@
                 {{-- Order Items --}}
                 <div class="space-y-3">
                     <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Detail Produk</h4>
-                    <div class="rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transition-all duration-300">
+                    {{-- Scrolls inside its own box on narrow screens instead of
+                         clipping the Total column. --}}
+                    <div class="rounded-2xl border border-slate-100 dark:border-slate-800 overflow-x-auto transition-all duration-300">
                         <table class="w-full text-sm">
                             <thead class="bg-slate-50 dark:bg-slate-800/50">
                                 <tr>
-                                    <th class="px-4 py-2 text-left font-bold text-slate-600 dark:text-slate-400 text-xs transition-colors">Produk</th>
-                                    <th class="px-4 py-2 text-center font-bold text-slate-600 dark:text-slate-400 text-xs w-20 transition-colors">Qty</th>
-                                    <th class="px-4 py-2 text-right font-bold text-slate-600 dark:text-slate-400 text-xs w-32 transition-colors">Total</th>
+                                    <th class="px-3 sm:px-4 py-2 text-left font-bold text-slate-600 dark:text-slate-400 text-xs transition-colors">Produk</th>
+                                    <th class="px-3 sm:px-4 py-2 text-center font-bold text-slate-600 dark:text-slate-400 text-xs w-16 whitespace-nowrap transition-colors">Qty</th>
+                                    <th class="px-3 sm:px-4 py-2 text-right font-bold text-slate-600 dark:text-slate-400 text-xs whitespace-nowrap transition-colors">Total</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
                                 <template x-for="item in selectedOrder?.items" :key="item.id">
                                     <tr>
-                                        <td class="px-4 py-3 min-w-[200px]">
+                                        <td class="px-3 sm:px-4 py-3 min-w-[170px]">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-100 bg-slate-50">
                                                     <img :src="item.product?.image ? '/storage/' + item.product.image : 'https://placehold.co/100x100?text=' + encodeURIComponent(item.product_name)" 
@@ -641,8 +643,8 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-center font-medium text-slate-600 dark:text-slate-400 transition-colors" x-text="item.quantity"></td>
-                                        <td class="px-4 py-3 text-right font-bold text-slate-900 dark:text-slate-100 transition-colors" x-text="formatCurrency(item.subtotal)"></td>
+                                        <td class="px-3 sm:px-4 py-3 text-center font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap transition-colors" x-text="item.quantity"></td>
+                                        <td class="px-3 sm:px-4 py-3 text-right font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap transition-colors" x-text="formatCurrency(item.subtotal)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -670,7 +672,8 @@
             </div>
 
             {{-- Modal Footer --}}
-            <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 transition-colors flex items-center justify-between shrink-0">
+            {{-- Stacks on mobile so the status and the actions each get a full row. --}}
+            <div class="px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Status:</span>
@@ -685,7 +688,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     {{-- Courier booking is automatic once payment settles. These two
                          buttons are the admin escape hatches when it did not work:
                          re-book when the booking never landed, re-search when Biteship
@@ -693,7 +696,7 @@
                     <template x-if="selectedOrder?.status === 'processing' && !selectedOrder?.biteship_order_id">
                         <button type="button"
                                 @click="submitProcessShipping(selectedOrder.id)"
-                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-indigo-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 flex items-center gap-1.5 sm:gap-2">
+                                class="flex-1 sm:flex-none justify-center whitespace-nowrap px-3 py-2 sm:px-5 bg-indigo-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 flex items-center gap-1.5 sm:gap-2">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0 1 21.485 12 59.77 59.77 0 0 1 3.27 20.876L5.999 12zm0 0h7.5" /></svg>
                             Booking Ulang ke Biteship
                         </button>
@@ -702,7 +705,7 @@
                     <template x-if="selectedOrder?.status === 'processing' && trackingData?.status === 'courier_not_found'">
                         <button type="button"
                                 @click="submitProcessShipping(selectedOrder.id)"
-                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-emerald-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 flex items-center gap-1.5 sm:gap-2">
+                                class="flex-1 sm:flex-none justify-center whitespace-nowrap px-3 py-2 sm:px-5 bg-emerald-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 flex items-center gap-1.5 sm:gap-2">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
                             Cari Ulang Kurir
                         </button>
@@ -713,13 +716,13 @@
                     <template x-if="['processing', 'shipped'].includes(selectedOrder?.status)">
                         <button type="button"
                                 @click="submitCancelOrder(selectedOrder.id)"
-                                class="px-3 py-1.5 sm:px-5 sm:py-2 bg-red-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-red-700 transition-all shadow-sm shadow-red-200 flex items-center gap-1.5 sm:gap-2">
-                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                                class="flex-1 sm:flex-none justify-center whitespace-nowrap px-3 py-2 sm:px-5 bg-red-600 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-red-700 transition-all shadow-sm shadow-red-200 flex items-center gap-1.5 sm:gap-2">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                             Batalkan Pesanan
                         </button>
                     </template>
                     <button @click="showDetail = false"
-                            class="px-3 py-1.5 sm:px-5 sm:py-2 bg-slate-900 dark:bg-slate-800 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200">Tutup</button>
+                            class="flex-1 sm:flex-none whitespace-nowrap px-3 py-2 sm:px-5 bg-slate-900 dark:bg-slate-800 text-white text-[11px] sm:text-sm font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200">Tutup</button>
                 </div>
             </div>
         </div>
