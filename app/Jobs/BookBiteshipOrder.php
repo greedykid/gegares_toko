@@ -24,6 +24,15 @@ class BookBiteshipOrder implements ShouldQueue
 {
     use Queueable;
 
+    /** Retry a failed booking a couple of times — Biteship can be briefly down. */
+    public $tries = 3;
+
+    /** Seconds to wait before the 2nd and 3rd attempt. */
+    public function backoff(): array
+    {
+        return [30, 120];
+    }
+
     public function __construct(public int $orderId) {}
 
     public function handle(BiteshipService $biteship): void
@@ -71,9 +80,33 @@ class BookBiteshipOrder implements ShouldQueue
             } else {
                 $err = $result['error'] ?? 'Unknown error';
                 Log::warning("Biteship Auto-Process Failed for Order #{$order->order_number}: ".$err);
+
+                // Hand the job back to the queue so a transient Biteship outage
+                // gets another go (see $tries/backoff). release() is a no-op when
+                // handle() is invoked directly, so this never throws into the
+                // payment flow.
+                $this->release($this->retryDelay());
             }
         } catch (\Throwable $e) {
             Log::error("Biteship Auto-Process Error for Order #{$order->order_number}: ".$e->getMessage());
+
+            $this->release($this->retryDelay());
         }
+    }
+
+    /** Delay for the next attempt, mirroring backoff(). */
+    protected function retryDelay(): int
+    {
+        return $this->attempts() >= 2 ? 120 : 30;
+    }
+
+    /**
+     * All attempts exhausted: leave a clear trail. The order stays "processing"
+     * without a Biteship booking, which is exactly the state the admin's
+     * "Booking Ulang ke Biteship" button is there to resolve.
+     */
+    public function failed(?\Throwable $e = null): void
+    {
+        Log::error("Biteship Auto-Process: giving up on order #{$this->orderId} after {$this->tries} attempts. ".($e?->getMessage() ?? ''));
     }
 }
