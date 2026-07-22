@@ -121,9 +121,17 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $product->load(['category', 'images', 'variants', 'reviews' => function ($q) {
-            $q->where('is_approved', true)->with('user')->latest()->take(10);
-        }]);
+        $product->load(['category', 'images', 'variants']);
+
+        // Reviews are paginated (own page name + fragment) so older ones are
+        // reachable instead of capped at the latest ten. Only approved reviews
+        // are public.
+        $reviews = $product->reviews()
+            ->where('is_approved', true)
+            ->with('user')
+            ->latest()
+            ->paginate(5, ['*'], 'ulasan')
+            ->fragment('ulasan');
 
         $relatedProducts = Product::inCategoryActive()
             ->where('category_id', $product->category_id)
@@ -132,6 +140,6 @@ class ProductController extends Controller
             ->take(4)
             ->get();
 
-        return view('products.show', compact('product', 'relatedProducts'));
+        return view('products.show', compact('product', 'relatedProducts', 'reviews'));
     }
 }

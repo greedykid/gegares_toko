@@ -387,8 +387,8 @@
     </div>
 
     {{-- ═══ Customer Reviews ═══ --}}
-    <section class="mt-16 lg:mt-20 pt-10 border-t border-slate-100 dark:border-slate-800/50">
-        @if($product->reviews->count())
+    <section id="ulasan" class="mt-16 lg:mt-20 pt-10 border-t border-slate-100 dark:border-slate-800/50 scroll-mt-24">
+        @if($reviews->total())
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2.5">
                     Ulasan Pelanggan
@@ -396,7 +396,7 @@
                 </h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach($product->reviews as $review)
+                @foreach($reviews as $review)
                     <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 hover:border-primary-100 dark:hover:border-primary-900/30 transition-all duration-300">
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex items-center gap-3">
@@ -439,6 +439,12 @@
                     </div>
                 @endforeach
             </div>
+
+            @if($reviews->hasPages())
+                <div class="mt-8">
+                    {{ $reviews->links() }}
+                </div>
+            @endif
         @else
             <div class="py-16 flex flex-col items-center text-center">
                 <div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/40 flex items-center justify-center mb-5">
