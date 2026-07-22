@@ -64,6 +64,27 @@ class GoogleLoginTest extends TestCase
         $this->assertEquals('google-link-1', $existing->fresh()->google_id);
     }
 
+    public function test_an_admin_cannot_sign_in_through_the_public_google_button(): void
+    {
+        $admin = User::factory()->create([
+            'email' => 'admin@gegares.shop',
+            'role' => 'admin',
+            'phone' => '081200000000',
+            'google_id' => null,
+        ]);
+
+        $this->fakeGoogleUser('google-admin-1', 'admin@gegares.shop', 'Admin');
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHasErrors('google_error');
+        $this->assertGuest();
+
+        // The rejection must not have linked Google onto the admin account.
+        $this->assertNull($admin->fresh()->google_id);
+    }
+
     public function test_a_returning_google_user_with_a_phone_goes_home(): void
     {
         $user = User::factory()->create([
