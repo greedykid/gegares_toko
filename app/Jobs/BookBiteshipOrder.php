@@ -77,11 +77,23 @@ class BookBiteshipOrder implements ShouldQueue
         if (! CourierSchedule::isOpenNow($order->shipping_courier, $order->shipping_service)) {
             $opensAt = CourierSchedule::nextOpening($order->shipping_courier, $order->shipping_service);
 
+            // No overlap at all — say so and stop. Retrying hourly against a
+            // configuration that can never come good just burns the budget and
+            // then fails silently; an admin needs to fix the hours or book by
+            // hand, and cannot do either without being told.
+            if ($opensAt === null) {
+                Log::error("Biteship Auto-Process: Order #{$order->order_number} can never be collected — store hours and {$order->shipping_courier} pickup hours do not overlap.");
+
+                $this->noteImpossiblePickup($order);
+
+                return;
+            }
+
             Log::info("Biteship Auto-Process: Order #{$order->order_number} is outside {$order->shipping_courier} pickup hours. Booking deferred to {$opensAt}.");
 
             $this->noteDeferral($order, $opensAt);
 
-            $this->release($opensAt ?? now()->addHour());
+            $this->release($opensAt);
 
             return;
         }
@@ -136,6 +148,23 @@ class BookBiteshipOrder implements ShouldQueue
      * an admin opening it sees a plan rather than something broken. Written once:
      * the job re-dispatches itself and must not stack the same sentence nightly.
      */
+    /** The hours cannot produce a pickup; leave that on the order for the admin. */
+    protected function noteImpossiblePickup(Order $order): void
+    {
+        $marker = 'TIDAK BISA DIJEMPUT';
+
+        if (str_contains($order->admin_note ?? '', $marker)) {
+            return;
+        }
+
+        $note = $marker.': jam buka toko dan jam jemput '.strtoupper((string) $order->shipping_courier)
+            .' tidak beririsan. Perbaiki jam buka toko atau booking manual.';
+
+        $order->update([
+            'admin_note' => ($order->admin_note ? $order->admin_note.' | ' : '').$note,
+        ]);
+    }
+
     protected function noteDeferral(Order $order, ?\Illuminate\Support\Carbon $opensAt): void
     {
         $marker = 'MENUNGGU JAM KURIR';

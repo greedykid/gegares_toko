@@ -21,28 +21,30 @@ class StoreSchedule
 
     public const DEFAULT_CLOSES_AT = 17;
 
+    /** Memo for the request; store hours are one rarely-changing row. */
+    protected static ?array $cachedHours = null;
+
     public static function isOpenNow(?Carbon $at = null): bool
     {
         [$opens, $closes] = static::hours();
 
         $hour = (int) static::localTime($at)->format('H');
 
-        return $hour >= $opens && $hour < $closes;
-    }
-
-    /**
-     * When the shop opens on the given day, or null if it is shut all day.
-     * Returns the moment itself so callers can compare it against a courier's.
-     */
-    public static function openingOn(Carbon $day): ?Carbon
-    {
-        [$opens, $closes] = static::hours();
-
-        if ($opens >= $closes) {
-            return null; // Misconfigured, or closed. Better than a bad promise.
+        // Equal times mean round the clock, not "shut forever" — a shop can
+        // legitimately never close, and reading it the other way would silently
+        // stop every order.
+        if ($opens === $closes) {
+            return true;
         }
 
-        return static::localTime($day)->setTime($opens, 0);
+        // Hours that wrap past midnight (22:00–06:00) are normal for a kitchen
+        // that produces overnight, which is exactly what Gegares does. Treating
+        // them as a broken range left the shop closed forever.
+        if ($opens < $closes) {
+            return $hour >= $opens && $hour < $closes;
+        }
+
+        return $hour >= $opens || $hour < $closes;
     }
 
     /** The next moment the shop is open, or null if it is already. */
@@ -52,21 +54,34 @@ class StoreSchedule
             return null;
         }
 
-        [$opens, $closes] = static::hours();
+        [$opens] = static::hours();
         $now = static::localTime($at);
 
         $opening = $now->copy()->setTime($opens, 0);
 
-        // Past closing, so the next shift is tomorrow's.
-        if ($now->hour >= $closes) {
+        if ($opening->lessThanOrEqualTo($now)) {
             $opening->addDay();
         }
 
         return $opening;
     }
 
+    /** Drop the memo. Called whenever the settings row is saved. */
+    public static function forgetCachedHours(): void
+    {
+        static::$cachedHours = null;
+    }
+
     /** Opening hours as whole hours, falling back to the documented defaults. */
     protected static function hours(): array
+    {
+        // Without this the row was read on every call — and since the checkout
+        // page asks per shipping option, and nextOpening() asks repeatedly while
+        // it searches, one page cost 21 queries for a single row.
+        return static::$cachedHours ??= static::loadHours();
+    }
+
+    protected static function loadHours(): array
     {
         $setting = StoreSetting::first();
 

@@ -70,6 +70,72 @@ class StoreOpeningHoursTest extends TestCase
         $this->assertTrue(StoreSchedule::isOpenNow());
     }
 
+    // ── Hours that wrap past midnight, and hours that never close ────────────
+
+    public function test_an_overnight_kitchen_is_open_across_midnight(): void
+    {
+        // Gegares produces before dawn; 22:00–06:00 is a real setting, not a
+        // mistake. Read as a plain range it left the shop closed forever.
+        StoreSetting::first()->update(['opens_at' => '22:00', 'closes_at' => '06:00']);
+        StoreSchedule::forgetCachedHours();
+
+        $this->jakartaTime('23:30');
+        $this->assertTrue(StoreSchedule::isOpenNow(), 'Late evening is inside 22:00–06:00.');
+
+        $this->jakartaTime('03:00');
+        $this->assertTrue(StoreSchedule::isOpenNow(), 'Early morning is still the same shift.');
+
+        $this->jakartaTime('12:00');
+        $this->assertFalse(StoreSchedule::isOpenNow(), 'Midday is outside it.');
+        $this->assertEquals(
+            '2026-07-22 22:00',
+            StoreSchedule::nextOpening()->format('Y-m-d H:i')
+        );
+    }
+
+    public function test_equal_times_mean_the_shop_never_closes(): void
+    {
+        StoreSetting::first()->update(['opens_at' => '08:00', 'closes_at' => '08:00']);
+        StoreSchedule::forgetCachedHours();
+
+        foreach (['03:00', '12:00', '23:00'] as $time) {
+            $this->jakartaTime($time);
+            $this->assertTrue(StoreSchedule::isOpenNow(), "Should be open at {$time}.");
+        }
+    }
+
+    public function test_a_pickup_that_can_never_happen_is_reported_not_retried(): void
+    {
+        // Shop works 22:00–06:00, Grab collects 09:00–14:00. They never meet.
+        StoreSetting::first()->update(['opens_at' => '22:00', 'closes_at' => '06:00']);
+        StoreSchedule::forgetCachedHours();
+        $this->jakartaTime('23:00');
+
+        $this->assertNull(CourierSchedule::nextOpening('grab', 'same_day'));
+
+        $biteship = $this->createMock(BiteshipService::class);
+        $biteship->expects($this->never())->method('createOrder');
+
+        $order = $this->makeOrder('grab', 'same_day');
+        (new BookBiteshipOrder($order->id))->handle($biteship);
+
+        // Retrying hourly against hours that cannot come good would burn the
+        // budget and then fail quietly; the admin has to know to fix it.
+        $this->assertStringContainsString('TIDAK BISA DIJEMPUT', $order->fresh()->admin_note);
+    }
+
+    public function test_changing_hours_takes_effect_immediately(): void
+    {
+        $this->jakartaTime('21:00');
+        $this->assertFalse(StoreSchedule::isOpenNow());
+
+        // Saving must drop the memo, or the rest of the request keeps deciding
+        // pickups with the hours the admin just replaced.
+        StoreSetting::first()->update(['opens_at' => '06:00', 'closes_at' => '23:00']);
+
+        $this->assertTrue(StoreSchedule::isOpenNow(), 'The new hours should apply at once.');
+    }
+
     // ── A closed shop holds every courier, instant included ──────────────────
 
     public function test_instant_waits_for_the_shop_to_open(): void

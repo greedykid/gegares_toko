@@ -3,10 +3,21 @@
 namespace Tests;
 
 use App\Services\BiteshipService;
+use App\Support\StoreSchedule;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // StoreSchedule memoises trading hours in a static, which survives
+        // between tests in the same process. Left alone, one test's opening
+        // hours decide another's pickups.
+        StoreSchedule::forgetCachedHours();
+    }
+
     /**
      * Bind a BiteshipService that quotes one courier service.
      *

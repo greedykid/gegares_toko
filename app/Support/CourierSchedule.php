@@ -47,7 +47,17 @@ class CourierSchedule
 
     /**
      * The next moment a pickup is possible: the first time the shop and the
-     * courier are open together. Null when a pickup could happen right now.
+     * courier are open together.
+     *
+     * Null means either a pickup could happen right now, or — and callers must
+     * handle this — the two never overlap at all. Opening 22:00–06:00 while a
+     * courier only collects 09:00–14:00 has no answer, and pretending otherwise
+     * would queue a booking that can never run.
+     *
+     * Stepping hour by hour rather than reasoning about which constraint binds:
+     * either side can wrap past midnight, so the arithmetic has more cases than
+     * it has value. Both windows sit on whole hours and the memo makes each
+     * check free, so a week is 192 comparisons and no queries.
      */
     public static function nextOpening(?string $courier, ?string $service, ?Carbon $at = null): ?Carbon
     {
@@ -55,34 +65,13 @@ class CourierSchedule
             return null;
         }
 
-        $now = static::localTime($at);
-        $window = static::window($courier, $service);
+        $cursor = static::localTime($at)->startOfHour();
 
-        // Walk forward a day at a time rather than reasoning about which of the
-        // two constraints binds. The shop may open before the courier, or the
-        // courier's window may have closed while the shop is still staffed —
-        // and if the two never overlap, this stops instead of looping.
-        for ($day = 0; $day <= 7; $day++) {
-            $storeOpens = StoreSchedule::openingOn($now->copy()->addDays($day));
+        for ($hour = 0; $hour < 24 * 8; $hour++) {
+            $cursor->addHour();
 
-            if ($storeOpens === null) {
-                continue; // Shop closed all day.
-            }
-
-            $candidate = $storeOpens->copy();
-
-            // Not before the courier starts.
-            if ($window !== null && $candidate->hour < $window['opens_at']) {
-                $candidate->setTime($window['opens_at'], 0);
-            }
-
-            if ($candidate->lessThan($now)) {
-                $candidate = $now->copy();
-            }
-
-            if (static::isOpenNow($courier, $service, $candidate)
-                && $candidate->greaterThanOrEqualTo($now)) {
-                return $candidate;
+            if (static::isOpenNow($courier, $service, $cursor)) {
+                return $cursor->copy();
             }
         }
 
