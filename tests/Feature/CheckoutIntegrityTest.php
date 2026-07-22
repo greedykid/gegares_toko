@@ -80,21 +80,24 @@ class CheckoutIntegrityTest extends TestCase
         ];
     }
 
-    public function test_a_forged_shipping_cost_is_replaced_by_the_quoted_rate(): void
+    public function test_the_shipping_cost_comes_from_the_quote_not_the_request(): void
     {
         $user = $this->makeUser();
         $address = $this->makeAddress($user);
         $product = $this->makeProduct();
         $this->fakeShippingRate('jne', 'reg', 9000);
 
-        // The customer posts a free delivery.
+        // Nothing about the price is sent, and the order is still priced.
+        // (A request that *does* carry a shipping_cost is treated as "this is
+        // what the customer was shown" and refused when it disagrees with the
+        // quote — see ShippingQuoteIntegrityTest. Either way the number the
+        // client sends can never become the number it is charged.)
         $this->actingAs($user)
             ->withSession(['cart' => $this->cartFor($product)])
             ->post(route('checkout.store'), [
                 'address_id' => $address->id,
                 'shipping_courier' => 'jne',
                 'shipping_service' => 'reg',
-                'shipping_cost' => 0,
                 'payment_method' => 'pakasir',
             ]);
 

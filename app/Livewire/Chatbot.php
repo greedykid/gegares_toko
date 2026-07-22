@@ -382,26 +382,25 @@ class Chatbot extends Component
             }
         }
 
-        // Fallback option if Biteship fails or empty
-        if (! $hasRates) {
-            $buttons[] = [
-                'label' => 'JNE Reguler - Rp 9.000',
-                'action' => "placeDirectOrder('jne', 'reg', 9000)",
-                'style' => 'primary',
-            ];
-        }
-
-        // Add a secondary button to do full checkout
+        // There used to be a "JNE Reguler - Rp 9.000" button here for when
+        // Biteship returned nothing. It could never work: jne is not among the
+        // couriers we ask Biteship for, and the results are filtered to
+        // instant/same_day, so the server-side re-quote in OrderService could
+        // never match it. It appeared precisely when the customer was already
+        // stuck, and every click ended in "pilih ulang kurir" with nothing left
+        // to pick. Saying we cannot quote right now is more use than offering a
+        // choice that is guaranteed to fail.
         $buttons[] = [
             'label' => 'Atur Pengiriman di Halaman Checkout',
             'url' => route('checkout.index'),
-            'style' => 'secondary',
+            'style' => $hasRates ? 'secondary' : 'primary',
         ];
 
-        // Ask user to select courier
         $this->chatHistory[] = [
             'role' => 'assistant',
-            'content' => "Silakan pilih kurir pengiriman yang Kakak inginkan untuk alamat **{$address->recipient_name} ({$address->city})**:",
+            'content' => $hasRates
+                ? "Silakan pilih kurir pengiriman yang Kakak inginkan untuk alamat **{$address->recipient_name} ({$address->city})**:"
+                : "Maaf Kak, untuk sementara kami belum bisa menghitung ongkos kirim ke alamat **{$address->recipient_name} ({$address->city})**. Silakan coba lagi beberapa saat lagi, atau lanjutkan lewat halaman checkout ya Kak.",
             'time' => now()->format('H:i'),
             'buttons' => $buttons,
         ];
@@ -456,14 +455,17 @@ class Chatbot extends Component
         // Delegate to the shared service so this chatbot flow and the web
         // checkout build orders identically (and atomically) — see OrderService.
         try {
-            // $cost only labelled the button — this is a public Livewire method,
-            // so the price is re-quoted server-side inside OrderService.
+            // $cost never sets the price — this is a public Livewire method, so
+            // OrderService re-quotes it. It is passed as the figure the button
+            // showed, so an order is stopped rather than silently charged more
+            // if the rate moved between the buttons rendering and this click.
             ['order' => $order, 'paymentUrl' => $paymentUrl] = app(OrderService::class)
                 ->createFromCart($user, [
                     'address_id' => $address->id,
                     'shipping_courier' => $courier,
                     'shipping_service' => $service,
                     'source' => 'chatbot',
+                    'expected_shipping_cost' => $cost,
                 ]);
         } catch (CheckoutException $e) {
             $this->addBotMessage('Maaf Kak, pesanan belum bisa diproses: '.$e->getMessage());

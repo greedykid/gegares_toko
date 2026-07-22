@@ -100,28 +100,41 @@ class BiteshipService
 
             $cacheKey = 'biteship_rates_'.md5(json_encode($payload));
 
-            return Cache::remember($cacheKey, 300, function () use ($payload) {
-                Log::info('Biteship Rates Payload: '.json_encode($payload));
+            $cached = Cache::get($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
 
-                $response = Http::withToken($this->apiKey)
-                    ->timeout($this->timeout)
-                    ->post("{$this->baseUrl}/rates/couriers", $payload);
+            Log::info('Biteship Rates Payload: '.json_encode($payload));
 
-                if ($response->successful()) {
-                    $rates = $response->json('pricing', []);
+            $response = Http::withToken($this->apiKey)
+                ->timeout($this->timeout)
+                ->post("{$this->baseUrl}/rates/couriers", $payload);
 
-                    // Filter only Instant and Sameday
-                    return collect($rates)->filter(function ($rate) {
-                        $type = strtolower($rate['type'] ?? '');
-
-                        return in_array($type, ['instant', 'same_day', 'sameday']);
-                    })->values()->toArray();
-                }
-
+            if (! $response->successful()) {
+                // Deliberately NOT cached. This used to run inside
+                // Cache::remember(), which stored the empty result like any
+                // other — so one error response from Biteship kept checkout
+                // broken for this cart for five more minutes after Biteship had
+                // already recovered.
                 Log::warning('Biteship getShippingRates failed: '.$response->body());
 
                 return [];
-            });
+            }
+
+            // Filter only Instant and Sameday
+            $rates = collect($response->json('pricing', []))
+                ->filter(function ($rate) {
+                    $type = strtolower($rate['type'] ?? '');
+
+                    return in_array($type, ['instant', 'same_day', 'sameday']);
+                })->values()->toArray();
+
+            // An empty list from a call that succeeded is a real answer — nothing
+            // serves this address — so that one is worth remembering.
+            Cache::put($cacheKey, $rates, 300);
+
+            return $rates;
         } catch (\Exception $e) {
             Log::error('Biteship getShippingRates error: '.$e->getMessage());
 
