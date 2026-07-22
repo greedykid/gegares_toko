@@ -171,49 +171,9 @@ class WebhookController extends Controller
             return response()->json(['success' => true]);
         }
 
-        // Map Biteship status to local Gegares status
-        $newStatus = match ($status) {
-            'allocated', 'picking_up', 'pickingUp' => 'processing',
-            'picked_up', 'picked', 'dropping_off', 'droppingOff', 'out_for_delivery', 'on_the_way', 'in_transit', 'dispatched', 'return_in_transit', 'returnInTransit' => 'shipped',
-            'delivered' => 'completed',
-            'cancelled', 'canceled', 'returned' => 'cancelled',
-            default => $order->status
-        };
-
-        if ($newStatus === $order->status) {
-            return response()->json(['success' => true]);
-        }
-
-        // The courier's view of an order is not allowed to rewrite history: a
-        // delayed "in transit" notification arriving after delivery must not
-        // drag a completed order back to "shipped". Same state machine the admin
-        // panel obeys.
-        if (! $order->canTransitionTo($newStatus)) {
-            Log::warning("Biteship Webhook: refused status '{$status}' for Order #{$order->order_number} — cannot move from '{$order->status}' to '{$newStatus}'.");
-
-            return response()->json(['success' => true]);
-        }
-
-        if ($newStatus === 'cancelled') {
-            // Never a bare status write: a cancellation has to return the stock
-            // and the coupon slot and tell a paying customer a refund is coming,
-            // exactly as the admin's cancel button does. A parcel Biteship
-            // reports as 'returned' is physically back on the shelf, so that one
-            // restocks even though the order had already shipped.
-            $restock = in_array($status, ['returned', 'return_in_transit', 'returnInTransit'], true) ? true : null;
-
-            $this->orders->cancelAndRelease($order, [
-                'admin_note' => ($order->admin_note ? $order->admin_note.' | ' : '')
-                    ."Dibatalkan otomatis dari Biteship (status: {$status}).",
-            ], $restock);
-
-            Log::info("Order #{$order->order_number} cancelled via Biteship Webhook (status: {$status}).");
-
-            return response()->json(['success' => true]);
-        }
-
-        $order->update(['status' => $newStatus]);
-        Log::info("Order #{$order->order_number} status updated to {$newStatus} via Biteship Webhook.");
+        // Translating and applying the status is OrderService's job, shared with
+        // biteship:sync and the admin tracking modal — see applyCourierStatus().
+        $this->orders->applyCourierStatus($order, $status, 'Biteship Webhook');
 
         return response()->json(['success' => true]);
     }
