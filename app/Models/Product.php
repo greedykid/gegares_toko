@@ -91,6 +91,21 @@ class Product extends Model
         return $this->is_available === false || $this->stock <= 0;
     }
 
+    /**
+     * Whether the product is sold in variants (portions) the customer must pick
+     * before it can go in the cart. Prefers an eager-loaded relation or
+     * `withCount('variants')` so callers listing many products avoid a query per
+     * row; falls back to a count only when neither was loaded.
+     */
+    public function hasVariants(): bool
+    {
+        if ($this->relationLoaded('variants')) {
+            return $this->variants->isNotEmpty();
+        }
+
+        return (int) ($this->variants_count ?? $this->variants()->count()) > 0;
+    }
+
     public function isLowStock(): bool
     {
         return ! $this->isOutOfStock() && $this->stock < 5;

@@ -18,8 +18,10 @@ class WishlistIcon extends Component
     #[On('wishlist-updated')]
     public function updateCount(): void
     {
+        // whereHas('product') so a soft-deleted product does not inflate the
+        // badge past what the drawer actually shows.
         $this->count = auth()->check()
-            ? Wishlist::where('user_id', auth()->id())->count()
+            ? Wishlist::where('user_id', auth()->id())->whereHas('product')->count()
             : 0;
     }
 

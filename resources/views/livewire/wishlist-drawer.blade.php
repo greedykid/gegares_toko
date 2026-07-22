@@ -100,8 +100,16 @@
 
                             {{-- Actions Bar --}}
                             <div class="flex items-center justify-between px-3 py-2 border-t border-slate-50 dark:border-slate-800/40 bg-slate-50/50 dark:bg-slate-800/20">
-                                @if($product->stock > 0)
-                                    <button wire:click="addToCart({{ $product->id }}, {{ $item->id }})" 
+                                @if($product->hasVariants())
+                                    {{-- Needs a portion/variant chosen first — the wishlist doesn't
+                                         remember which, so hand off to the product page. --}}
+                                    <a href="{{ route('products.show', $product) }}" wire:navigate
+                                       class="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-lg hover:bg-primary-700 transition-all active:scale-95">
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/></svg>
+                                        Pilih Varian
+                                    </a>
+                                @elseif($product->stock > 0)
+                                    <button wire:click="addToCart({{ $product->id }}, {{ $item->id }})"
                                             class="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-lg hover:bg-primary-700 transition-all active:scale-95">
                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
                                         + Keranjang
