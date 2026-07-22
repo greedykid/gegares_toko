@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\ToggleWishlist;
 use App\Livewire\WishlistDrawer;
 use App\Livewire\WishlistIcon;
 use App\Models\Category;
@@ -84,6 +85,30 @@ class WishlistTest extends TestCase
 
         // Nothing was added — the customer still has to pick a portion.
         $this->assertEmpty(Session::get('cart', []));
+    }
+
+    public function test_toggling_add_twice_never_throws_or_duplicates(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct();
+        $this->actingAs($user);
+
+        Livewire::test(ToggleWishlist::class, ['productId' => $product->id])
+            ->assertSet('isWishlisted', false)
+            ->call('toggle')
+            ->assertSet('isWishlisted', true);
+
+        // Simulate a stale second component (or a fast double-click) that still
+        // believes the product is not wishlisted and takes the "add" path again.
+        // firstOrCreate must swallow the race instead of hitting the unique index.
+        Livewire::test(ToggleWishlist::class, ['productId' => $product->id])
+            ->set('isWishlisted', false)
+            ->call('toggle')
+            ->assertSet('isWishlisted', true);
+
+        $this->assertEquals(1, Wishlist::where('user_id', $user->id)
+            ->where('product_id', $product->id)
+            ->count());
     }
 
     public function test_soft_deleted_products_are_excluded_from_the_badge_and_the_drawer(): void
