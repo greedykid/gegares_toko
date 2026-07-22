@@ -33,6 +33,15 @@ class OrderController extends Controller
 
         $orders = $query->paginate(10)->withQueryString();
 
+        // "Muat Lebih Banyak": hand back just the next batch of cards so the
+        // browser appends them instead of reloading the page (and its stats).
+        if ($request->boolean('partial')) {
+            return response()->json([
+                'html' => view('orders.partials.order-cards', compact('orders'))->render(),
+                'next_page_url' => $orders->nextPageUrl(),
+            ]);
+        }
+
         // Calculate stats
         $counts = $user->orders()
             ->select('status')
