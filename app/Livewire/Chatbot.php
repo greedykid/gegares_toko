@@ -18,6 +18,7 @@ use App\Services\SecurityService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -26,12 +27,19 @@ class Chatbot extends Component
 {
     use WithFileUploads;
 
+    /** Most recent messages kept in history; caps the session row + LW payload. */
+    private const MAX_HISTORY = 40;
+
     public bool $isOpen = false;
 
     public string $message = '';
 
     public string $honeyPot = ''; // Honeypot field for bot detection
 
+    // Locked: history is only ever written server-side and rendered read-only, so
+    // the browser must not be able to rewrite it — that content is fed back to the
+    // AI as memory and is HMAC-signed into the session.
+    #[Locked]
     public array $chatHistory = [];
 
     public $image;
@@ -103,7 +111,10 @@ class Chatbot extends Component
 
     protected function getRateLimitKey()
     {
-        return 'chatbot-'.session()->getId();
+        // Key on the authenticated user, falling back to IP for guests — NOT the
+        // session id, which a script could rotate to mint a fresh bucket every
+        // request and hammer the paid AI endpoint unthrottled.
+        return 'chatbot-'.(Auth::id() ? 'u'.Auth::id() : 'ip'.request()->ip());
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -536,6 +547,13 @@ class Chatbot extends Component
 
     protected function persist()
     {
+        // Cap retained history so a long conversation doesn't balloon the session
+        // row and the Livewire payload shipped to the browser each request. The
+        // AI only reads the last 12 turns anyway.
+        if (count($this->chatHistory) > self::MAX_HISTORY) {
+            $this->chatHistory = array_slice($this->chatHistory, -self::MAX_HISTORY);
+        }
+
         session(['gegares_chat_history' => $this->chatHistory]);
 
         // Generate integrity hash
@@ -714,7 +732,9 @@ class Chatbot extends Component
             $this->logSecurityEvent('moderation_block', 'high', $userMsg);
             $this->addBotMessage('Maaf, permintaan Anda tidak dapat diproses karena alasan keamanan konten.');
         } elseif ($response) {
-            $this->processAiResult($response, 'text_chat');
+            // Thread the actual user message so the buy-intent gate reads it
+            // directly rather than depending on it already being in history.
+            $this->processAiResult($response, 'text_chat', $userMsg);
         } else {
             $this->addBotMessage('Maaf, saya tidak bisa memproses permintaan Anda saat ini.');
         }
@@ -744,7 +764,7 @@ class Chatbot extends Component
         $this->dispatch('bot-replied');
     }
 
-    protected function processAiResult(string $aiText, string $context = 'general')
+    protected function processAiResult(string $aiText, string $context = 'general', ?string $userMsg = null)
     {
         $parser = $this->parser();
 
@@ -758,7 +778,17 @@ class Chatbot extends Component
         //         this side effect stays in the component (not the pure parser). ──
         $foundButtons = [];
         if (! empty($buyRequests)) {
-            ['text' => $aiText, 'buttons' => $foundButtons] = $this->handleBuyRequests($buyRequests, $aiText);
+            if ($this->userExpressedBuyIntent($userMsg)) {
+                ['text' => $aiText, 'buttons' => $foundButtons] = $this->handleBuyRequests($buyRequests, $aiText);
+            } else {
+                // The model asked to buy, but the customer's own message showed no
+                // buy intent (a stray tag, or a prompt-injection attempt). Don't
+                // silently fill the cart — surface the products as cards so adding
+                // stays an explicit choice.
+                foreach ($buyRequests as $req) {
+                    $aiText .= ' [['.$req['name'].']]';
+                }
+            }
         }
 
         // ── Generate contextual fallback suggestions if AI didn't provide any ──
@@ -806,6 +836,36 @@ class Chatbot extends Component
     }
 
     /**
+     * Whether the customer's most recent message actually expressed intent to
+     * buy. Gates the auto-add so a stray ---BUY--- tag (an over-eager model, or a
+     * prompt-injection attempt) cannot fill the cart on its own.
+     */
+    protected function userExpressedBuyIntent(?string $userMsg = null): bool
+    {
+        // Prefer the message just sent; fall back to the latest user turn in
+        // history (e.g. the image-analysis flow passes nothing).
+        $text = $userMsg;
+        if ($text === null || $text === '') {
+            for ($i = count($this->chatHistory) - 1; $i >= 0; $i--) {
+                if (($this->chatHistory[$i]['role'] ?? null) === 'user') {
+                    $text = $this->chatHistory[$i]['content'] ?? '';
+                    break;
+                }
+            }
+        }
+
+        $text = mb_strtolower((string) $text);
+
+        foreach (['beli', 'pesan', 'pesen', 'order', 'checkout', 'keranjang', 'bungkus', 'tambah', 'ambil', 'mau beli', 'mau pesan', 'mau order'] as $kw) {
+            if (str_contains($text, $kw)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Add the products the AI asked to buy (via ---BUY--- tags) to the cart and
      * build the confirmation copy + checkout buttons. Kept in the component
      * because it dispatches cart/toast UI events.
@@ -829,8 +889,9 @@ class Chatbot extends Component
         }
 
         $cartService = app(CartService::class);
-        $added = [];      // ['name' => ..., 'qty' => ...]
-        $failed = [];     // human-readable failure reasons
+        $added = [];        // ['name' => ..., 'qty' => ...]
+        $failed = [];       // human-readable failure reasons
+        $needVariant = [];  // products the customer must pick a variant for
 
         foreach ($buyRequests as $req) {
             $product = Product::where('name', $req['name'])->first();
@@ -842,6 +903,15 @@ class Chatbot extends Component
             }
             if ($product->isOutOfStock()) {
                 $failed[] = "**{$product->name}** sedang habis";
+
+                continue;
+            }
+            if ($product->hasVariants()) {
+                // The buy tag only carries a product name, not which portion —
+                // adding blindly would charge the base price or be refused when
+                // the stock lives on a variant. Send them to the product page.
+                $needVariant[] = $product;
+                $failed[] = "**{$product->name}** punya beberapa varian — silakan pilih dulu di halaman produk";
 
                 continue;
             }
@@ -886,6 +956,17 @@ class Chatbot extends Component
         } else {
             // Nothing could be added.
             $aiText = 'Maaf Kak, pesanan belum bisa diproses: '.implode(', ', $failed).'.';
+        }
+
+        // Give each variant product a direct button to its page so the customer
+        // can pick a portion. A button (not a [[card]] tag) keeps the explanatory
+        // line from being stripped by the redundant-text cleanup.
+        foreach ($needVariant as $vp) {
+            $foundButtons[] = [
+                'label' => 'Pilih Varian: '.$vp->name,
+                'url' => route('products.show', $vp),
+                'style' => 'secondary',
+            ];
         }
 
         return ['text' => $aiText, 'buttons' => $foundButtons];
