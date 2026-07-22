@@ -55,17 +55,10 @@ class NotificationDropdown extends Component
 
                 switch ($order->status) {
                     case 'pending':
-                    case 'awaiting_payment':
                         $icon = 'amber';
                         $title = 'Menunggu Pembayaran';
                         $description = "Pesanan #{$order->order_number} menanti pembayaran Anda. Silakan selesaikan transaksi.";
                         $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />';
-                        break;
-                    case 'paid':
-                        $icon = 'emerald';
-                        $title = 'Pembayaran Diterima';
-                        $description = "Pembayaran untuk pesanan #{$order->order_number} berhasil diverifikasi. Pesanan akan segera diproses.";
-                        $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />';
                         break;
                     case 'processing':
                         $icon = 'primary';

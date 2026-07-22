@@ -103,11 +103,15 @@ class PakasirPaymentTest extends TestCase
         $expectedOrderId = 'GGR-'.date('Ymd').'-'.strtolower(substr($order->order_number, -6));
         $this->assertStringContainsString('order_id='.$expectedOrderId, $order->pakasir_link);
 
+        // Stock is reserved the moment the order is written, so the next
+        // customer cannot check out against units this order already holds.
+        $this->assertEquals(48, $product->fresh()->stock);
+
         // Clear cart session verification
         $this->assertEmpty(Session::get('cart'));
     }
 
-    public function test_webhook_successfully_updates_payment_status_and_decrements_stock(): void
+    public function test_webhook_settles_payment_without_touching_stock(): void
     {
         $user = User::factory()->create([
             'phone' => '081234567890',
@@ -197,8 +201,10 @@ class PakasirPaymentTest extends TestCase
         $this->assertEquals('qris', $order->payment_method);
 
         $product->refresh();
-        // Initial stock was 50, purchased 2, should be 48
-        $this->assertEquals(48, $product->stock);
+        // Stock is claimed when the order is written, not when it is paid. This
+        // order was built by hand (no reservation), so settling it must leave
+        // the shelf exactly as it found it.
+        $this->assertEquals(50, $product->stock);
     }
 
     public function test_settling_payment_moves_order_to_processing_and_books_biteship(): void

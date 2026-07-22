@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
 use App\Notifications\OrderRefundedNotification;
-use App\Notifications\OrderRefundPendingNotification;
 use App\Services\BiteshipService;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -30,7 +30,7 @@ class OrderController extends Controller
         // 3. Statistics Calculation (Global Stats)
         $stats = Order::selectRaw("
             count(*) as total,
-            sum(case when status in ('paid', 'processing', 'shipped') then 1 else 0 end) as active,
+            sum(case when status in ('processing', 'shipped') then 1 else 0 end) as active,
             sum(case when status = 'completed' then 1 else 0 end) as completed,
             sum(case when status = 'completed' then total else 0 end) as revenue
         ")->first();
@@ -161,31 +161,18 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    /**
-     * Which status an order may move to next. Terminal states stay terminal, and
-     * an order cannot walk backwards (completed → pending, cancelled → shipped).
-     */
-    private const STATUS_TRANSITIONS = [
-        'pending' => ['awaiting_payment', 'paid', 'processing', 'cancelled'],
-        'awaiting_payment' => ['paid', 'processing', 'cancelled'],
-        'paid' => ['processing', 'shipped', 'cancelled'],
-        'processing' => ['shipped', 'completed', 'cancelled'],
-        'shipped' => ['completed', 'cancelled'],
-        'completed' => [],
-        'cancelled' => [],
-    ];
-
-    public function update(Request $request, Order $order, BiteshipService $biteship)
+    public function update(Request $request, Order $order, BiteshipService $biteship, OrderService $orders)
     {
         $data = $request->validate([
-            'status' => 'required|in:pending,awaiting_payment,paid,processing,shipped,completed,cancelled',
+            'status' => ['required', Rule::in(Order::STATUSES)],
             'tracking_number' => 'nullable|string',
         ]);
 
         $target = $data['status'];
 
-        if ($target !== $order->status
-            && ! in_array($target, self::STATUS_TRANSITIONS[$order->status] ?? [], true)) {
+        // The state machine lives on the model so the Biteship webhook obeys the
+        // same rules this dropdown does.
+        if (! $order->canTransitionTo($target)) {
             return back()->with(
                 'error',
                 "Status tidak dapat diubah dari \"{$order->status_label}\" ke status tersebut."
@@ -196,7 +183,7 @@ class OrderController extends Controller
         // button does — otherwise the courier still collects a cancelled order
         // and its stock is never returned.
         if ($target === 'cancelled') {
-            [$ok, $message] = $this->applyCancellation($order, $biteship, 'Dibatalkan oleh admin');
+            [$ok, $message] = $this->applyCancellation($order, $biteship, $orders, 'Dibatalkan oleh admin');
 
             if (! $ok) {
                 return back()->with('error', $message);
@@ -216,8 +203,8 @@ class OrderController extends Controller
 
     public function processShipping(Order $order, BiteshipService $biteship)
     {
-        if (! in_array($order->status, ['paid', 'processing'])) {
-            return back()->with('error', 'Hanya pesanan yang sudah dibayar atau sedang diproses yang dapat dibooking ke Biteship.');
+        if ($order->status !== 'processing') {
+            return back()->with('error', 'Hanya pesanan yang sudah dibayar dan sedang diproses yang dapat dibooking ke Biteship.');
         }
 
         $result = $biteship->createOrder($order);
@@ -236,23 +223,24 @@ class OrderController extends Controller
         return back()->with('error', $errorMessage);
     }
 
-    public function cancelShipping(Request $request, Order $order, BiteshipService $biteship)
+    public function cancelShipping(Request $request, Order $order, BiteshipService $biteship, OrderService $orders)
     {
         $reason = trim((string) $request->input('cancellation_reason')) ?: 'Dibatalkan oleh admin';
 
-        [$ok, $message] = $this->applyCancellation($order, $biteship, $reason);
+        [$ok, $message] = $this->applyCancellation($order, $biteship, $orders, $reason);
 
         return back()->with($ok ? 'success' : 'error', $message);
     }
 
     /**
-     * The one way an order gets cancelled, whichever button the admin pressed:
-     * cancel the shipment at Biteship first, return stock only if the goods have
-     * not left yet, and flip the status atomically.
+     * The one way an order gets cancelled from the admin panel, whichever button
+     * was pressed: cancel the shipment at Biteship first, then let
+     * OrderService::cancelAndRelease return the stock and the coupon slot and
+     * notify the customer if a refund is owed.
      *
      * @return array{0: bool, 1: string} success flag and the message to show
      */
-    private function applyCancellation(Order $order, BiteshipService $biteship, string $reason): array
+    private function applyCancellation(Order $order, BiteshipService $biteship, OrderService $orders, string $reason): array
     {
         if ($order->status === 'cancelled') {
             return [false, 'Pesanan ini sudah dibatalkan.'];
@@ -272,33 +260,14 @@ class OrderController extends Controller
             }
         }
 
-        // Stock only ever leaves on payment, and a shipped order has physically
-        // gone — so it comes back exactly when the order was paid and is still
-        // being prepared. Captured before the status flips.
-        $shouldRestock = $order->payment_status === 'paid' && $order->status === 'processing';
+        // Captured before the flip: stock is reserved from the moment the order
+        // is created, so it comes back for anything that has not yet been handed
+        // to the courier.
+        $shouldRestock = $order->status !== 'shipped';
         $owesRefund = $order->payment_status === 'paid';
 
-        DB::transaction(function () use ($order, $shouldRestock) {
-            if ($shouldRestock) {
-                foreach ($order->items as $item) {
-                    if ($item->product_variant_id) {
-                        $item->variant()->increment('stock', $item->quantity);
-                    } else {
-                        $item->product()->increment('stock', $item->quantity);
-                    }
-                }
-            }
-
-            $order->update(['status' => 'cancelled']);
-        });
-
-        // Queued, non-blocking: a mail failure must never fail the cancellation.
-        if ($owesRefund && $order->user) {
-            try {
-                $order->user->notify(new OrderRefundPendingNotification($order->fresh()));
-            } catch (\Throwable $e) {
-                Log::error('OrderRefundPending notification failed: '.$e->getMessage());
-            }
+        if (! $orders->cancelAndRelease($order)) {
+            return [false, 'Pesanan ini sudah dibatalkan.'];
         }
 
         $message = 'Pesanan berhasil dibatalkan';
@@ -366,7 +335,9 @@ class OrderController extends Controller
                         'name' => $tracking['courier']['name'] ?? 'Kurir Biteship',
                         'phone' => $tracking['courier']['phone'] ?? '-',
                         'plate_number' => $tracking['courier']['plate_number'] ?? 'GGR-TRK',
-                        'photo' => $tracking['courier']['photo'] ?? 'https://i.pravatar.cc/150?u=biteship',
+                        // Null, not a stock portrait: a random face from an avatar
+                        // service would be presented as this courier's photo.
+                        'photo' => $tracking['courier']['photo'] ?? null,
                         'type' => $tracking['courier']['type'] ?? ($order->shipping_courier.' '.$order->shipping_service),
                     ],
                     'link' => $order->tracking_url,
@@ -375,58 +346,17 @@ class OrderController extends Controller
             }
         }
 
-        // Fallback Simulation for testing
-        if (in_array($order->status, ['processing', 'shipped', 'completed', 'cancelled'])) {
-            $status = 'allocated';
-            $label = 'Kurir Menuju Lokasi';
-            $history = [
-                ['status' => 'confirmed', 'note' => 'Pesanan dikonfirmasi', 'time' => $order->updated_at->subMinutes(30)->translatedFormat('d M, H:i')],
-            ];
-
-            if ($order->status === 'shipped') {
-                $status = 'picked_up';
-                $label = 'Pesanan Berhasil Dijemput';
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan', 'time' => $order->updated_at->subMinutes(20)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'picking_up', 'note' => 'Kurir sedang menuju lokasi Anda', 'time' => $order->updated_at->subMinutes(15)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'picked_up', 'note' => 'Pesanan berhasil dijemput oleh kurir', 'time' => $order->updated_at->subMinutes(10)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'on_the_way', 'note' => 'Paket sedang dikirim ke tujuan', 'time' => $order->updated_at->translatedFormat('d M, H:i')];
-            } elseif ($order->status === 'completed') {
-                $status = 'delivered';
-                $label = 'Pesanan Diterima';
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan', 'time' => $order->updated_at->subHours(1)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'picked_up', 'note' => 'Pesanan telah dijemput oleh kurir', 'time' => $order->updated_at->subMinutes(45)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'delivered', 'note' => 'Selesai: Pesanan telah diterima oleh pelanggan', 'time' => $order->updated_at->translatedFormat('d M, H:i')];
-            } elseif ($order->status === 'cancelled') {
-                $status = 'returned';
-                $label = 'Pesanan Telah Dikembalikan';
-                $history[] = ['status' => 'return_in_transit', 'note' => 'Paket sedang dalam perjalanan kembali ke penjual', 'time' => $order->updated_at->subMinutes(30)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'returned', 'note' => 'Selesai: Pesanan telah diterima kembali oleh penjual', 'time' => $order->updated_at->translatedFormat('d M, H:i')];
-            } else {
-                // processing
-                $history[] = ['status' => 'allocated', 'note' => 'Mencari kurir terdekat...', 'time' => now()->subMinutes(5)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan dan sedang menuju lokasi Anda', 'time' => now()->subMinutes(2)->translatedFormat('d M, H:i')];
-            }
-
-            // Reverse history for chronological order (latest first)
-            $history = array_reverse($history);
-
-            return response()->json([
-                'success' => true,
-                'status' => $status,
-                'status_label' => $label,
-                'courier' => [
-                    'name' => 'Budi Santoso',
-                    'phone' => '081234567890',
-                    'plate_number' => 'B 3546 UIL',
-                    'photo' => 'https://i.pravatar.cc/150?u=budi',
-                    'type' => 'Gojek Instant',
-                ],
-                'link' => $order->tracking_url,
-                'history' => $history,
-            ]);
-        }
-
-        return response()->json(['success' => false, 'message' => 'Belum ada informasi pelacakan.']);
+        // Nothing is invented when Biteship has no data. The admin needs to see
+        // that a booking has not produced a waybill yet — a simulated courier
+        // here hid exactly the failures this panel exists to catch.
+        return response()->json([
+            'success' => false,
+            'status' => $order->status,
+            'status_label' => $order->status_label,
+            'message' => $order->biteship_order_id
+                ? 'Pesanan sudah dibooking ke Biteship, tetapi kurir belum mengirimkan data pelacakan.'
+                : 'Pesanan belum dibooking ke Biteship, jadi belum ada data pelacakan.',
+        ]);
     }
 
     private function mapBiteshipStatusToLabel($status)

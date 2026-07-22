@@ -162,7 +162,7 @@
                 <div x-data="{ 
                         open: false, 
                         selectedValue: '{{ request('status') }}', 
-                        selectedLabel: '{{ request('status') == 'pending' ? 'Menunggu' : (request('status') == 'paid' ? 'Dibayar' : (request('status') == 'processing' ? 'Diproses' : (request('status') == 'shipped' ? 'Dikirim' : (request('status') == 'completed' ? 'Selesai' : (request('status') == 'cancelled' ? 'Batal' : 'Semua'))))) }}'
+                        selectedLabel: '{{ request('status') == 'pending' ? 'Menunggu' : (request('status') == 'processing' ? 'Diproses' : (request('status') == 'shipped' ? 'Dikirim' : (request('status') == 'completed' ? 'Selesai' : (request('status') == 'cancelled' ? 'Batal' : 'Semua')))) }}'
                      }" 
                      class="relative w-full">
                     <input type="hidden" name="status" :value="selectedValue">
@@ -189,9 +189,6 @@
                         <button type="button" @click="selectedValue = 'pending'; selectedLabel = 'Menunggu'; open = false"
                                 class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                                 :class="selectedValue === 'pending' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Menunggu</button>
-                        <button type="button" @click="selectedValue = 'paid'; selectedLabel = 'Dibayar'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'paid' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Dibayar</button>
                         <button type="button" @click="selectedValue = 'processing'; selectedLabel = 'Diproses'; open = false"
                                 class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                                 :class="selectedValue === 'processing' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Diproses</button>
@@ -572,7 +569,8 @@
                             <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm relative overflow-hidden transition-all duration-300">
                                 <div class="flex items-center gap-4 relative z-10">
                                     <div class="w-12 h-12 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900 shrink-0 transition-colors">
-                                        <img :src="trackingData.courier.photo" class="w-full h-full object-cover">
+                                        {{-- Biteship does not always send a photo; the tile stays empty rather than showing a stand-in face. --}}
+                                        <img x-show="trackingData.courier.photo" :src="trackingData.courier.photo" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
@@ -696,9 +694,9 @@
                         <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-white dark:bg-slate-950 shadow-sm border border-slate-100 dark:border-slate-800 transition-all" 
                               x-text="selectedOrder?.status_label"
                               :class="{
-                                  'text-emerald-600 dark:text-emerald-400': selectedOrder?.status === 'completed' || selectedOrder?.status === 'paid',
+                                  'text-emerald-600 dark:text-emerald-400': selectedOrder?.status === 'completed',
                                   'text-amber-500 dark:text-amber-400': selectedOrder?.status === 'processing' || selectedOrder?.status === 'shipped',
-                                  'text-orange-500 dark:text-orange-400': selectedOrder?.status === 'pending' || selectedOrder?.status === 'awaiting_payment',
+                                  'text-orange-500 dark:text-orange-400': selectedOrder?.status === 'pending',
                                   'text-red-500 dark:text-red-400': selectedOrder?.status === 'cancelled'
                               }"></span>
                     </div>

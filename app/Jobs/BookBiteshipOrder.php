@@ -68,9 +68,10 @@ class BookBiteshipOrder implements ShouldQueue
                         'tracking_number' => $result['courier']['waybill_id'] ?? $order->tracking_number,
                     ];
 
-                    // Keep the order in "processing" while it awaits pickup, but
-                    // never move a more-advanced order (shipped/completed) back.
-                    if (in_array($order->status, ['paid', 'processing'], true)) {
+                    // The order is already "processing" by this point (payment set
+                    // it there); this only guards against a more-advanced order
+                    // being dragged back if the job runs late.
+                    if ($order->status === 'processing') {
                         $updates['status'] = 'processing';
                     }
 

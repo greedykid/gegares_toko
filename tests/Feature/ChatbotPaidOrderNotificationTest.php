@@ -40,7 +40,8 @@ class ChatbotPaidOrderNotificationTest extends TestCase
             'subtotal' => 20000.00,
             'shipping_cost' => 9000.00,
             'total' => 29000.00,
-            'status' => 'paid',
+            // A settled payment puts the order straight into "processing".
+            'status' => 'processing',
             'payment_status' => 'paid',
             'payment_method' => 'qris',
             'shipping_courier' => 'jne',

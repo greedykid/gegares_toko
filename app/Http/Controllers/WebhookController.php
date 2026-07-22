@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\BookBiteshipOrder;
 use App\Models\Order;
 use App\Services\BiteshipService;
+use App\Services\OrderService;
 use App\Services\PakasirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
+    public function __construct(protected OrderService $orders) {}
+
     // Midtrans integration removed. Use Pakasir webhook instead.
 
     public function pakasir(Request $request, PakasirService $pakasirService)
@@ -172,10 +175,40 @@ class WebhookController extends Controller
             default => $order->status
         };
 
-        if ($newStatus && $order->status !== $newStatus) {
-            $order->update(['status' => $newStatus]);
-            Log::info("Order #{$order->order_number} status updated to {$newStatus} via Biteship Webhook.");
+        if ($newStatus === $order->status) {
+            return response()->json(['success' => true]);
         }
+
+        // The courier's view of an order is not allowed to rewrite history: a
+        // delayed "in transit" notification arriving after delivery must not
+        // drag a completed order back to "shipped". Same state machine the admin
+        // panel obeys.
+        if (! $order->canTransitionTo($newStatus)) {
+            Log::warning("Biteship Webhook: refused status '{$status}' for Order #{$order->order_number} — cannot move from '{$order->status}' to '{$newStatus}'.");
+
+            return response()->json(['success' => true]);
+        }
+
+        if ($newStatus === 'cancelled') {
+            // Never a bare status write: a cancellation has to return the stock
+            // and the coupon slot and tell a paying customer a refund is coming,
+            // exactly as the admin's cancel button does. A parcel Biteship
+            // reports as 'returned' is physically back on the shelf, so that one
+            // restocks even though the order had already shipped.
+            $restock = in_array($status, ['returned', 'return_in_transit', 'returnInTransit'], true) ? true : null;
+
+            $this->orders->cancelAndRelease($order, [
+                'admin_note' => ($order->admin_note ? $order->admin_note.' | ' : '')
+                    ."Dibatalkan otomatis dari Biteship (status: {$status}).",
+            ], $restock);
+
+            Log::info("Order #{$order->order_number} cancelled via Biteship Webhook (status: {$status}).");
+
+            return response()->json(['success' => true]);
+        }
+
+        $order->update(['status' => $newStatus]);
+        Log::info("Order #{$order->order_number} status updated to {$newStatus} via Biteship Webhook.");
 
         return response()->json(['success' => true]);
     }

@@ -246,9 +246,12 @@ class PakasirService
     }
 
     /**
-     * Atomically mark an order as paid and deduct stock exactly once.
-     * Wrapped in a transaction with a row lock so concurrent webhook/sync
-     * calls cannot double-deduct stock or double-process the payment.
+     * Atomically mark an order as paid, exactly once. Wrapped in a transaction
+     * with a row lock so concurrent webhook and polling calls cannot both
+     * process the same payment (and send two "payment received" emails).
+     *
+     * Stock is not this method's business: it was reserved when the order was
+     * created. See the invariant note on OrderService.
      */
     protected function markOrderPaid(Order $order, string $paymentMethod, ?string $completedAt): void
     {
@@ -292,24 +295,11 @@ class PakasirService
                 return false;
             }
 
-            // Deduct stock first (atomic SQL decrement) while still inside the lock.
-            // The `stock >= quantity` guard means two orders racing for the last
-            // unit can never drive stock negative: whichever loses the race matches
-            // zero rows and is logged instead of silently overselling.
-            $shortfalls = [];
-
-            foreach ($locked->items as $item) {
-                $relation = $item->product_variant_id ? $item->variant() : $item->product();
-
-                $affected = $relation->where('stock', '>=', $item->quantity)
-                    ->decrement('stock', $item->quantity);
-
-                if ($affected === 0) {
-                    Log::warning("Stock oversell prevented for Order #{$locked->order_number}: '{$item->product_name}' requested {$item->quantity} but insufficient stock remains.");
-                    $shortfalls[] = $item->product_name.' x'.$item->quantity;
-                }
-            }
-
+            // Stock is NOT touched here. It was taken out of stock when the order
+            // was written (OrderService::reserveStock) and is handed back by
+            // OrderService::cancelAndRelease if the order dies. Deducting at
+            // payment time meant the shop could accept money for goods it had
+            // already promised to someone else.
             $updates = [
                 // Go straight to "processing": once payment is confirmed the order
                 // is being fulfilled, so the customer sees "Diproses" immediately.
@@ -321,16 +311,6 @@ class PakasirService
                 'payment_method' => $paymentMethod,
                 'paid_at' => $this->resolvePaidAt($completedAt),
             ];
-
-            // Flag the shortfall on the order itself, not just in the log: the
-            // customer has paid for goods the shop may not physically have, and
-            // the admin needs to see that when opening the order.
-            if ($shortfalls !== []) {
-                // Written to admin_note, never to `notes` — that column belongs to
-                // the customer, who could otherwise forge this same warning.
-                $warning = 'PERLU DICEK: stok tidak mencukupi saat pembayaran ('.implode(', ', $shortfalls).').';
-                $updates['admin_note'] = ($locked->admin_note ? $locked->admin_note.' | ' : '').$warning;
-            }
 
             $locked->update($updates);
 
