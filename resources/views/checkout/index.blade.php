@@ -226,16 +226,21 @@
 
     {{-- Closed-shop confirmation. Not a blocker: the order is still welcome, the
          customer just gets to know the parcel waits for opening before they pay. --}}
+    {{-- z-100 and centred on every screen, matching the other modals in the app.
+         At z-[60] and anchored to the bottom on mobile it sat under the chat
+         widget (z-50 but painted later) and clear of the sticky nav, which read
+         as a panel stuck to the bottom of the page rather than a dialog. --}}
     <div x-show="showClosedModal" x-cloak
-         class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 sm:p-6"
+         class="fixed inset-0 z-100 flex items-center justify-center p-4"
          x-transition.opacity role="dialog" aria-modal="true" aria-labelledby="closedModalTitle">
 
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showClosedModal = false"></div>
 
-        <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-7"
+        <div class="relative w-full max-w-md max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-7"
+             @click.stop
              x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100">
 
             <div class="flex items-start gap-4">
                 <div class="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
