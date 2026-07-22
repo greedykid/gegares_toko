@@ -63,7 +63,15 @@ class StoreSetting extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget('store_settings'));
-        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget('store_settings'));
+        // StoreSchedule memoises the trading hours for the request, so changing
+        // them here has to drop that too — otherwise the admin saves new hours
+        // and the same request keeps deciding pickups with the old ones.
+        $flush = function () {
+            \Illuminate\Support\Facades\Cache::forget('store_settings');
+            \App\Support\StoreSchedule::forgetCachedHours();
+        };
+
+        static::saved($flush);
+        static::deleted($flush);
     }
 }

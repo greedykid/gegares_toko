@@ -180,8 +180,11 @@ class ManageStoreContent extends Component
             'about_gallery_subtitle' => 'required|string',
             'contact_whatsapp' => 'required|string|max:20',
             'contact_hours' => 'required|string',
+            // No `after:opens_at`: hours may legitimately wrap past midnight
+            // (22:00–06:00 for an overnight kitchen), and equal times mean the
+            // shop never closes. StoreSchedule reads all three shapes.
             'opens_at' => 'required|date_format:H:i',
-            'closes_at' => 'required|date_format:H:i|after:opens_at',
+            'closes_at' => 'required|date_format:H:i',
             'contact_phone' => 'required|string|max:20',
             'contact_email' => 'required|email|max:255',
             'new_gallery_images.*' => 'nullable|image|max:2048', // 2MB Max
