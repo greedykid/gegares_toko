@@ -176,11 +176,19 @@
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Cari Lokasi / Patokan <span class="text-xs text-slate-400 dark:text-slate-600 font-normal">(Opsional)</span></label>
                                 <div class="relative">
-                                    <input type="text" 
-                                           wire:model.live.debounce.500ms="addressSearchQuery" 
-                                           class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all text-sm" 
-                                           placeholder="Cth: Monas, Grand Indonesia, atau nama gedung...">
-                                    
+                                    <input type="text"
+                                           wire:model.live.debounce.500ms="addressSearchQuery"
+                                           @disabled(empty($area_id))
+                                           @class([
+                                               'w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all text-sm',
+                                               'opacity-60 cursor-not-allowed' => empty($area_id),
+                                           ])
+                                           placeholder="{{ empty($area_id) ? 'Pilih area/kecamatan dulu di atas' : 'Cari jalan/gang/patokan di ' . $city }}">
+
+                                    @if(empty($area_id))
+                                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Hasil pencarian akan menyempit ke kecamatan yang Anda pilih.</p>
+                                    @endif
+
                                     <div wire:loading wire:target="addressSearchQuery" class="absolute right-3 top-3 text-slate-400">
                                         <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
