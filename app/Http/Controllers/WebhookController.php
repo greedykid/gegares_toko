@@ -16,8 +16,6 @@ class WebhookController extends Controller
 {
     public function __construct(protected OrderService $orders) {}
 
-    // Midtrans integration removed. Use Pakasir webhook instead.
-
     public function pakasir(Request $request, PakasirService $pakasirService)
     {
         // Log only the non-sensitive fields we actually act on, never the raw

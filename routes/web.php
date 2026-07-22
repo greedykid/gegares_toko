@@ -175,7 +175,6 @@ Route::get('/admin/login', fn () => $legacy('/admin'));
 Route::get('/admin/dashboard', fn () => $legacy('/admin/dasbor'));
 
 // ─── Webhook (paths fixed by Pakasir & Biteship dashboards — do not translate) ───
-Route::post('/webhook/midtrans', [WebhookController::class, 'midtrans'])->name('webhook.midtrans');
 Route::post('/webhook/pakasir', [WebhookController::class, 'pakasir'])->name('webhook.pakasir');
 Route::post('/webhook/biteship', [WebhookController::class, 'biteship'])->name('webhook.biteship');
 Route::get('/webhook/biteship', fn () => 'Biteship Webhook is active. Waiting for POST data from Biteship.');
