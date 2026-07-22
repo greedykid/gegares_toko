@@ -14,7 +14,15 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" @submit="loading = true">
+    {{-- When the shop is shut the parcel cannot be collected until it opens, so
+         the customer confirms that before paying rather than discovering it
+         afterwards. Inside opening hours this never fires. --}}
+    <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" x-ref="checkoutForm"
+          @submit="
+              if (storeOpen || closedAcknowledged) { loading = true; return; }
+              $event.preventDefault();
+              showClosedModal = true;
+          ">
         @csrf
         {{-- Hidden Fields --}}
         <input type="hidden" name="address_id" x-model="addressId">
@@ -215,6 +223,51 @@
             </div>
         </div>
     </form>
+
+    {{-- Closed-shop confirmation. Not a blocker: the order is still welcome, the
+         customer just gets to know the parcel waits for opening before they pay. --}}
+    <div x-show="showClosedModal" x-cloak
+         class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 sm:p-6"
+         x-transition.opacity role="dialog" aria-modal="true" aria-labelledby="closedModalTitle">
+
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showClosedModal = false"></div>
+
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-7"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+
+            <div class="flex items-start gap-4">
+                <div class="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <h3 id="closedModalTitle" class="text-base font-black text-slate-900 dark:text-slate-100">Toko Sedang Tutup</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
+                        Pesanan Kakak tetap kami terima dan langsung kami siapkan. Hanya saja kurir
+                        baru bisa menjemput setelah toko buka, yaitu
+                        <span class="font-bold text-slate-900 dark:text-slate-200" x-text="storeOpensAt"></span>.
+                    </p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                        Lanjutkan pembayaran sekarang?
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-col-reverse sm:flex-row gap-2.5 mt-6">
+                <button type="button" @click="showClosedModal = false"
+                        class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                    Nanti Saja
+                </button>
+                <button type="button" @click="confirmClosedOrder()"
+                        class="flex-1 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold shadow-lg shadow-primary-500/20 transition-all">
+                    Ya, Lanjutkan Bayar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -230,6 +283,20 @@ function registerCheckoutFlow() {
             shippingInfo: '',
             paymentMethod: 'pakasir',
             loading: false,
+
+            // Closed-shop confirmation. `storeOpen` is decided server-side so a
+            // page left open across closing time still asks before charging.
+            storeOpen: {{ $storeOpen ? 'true' : 'false' }},
+            storeOpensAt: @json($storeOpensAt?->translatedFormat('l, d M') . ($storeOpensAt ? ' pukul '.$storeOpensAt->format('H:i').' WIB' : '')),
+            showClosedModal: false,
+            closedAcknowledged: false,
+
+            confirmClosedOrder() {
+                this.closedAcknowledged = true;
+                this.showClosedModal = false;
+                this.loading = true;
+                this.$refs.checkoutForm.submit();
+            },
 
             init() {
                 this.addressId = this.$el.dataset.addressId;

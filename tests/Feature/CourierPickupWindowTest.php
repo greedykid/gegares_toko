@@ -108,17 +108,19 @@ class CourierPickupWindowTest extends TestCase
         $this->assertTrue(CourierSchedule::isOpenNow('gojek', 'same_day'));
     }
 
-    public function test_a_courier_without_a_window_is_always_bookable(): void
+    public function test_a_courier_without_a_window_is_bound_only_by_the_shop(): void
     {
-        $this->jakartaTime('23:00');
-
-        // No window configured, so nothing to wait for.
+        // 'instant', and any courier with no configured window, has no hours of
+        // its own — but a pickup still needs someone at the shop, so the shop's
+        // hours are the only constraint left. See StoreOpeningHoursTest.
+        $this->jakartaTime('10:00');
         $this->assertTrue(CourierSchedule::isOpenNow('paxel', 'same_day'));
-        $this->assertNull(CourierSchedule::nextOpening('paxel', 'same_day'));
-
-        // 'instant' is deliberately not treated as a windowed service — its real
-        // hours are unknown, and guessing them would be inventing an API rule.
         $this->assertTrue(CourierSchedule::isOpenNow('grab', 'instant'));
+        $this->assertNull(CourierSchedule::nextOpening('grab', 'instant'));
+
+        $this->jakartaTime('23:00');
+        $this->assertFalse(CourierSchedule::isOpenNow('grab', 'instant'), 'Nobody is at the shop to hand the parcel over.');
+        $this->assertNotNull(CourierSchedule::nextOpening('grab', 'instant'));
     }
 
     public function test_the_next_opening_is_today_before_nine_and_tomorrow_after_close(): void

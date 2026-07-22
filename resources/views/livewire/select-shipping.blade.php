@@ -91,22 +91,25 @@
                                             Estimasi: <span class="font-bold text-slate-500 dark:text-slate-400">{{ $rate['shipment_duration_range'] ?? '?' }} {{ $rate['shipment_duration_unit'] ?? 'jam' }}</span>
                                         </p>
 
-                                        {{-- Same-day couriers collect on demand, so one ordered
-                                             after hours is picked up when they reopen. Saying so
-                                             here, before the choice is made, beats letting the
-                                             customer discover it after paying. --}}
+                                        {{-- A parcel needs the shop staffed AND the courier running.
+                                             Whichever is shut, saying so here — before the choice is
+                                             made — beats letting the customer find out after paying. --}}
                                         @php
                                             $opensAt = \App\Support\CourierSchedule::nextOpening(
                                                 $rate['courier_code'] ?? null,
                                                 $rate['courier_service_code'] ?? null
                                             );
+                                            $storeShut = ! \App\Support\StoreSchedule::isOpenNow();
                                         @endphp
                                         @if($opensAt)
                                             <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1 flex items-start gap-1.5 font-semibold">
                                                 <svg class="w-3.5 h-3.5 shrink-0 mt-px" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
                                                 </svg>
-                                                <span>Di luar jam jemput kurir. Pesanan tetap kami terima, dijemput {{ $opensAt->translatedFormat('l, d M') }} mulai {{ $opensAt->format('H:i') }} WIB.</span>
+                                                <span>
+                                                    {{ $storeShut ? 'Toko sedang tutup.' : 'Di luar jam jemput kurir.' }}
+                                                    Pesanan tetap kami terima, dijemput {{ $opensAt->translatedFormat('l, d M') }} mulai {{ $opensAt->format('H:i') }} WIB.
+                                                </span>
                                             </p>
                                         @endif
                                     </div>
