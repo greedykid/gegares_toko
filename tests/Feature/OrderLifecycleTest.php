@@ -7,9 +7,12 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\OrderRefundedNotification;
+use App\Notifications\OrderRefundPendingNotification;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -208,6 +211,98 @@ class OrderLifecycleTest extends TestCase
         $order->refresh();
         $this->assertNotNull($order->refunded_at);
         $this->assertFalse($order->needsRefund());
+    }
+
+    // ── Refund notifications ─────────────────────────────────────────────────
+
+    public function test_cancelling_a_paid_order_notifies_the_customer_about_the_refund(): void
+    {
+        Notification::fake();
+        $this->bindBiteship();
+
+        $order = $this->makeOrder(['status' => 'processing']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.orders.cancel-shipping', $order));
+
+        Notification::assertSentTo($order->user, OrderRefundPendingNotification::class);
+    }
+
+    public function test_cancelling_an_unpaid_order_sends_no_refund_notice(): void
+    {
+        Notification::fake();
+        $this->bindBiteship();
+
+        $order = $this->makeOrder(['status' => 'pending', 'payment_status' => 'unpaid']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.orders.cancel-shipping', $order));
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_a_late_payment_on_a_cancelled_order_notifies_the_customer(): void
+    {
+        Notification::fake();
+
+        $order = $this->makeOrder(['status' => 'cancelled', 'payment_status' => 'expired']);
+
+        config(['pakasir.api_key' => 'test-key']);
+        Http::fake([
+            'app.pakasir.com/api/transactiondetail*' => Http::response([
+                'transaction' => ['status' => 'completed', 'amount' => 29000, 'payment_method' => 'qris'],
+            ], 200),
+        ]);
+
+        $this->postJson(route('webhook.pakasir'), [
+            'order_id' => $order->order_number,
+            'status' => 'completed',
+            'amount' => 29000,
+        ])->assertOk();
+
+        Notification::assertSentTo($order->user, OrderRefundPendingNotification::class);
+    }
+
+    public function test_recording_the_refund_notifies_the_customer(): void
+    {
+        Notification::fake();
+
+        $order = $this->makeOrder(['status' => 'cancelled', 'payment_status' => 'paid']);
+
+        $this->actingAs($this->admin)
+            ->patch(route('admin.orders.mark-refunded', $order));
+
+        Notification::assertSentTo($order->user, OrderRefundedNotification::class);
+    }
+
+    /** The templates must actually render — a broken Blade would only fail in the queue. */
+    public function test_both_refund_emails_render(): void
+    {
+        $order = $this->makeOrder([
+            'status' => 'cancelled',
+            'payment_status' => 'paid',
+            'refunded_at' => now(),
+        ]);
+        $order->items()->create([
+            'product_id' => Product::create([
+                'category_id' => Category::create(['name' => 'Snack', 'slug' => 'snack', 'is_active' => true])->id,
+                'name' => 'Klepon',
+                'slug' => 'klepon',
+                'price' => 10000,
+                'stock' => 10,
+            ])->id,
+            'product_name' => 'Klepon',
+            'product_price' => 10000,
+            'quantity' => 2,
+            'subtotal' => 20000,
+        ]);
+
+        $pending = (new OrderRefundPendingNotification($order))->toMail($order->user)->render();
+        $this->assertStringContainsString('Pesanan dibatalkan', $pending);
+        $this->assertStringContainsString('wa.me', $pending);
+
+        $done = (new OrderRefundedNotification($order))->toMail($order->user)->render();
+        $this->assertStringContainsString('sudah kami kembalikan', $done);
     }
 
     // ── What the customer sees on a cancelled order ──────────────────────────

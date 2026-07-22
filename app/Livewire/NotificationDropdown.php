@@ -3,13 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\Coupon;
-use Livewire\Component;
-use Livewire\Attributes\On;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class NotificationDropdown extends Component
 {
     public array $notificationsList = [];
+
     public int $unreadCount = 0;
 
     public function mount(): void
@@ -22,9 +23,10 @@ class NotificationDropdown extends Component
     #[On('order-created')]
     public function updateNotifications(): void
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             $this->notificationsList = [];
             $this->unreadCount = 0;
+
             return;
         }
 
@@ -45,13 +47,13 @@ class NotificationDropdown extends Component
                 ->take(3)
                 ->get();
 
-            foreach($userOrders as $order) {
+            foreach ($userOrders as $order) {
                 $icon = 'primary';
                 $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />';
                 $title = 'Status Pesanan';
                 $description = '';
 
-                switch($order->status) {
+                switch ($order->status) {
                     case 'pending':
                     case 'awaiting_payment':
                         $icon = 'amber';
@@ -84,10 +86,24 @@ class NotificationDropdown extends Component
                         $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />';
                         break;
                     case 'cancelled':
-                        $icon = 'red';
-                        $title = 'Pesanan Dibatalkan';
-                        $description = "Pesanan #{$order->order_number} telah dibatalkan.";
-                        $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />';
+                        // A cancelled order that was paid is really a refund story,
+                        // so say where the money is rather than just "dibatalkan".
+                        if ($order->needsRefund()) {
+                            $icon = 'amber';
+                            $title = 'Dana Akan Dikembalikan';
+                            $description = "Pesanan #{$order->order_number} dibatalkan. Pembayaran {$order->formatted_total} akan dikembalikan — hubungi admin kami untuk memprosesnya.";
+                            $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />';
+                        } elseif ($order->refunded_at) {
+                            $icon = 'emerald';
+                            $title = 'Dana Telah Dikembalikan';
+                            $description = "Pengembalian dana {$order->formatted_total} untuk pesanan #{$order->order_number} sudah kami proses.";
+                            $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />';
+                        } else {
+                            $icon = 'red';
+                            $title = 'Pesanan Dibatalkan';
+                            $description = "Pesanan #{$order->order_number} telah dibatalkan.";
+                            $svgPath = '<path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />';
+                        }
                         break;
                     default:
                         $description = "Pesanan #{$order->order_number} berstatus {$order->status}.";
@@ -113,16 +129,16 @@ class NotificationDropdown extends Component
         // 2. Fetch active valid coupons (last 2)
         if ($showPromos) {
             $couponsList = Coupon::where('is_active', true)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 })
                 ->latest()
                 ->take(2)
                 ->get();
 
-            foreach($couponsList as $coupon) {
-                $discountText = $coupon->type === 'percent' ? (int)$coupon->value . '%' : 'Rp ' . number_format($coupon->value, 0, ',', '.');
-                
+            foreach ($couponsList as $coupon) {
+                $discountText = $coupon->type === 'percent' ? (int) $coupon->value.'%' : 'Rp '.number_format($coupon->value, 0, ',', '.');
+
                 $couponTime = $coupon->created_at ?? now();
                 $isUnread = $lastReadAt === null || $couponTime->gt($lastReadAt);
 
@@ -164,16 +180,16 @@ class NotificationDropdown extends Component
 
     public function markAsRead(): void
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return;
         }
 
         $user = auth()->user();
         $settings = $user->notification_settings ?? [];
         $settings['last_read_at'] = Carbon::now()->toIso8601String();
-        
+
         $user->update([
-            'notification_settings' => $settings
+            'notification_settings' => $settings,
         ]);
 
         $this->updateNotifications();
