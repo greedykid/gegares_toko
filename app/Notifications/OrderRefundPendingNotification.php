@@ -9,10 +9,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Sent to the customer once payment for an order is confirmed as paid.
- * Queued so the email never blocks the webhook / payment-confirmation path.
+ * Sent when an order the customer already paid for is cancelled, so they hear it
+ * from us rather than discovering a cancelled order and wondering about the
+ * money. Queued so a mail failure never blocks the cancellation itself.
  */
-class OrderPaidNotification extends Notification implements ShouldQueue
+class OrderRefundPendingNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -31,9 +32,9 @@ class OrderPaidNotification extends Notification implements ShouldQueue
         $order = $this->order->loadMissing('items');
 
         return (new MailMessage)
-            ->subject('Pembayaran Berhasil #'.$order->order_number)
+            ->subject('Pengembalian Dana Pesanan #'.$order->order_number)
             ->theme('gegares')
-            ->markdown('mail.orders.paid', [
+            ->markdown('mail.orders.refund-pending', [
                 'order' => $order,
                 'user' => $notifiable,
             ]);

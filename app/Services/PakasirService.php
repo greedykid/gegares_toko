@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\BookBiteshipOrder;
 use App\Models\Order;
 use App\Notifications\OrderPaidNotification;
+use App\Notifications\OrderRefundPendingNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -277,6 +278,16 @@ class PakasirService
                 ]);
 
                 Log::warning("Pakasir: payment received for cancelled Order #{$locked->order_number}; recorded for refund, order left cancelled.");
+
+                // Tell the customer their money landed on a cancelled order and
+                // is coming back, rather than leaving them to notice themselves.
+                if ($locked->user) {
+                    try {
+                        $locked->user->notify(new OrderRefundPendingNotification($locked->fresh()));
+                    } catch (\Throwable $e) {
+                        Log::error('OrderRefundPending notification failed: '.$e->getMessage());
+                    }
+                }
 
                 return false;
             }

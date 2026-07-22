@@ -17,9 +17,7 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public Order $order)
-    {
-    }
+    public function __construct(public Order $order) {}
 
     /**
      * @return array<int, string>
@@ -34,7 +32,7 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
         $order = $this->order->loadMissing('items');
 
         return (new MailMessage)
-            ->subject('Pesanan Diterima #' . $order->order_number)
+            ->subject('Pesanan Diterima #'.$order->order_number)
             ->theme('gegares')
             ->markdown('mail.orders.placed', [
                 'order' => $order,

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Notifications\OrderRefundedNotification;
+use App\Notifications\OrderRefundPendingNotification;
 use App\Services\BiteshipService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -290,6 +292,15 @@ class OrderController extends Controller
             $order->update(['status' => 'cancelled']);
         });
 
+        // Queued, non-blocking: a mail failure must never fail the cancellation.
+        if ($owesRefund && $order->user) {
+            try {
+                $order->user->notify(new OrderRefundPendingNotification($order->fresh()));
+            } catch (\Throwable $e) {
+                Log::error('OrderRefundPending notification failed: '.$e->getMessage());
+            }
+        }
+
         $message = 'Pesanan berhasil dibatalkan';
         $message .= $shouldRestock ? ' dan stok dikembalikan' : '';
         $message .= $owesRefund ? '. Pesanan ini sudah dibayar — tandai sudah direfund setelah dana dikembalikan.' : '.';
@@ -305,6 +316,14 @@ class OrderController extends Controller
         }
 
         $order->update(['refunded_at' => now()]);
+
+        if ($order->user) {
+            try {
+                $order->user->notify(new OrderRefundedNotification($order->fresh()));
+            } catch (\Throwable $e) {
+                Log::error('OrderRefunded notification failed: '.$e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Pesanan ditandai sudah direfund.');
     }
