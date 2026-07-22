@@ -44,6 +44,14 @@
                     </svg>
                     <span>Footer</span>
                 </button>
+                <button wire:click="setTab('integrations')" type="button"
+                    class="shrink-0 lg:w-full flex items-center gap-2 lg:gap-3 px-3.5 lg:px-4 py-2.5 lg:py-3 rounded-xl text-xs lg:text-sm font-bold uppercase tracking-wider transition-all cursor-pointer {{ $activeTab === 'integrations' ? 'bg-primary-500 text-white shadow-md shadow-primary-500/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white' }}">
+                    <svg class="w-4.5 h-4.5 lg:w-5 lg:h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                    </svg>
+                    <span>Integrasi</span>
+                </button>
                 <div class="w-2 shrink-0 lg:hidden"></div>
             </div>
         </div>
@@ -52,6 +60,10 @@
     {{-- Main Form Body --}}
     <div
         class="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800 p-4 sm:p-8 transition-all duration-300">
+        @if ($activeTab === 'integrations')
+            {{-- Rendered outside the form above: nesting one form inside another is invalid HTML. --}}
+            @livewire('admin.manage-integrations')
+        @else
         <form wire:submit.prevent="save" class="space-y-6 sm:space-y-8">
 
             {{-- 1. TAB: HERO & CTA --}}
@@ -607,5 +619,6 @@
                 </button>
             </div>
         </form>
+        @endif
     </div>
 </div>
