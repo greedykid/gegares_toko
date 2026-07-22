@@ -6,6 +6,7 @@ use App\Exceptions\CheckoutException;
 use App\Exceptions\PaymentGatewayException;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreSetting;
 use App\Models\Wishlist;
 use App\Services\BiteshipService;
 use App\Services\CartService;
@@ -16,6 +17,7 @@ use App\Services\GeminiService;
 use App\Services\OrderService;
 use App\Services\SecurityService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Locked;
@@ -697,6 +699,15 @@ class Chatbot extends Component
             'time' => now()->format('H:i'),
         ];
 
+        // If the customer says the bot is going in circles, don't spend another
+        // AI call repeating ourselves — hand them straight to a human.
+        if ($this->userSoundsFrustrated($maskedMsg)) {
+            $this->escalateToHuman('Maaf ya Kak kalau jawaban saya belum membantu. Biar lebih cepat dan pasti, Kakak bisa langsung ngobrol dengan admin kami:');
+            $this->dispatch('user-messaged');
+
+            return;
+        }
+
         $this->isTyping = true;
         $this->persist();
         $this->dispatch('process-ai', userMsg: $maskedMsg);
@@ -830,9 +841,107 @@ class Chatbot extends Component
             $entry['suggestions'] = $suggestions;
         }
 
+        // Loop guard: if this reply is basically the previous one again, stop
+        // going in circles — add a note and a direct line to a human. Skipped
+        // when the reply carries product cards/orders (that is real progress).
+        if (empty($foundProducts) && empty($foundOrders) && $this->looksRepetitive($aiText)) {
+            $entry['content'] = "Sepertinya jawaban saya belum pas ya, Kak — maaf. Kalau masih kurang jelas, boleh langsung hubungi admin kami biar dibantu lebih cepat.";
+            $entry['buttons'] = array_merge($entry['buttons'] ?? [], [[
+                'label' => 'Chat Admin via WhatsApp',
+                'url' => $this->storeWhatsappUrl('Halo admin Gegares, saya butuh bantuan.'),
+                'style' => 'primary',
+            ]]);
+            $entry['suggestions'] = ['Lihat produk terlaris', 'Jam operasional & lokasi toko'];
+        }
+
         $this->chatHistory[] = $entry;
         $this->persist();
         $this->dispatch('bot-replied');
+    }
+
+    /** A wa.me link to the shop's admin, matching the contact-page normalisation. */
+    protected function storeWhatsappUrl(string $text = ''): string
+    {
+        $store = Cache::remember('store_settings', 86400, fn () => (StoreSetting::first() ?? new StoreSetting)->toArray());
+        $wa = preg_replace('/[^0-9]/', '', $store['contact_whatsapp'] ?? $store['contact_phone'] ?? '6281234567890');
+        if (str_starts_with((string) $wa, '0')) {
+            $wa = '62'.substr($wa, 1);
+        }
+
+        return 'https://wa.me/'.$wa.($text ? '?text='.rawurlencode($text) : '');
+    }
+
+    /**
+     * Bail out of the chatbot loop and hand the customer to a human: append a
+     * reply with a WhatsApp-admin button. Shared by the frustration and
+     * repetition paths so both offer the same clear exit.
+     */
+    protected function escalateToHuman(string $intro): void
+    {
+        $this->chatHistory[] = [
+            'role' => 'assistant',
+            'content' => $intro,
+            'time' => now()->format('H:i'),
+            'buttons' => [[
+                'label' => 'Chat Admin via WhatsApp',
+                'url' => $this->storeWhatsappUrl('Halo admin Gegares, saya butuh bantuan.'),
+                'style' => 'primary',
+            ]],
+            'suggestions' => ['Lihat produk terlaris', 'Jam operasional & lokasi toko'],
+        ];
+        $this->isTyping = false;
+        $this->persist();
+        $this->dispatch('bot-replied');
+    }
+
+    /** Words that say the customer feels the bot is going in circles. */
+    protected function userSoundsFrustrated(string $msg): bool
+    {
+        $t = mb_strtolower($msg);
+
+        foreach ([
+            'muter', 'sama aja', 'sama saja', 'gak nyambung', 'ga nyambung', 'nggak nyambung',
+            'tidak nyambung', 'gaje', 'gak jelas', 'ga jelas', 'nggak jelas', 'dari tadi',
+            'itu itu aja', 'itu-itu aja', 'ngulang', 'gak ngerti kamu', 'gak paham kamu', 'bosen',
+        ] as $kw) {
+            if (str_contains($t, $kw)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Whether a fresh reply is basically the previous bot reply again. */
+    protected function looksRepetitive(string $newText): bool
+    {
+        if (trim($newText) === '') {
+            return false;
+        }
+
+        $prev = null;
+        for ($i = count($this->chatHistory) - 1; $i >= 0; $i--) {
+            if (($this->chatHistory[$i]['role'] ?? null) === 'assistant') {
+                $prev = $this->chatHistory[$i]['content'] ?? '';
+                break;
+            }
+        }
+
+        if (! $prev) {
+            return false;
+        }
+
+        $parser = $this->parser();
+        $a = $parser->normalizeForCompare($newText);
+        $b = $parser->normalizeForCompare($prev);
+
+        if ($a === '' || $b === '') {
+            return false;
+        }
+
+        similar_text($a, $b, $percent);
+
+        return $percent >= 85;
     }
 
     /**

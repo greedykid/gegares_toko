@@ -31,11 +31,26 @@ class ChatbotResponseParser
         // Take last N messages
         $recent = array_slice($textMessages, -$maxTurns);
 
+        $lastAssistant = null;
         foreach ($recent as $chat) {
-            $memory[] = [
-                'role' => $chat['role'] === 'assistant' ? 'assistant' : 'user',
-                'content' => $chat['content'],
-            ];
+            $role = $chat['role'] === 'assistant' ? 'assistant' : 'user';
+            $content = $chat['content'];
+
+            // Condense: drop a near-duplicate assistant turn so the model is not
+            // fed its own repeated answers — that reinforcement is what makes it
+            // loop. User turns are always kept.
+            if ($role === 'assistant') {
+                $norm = $this->normalizeForCompare($content);
+                if ($lastAssistant !== null && $norm !== '') {
+                    similar_text($norm, $lastAssistant, $percent);
+                    if ($percent >= 90) {
+                        continue;
+                    }
+                }
+                $lastAssistant = $norm;
+            }
+
+            $memory[] = ['role' => $role, 'content' => $content];
         }
 
         return $memory;
@@ -251,5 +266,20 @@ class ChatbotResponseParser
         }
 
         return array_slice($suggestions, 0, 3);
+    }
+
+    /**
+     * Reduce a reply to a comparable core: lowercase, drop markdown/tags/emoji
+     * and punctuation, collapse whitespace. Used to spot near-duplicate answers.
+     */
+    public function normalizeForCompare(string $text): string
+    {
+        $t = mb_strtolower($text);
+        $t = preg_replace('/\[\[[^\]]*\]\]/', ' ', $t);   // product tags
+        $t = preg_replace('/[#*_>`~-]+/', ' ', $t);        // markdown
+        $t = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $t);  // punctuation/emoji
+        $t = preg_replace('/\s+/', ' ', $t);
+
+        return trim($t);
     }
 }

@@ -125,4 +125,60 @@ class ChatbotHardeningTest extends TestCase
 
         $this->assertLessThanOrEqual(40, count($prop->getValue($component)));
     }
+
+    public function test_a_frustrated_message_escalates_to_a_human_without_calling_the_ai(): void
+    {
+        // The AI must NOT be called — we go straight to a human.
+        $mock = $this->createMock(GeminiService::class);
+        $mock->expects($this->never())->method('chat');
+        $this->app->instance(GeminiService::class, $mock);
+
+        $this->actingAs(User::factory()->create());
+
+        Livewire::test(Chatbot::class)
+            ->set('isOpen', true)
+            ->set('message', 'kamu ini muter muter aja dari tadi')
+            ->call('sendMessage')
+            ->assertSee('Chat Admin via WhatsApp');
+    }
+
+    public function test_a_repeated_reply_offers_a_human_instead_of_looping(): void
+    {
+        $fixed = 'Jam operasional toko kami pukul 06:00 sampai 17:00 WIB ya Kak.';
+        $this->mockGeminiReturning($fixed);
+
+        $this->actingAs(User::factory()->create());
+
+        $test = Livewire::test(Chatbot::class)->set('isOpen', true);
+        $test->call('processAi', 'jam buka?');                 // first answer
+        $test->call('processAi', 'jam bukanya kapan?')          // same answer again → loop
+            ->assertSee('Chat Admin via WhatsApp')
+            ->assertSee('belum pas');
+    }
+
+    public function test_conversation_memory_drops_repeated_assistant_turns(): void
+    {
+        $parser = app(\App\Services\Chatbot\ChatbotResponseParser::class);
+
+        $history = [
+            ['role' => 'user', 'content' => 'jam buka?'],
+            ['role' => 'assistant', 'content' => 'Toko buka 06:00-17:00 WIB.'],
+            ['role' => 'user', 'content' => 'jam bukanya?'],
+            ['role' => 'assistant', 'content' => 'Toko buka 06:00-17:00 WIB.'],
+        ];
+
+        $memory = $parser->conversationMemory($history, 8);
+        $assistantTurns = array_values(array_filter($memory, fn ($m) => $m['role'] === 'assistant'));
+
+        $this->assertCount(1, $assistantTurns, 'A repeated assistant answer should be collapsed in memory.');
+    }
+
+    public function test_system_prompt_carries_the_anti_repetition_rule(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $prompt = app(\App\Services\Chatbot\ChatbotContextBuilder::class)->systemPrompt();
+
+        $this->assertStringContainsString('ANTI-PENGULANGAN', $prompt);
+    }
 }
