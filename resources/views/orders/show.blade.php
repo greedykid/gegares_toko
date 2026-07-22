@@ -78,6 +78,28 @@
                  </div>
              </div>
 
+             {{-- Ordered while the shop was shut: carry the checkout's closed-shop
+                  notice onto the order so the customer keeps that context — the
+                  parcel is prepared now but a courier can only collect it once the
+                  shop opens. Only while it still matters (not yet handed over). --}}
+             @if(in_array($order->status, ['pending', 'processing']) && ! \App\Support\StoreSchedule::isOpenNow($order->created_at))
+                 @php $pickupOpensAt = \App\Support\StoreSchedule::nextOpening($order->created_at); @endphp
+                 @if($pickupOpensAt)
+                 <div class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-3xl p-5 flex items-start gap-4">
+                     <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                     </div>
+                     <div>
+                         <p class="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">Dikirim Saat Toko Buka</p>
+                         <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
+                             Pesanan ini dibuat di luar jam buka toko. Pesanan tetap kami siapkan, dan kurir baru menjemput setelah toko buka, yaitu
+                             <span class="text-amber-700 dark:text-amber-300">{{ $pickupOpensAt->translatedFormat('l, d M') }} pukul {{ $pickupOpensAt->format('H:i') }} WIB</span>.
+                         </p>
+                     </div>
+                 </div>
+                 @endif
+             @endif
+
              {{-- Cancelled but already paid: tell the customer their money is coming
                   back and give them a direct line to ask about it. --}}
              @if($order->needsRefund())
@@ -478,6 +500,28 @@
                             </svg>
                         </button>
                     </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- Which courier/service the customer picked at checkout. Shown from
+                 the moment the order exists, not only once a tracking number
+                 arrives (the resi bar above only appears after pickup). --}}
+            @if($order->shipping_courier)
+            <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80">
+                <h3 class="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+                    Metode Pengiriman
+                </h3>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 text-xs font-black uppercase tracking-wider border border-primary-200/40 dark:border-primary-900/50 shadow-2xs">
+                        {{ strtoupper($order->shipping_courier) }}
+                    </span>
+                    @if($order->shipping_service)
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 shadow-2xs">
+                        {{ strtoupper(str_replace('_', ' ', $order->shipping_service)) }}
+                    </span>
+                    @endif
                 </div>
             </div>
             @endif
