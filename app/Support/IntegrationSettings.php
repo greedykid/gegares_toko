@@ -38,6 +38,12 @@ class IntegrationSettings
                 'google_client_secret' => ['services.google.client_secret', 'Client Secret', true],
                 'google_redirect' => ['services.google.redirect', 'Redirect URL', false],
             ],
+            'recaptcha' => [
+                // Site key is embedded in the page HTML, so it is public, not a
+                // secret; the secret key verifies tokens server-side.
+                'recaptcha_site_key' => ['services.recaptcha.site', 'Site Key', false],
+                'recaptcha_secret_key' => ['services.recaptcha.secret', 'Secret Key', true],
+            ],
             'pakasir' => [
                 'pakasir_project_slug' => ['pakasir.project_slug', 'Project Slug', false],
                 'pakasir_api_key' => ['pakasir.api_key', 'API Key', true],

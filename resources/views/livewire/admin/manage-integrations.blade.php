@@ -1,6 +1,7 @@
 @php
     $meta = [
         'google'   => ['Login Google', 'Kredensial OAuth dari Google Cloud Console untuk tombol "Masuk dengan Google".'],
+        'recaptcha' => ['Keamanan — reCAPTCHA', 'Kunci reCAPTCHA v3 dari Google untuk proteksi bot pada form login, daftar, dan reset kata sandi. Aktif saat APP_ENV=production.'],
         'pakasir'  => ['Pembayaran — Pakasir', 'Dipakai untuk membuat link QRIS dan memverifikasi pembayaran.'],
         'biteship' => ['Pengiriman — Biteship', 'Dipakai untuk menghitung ongkir dan memesan kurir.'],
         'ai'       => ['AI Chatbot', 'Endpoint dan kunci model bahasa untuk chatbot toko.'],
