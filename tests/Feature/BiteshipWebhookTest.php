@@ -397,4 +397,45 @@ class BiteshipWebhookTest extends TestCase
         $this->assertEquals('cancelled', $order->fresh()->status);
         $this->assertEquals(50, $product->fresh()->stock, 'A refused transition must not touch stock.');
     }
+
+    // ── Webhook authentication (shared-secret token) ─────────────────────────
+
+    public function test_webhook_rejects_requests_without_the_configured_token(): void
+    {
+        config(['biteship.webhook_token' => 'secret-token']);
+
+        $product = $this->makeProduct(50);
+        $order = $this->paidOrderHolding($product, 2, ['status' => 'processing']);
+
+        // No token at all → rejected before any status is applied.
+        $this->postJson(route('webhook.biteship'), [
+            'event' => 'order.status',
+            'data' => ['order_id' => 'biteship-cancel-1', 'status' => 'delivered'],
+        ])->assertStatus(401);
+
+        // A wrong token is no better than none.
+        $this->withHeader('X-Webhook-Token', 'not-the-token')
+            ->postJson(route('webhook.biteship'), [
+                'event' => 'order.status',
+                'data' => ['order_id' => 'biteship-cancel-1', 'status' => 'delivered'],
+            ])->assertStatus(401);
+
+        $this->assertEquals('processing', $order->fresh()->status, 'A rejected webhook must not change the order.');
+    }
+
+    public function test_webhook_accepts_the_configured_token(): void
+    {
+        config(['biteship.webhook_token' => 'secret-token']);
+
+        $product = $this->makeProduct(50);
+        $order = $this->paidOrderHolding($product, 2, ['status' => 'processing']);
+
+        $this->withHeader('X-Webhook-Token', 'secret-token')
+            ->postJson(route('webhook.biteship'), [
+                'event' => 'order.status',
+                'data' => ['order_id' => 'biteship-cancel-1', 'status' => 'delivered'],
+            ])->assertStatus(200);
+
+        $this->assertEquals('completed', $order->fresh()->status);
+    }
 }

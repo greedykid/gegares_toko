@@ -44,6 +44,18 @@ class PakasirService
     }
 
     /**
+     * Find the order a Pakasir notification refers to. Case-insensitive on both
+     * our order number and the id we registered with Pakasir, so a match holds
+     * regardless of how the gateway echoes the casing back.
+     */
+    public function findOrderByPayloadId(string $orderId): ?Order
+    {
+        return Order::whereRaw('LOWER(order_number) = ?', [strtolower($orderId)])
+            ->orWhereRaw('LOWER(pakasir_order_id) = ?', [strtolower($orderId)])
+            ->first();
+    }
+
+    /**
      * Handle incoming Pakasir Webhook notification.
      */
     public function handleNotification(array $payload): ?Order
@@ -57,10 +69,7 @@ class PakasirService
                 return null;
             }
 
-            // Case-insensitive lookup to ensure matching regardless of driver settings
-            $order = Order::whereRaw('LOWER(order_number) = ?', [strtolower($orderId)])
-                ->orWhereRaw('LOWER(pakasir_order_id) = ?', [strtolower($orderId)])
-                ->first();
+            $order = $this->findOrderByPayloadId($orderId);
 
             if (! $order) {
                 Log::warning("Pakasir Webhook: Order not found for ID {$orderId}");

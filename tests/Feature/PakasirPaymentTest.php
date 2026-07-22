@@ -10,7 +10,9 @@ use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use App\Jobs\ConfirmPakasirPayment;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Session;
 use Tests\TestCase;
 
@@ -222,6 +224,68 @@ class PakasirPaymentTest extends TestCase
         // order was built by hand (no reservation), so settling it must leave
         // the shelf exactly as it found it.
         $this->assertEquals(50, $product->stock);
+    }
+
+    public function test_webhook_defers_confirmation_to_a_queued_job(): void
+    {
+        // The API re-confirmation is a slow sweep, so the webhook must hand it to
+        // the queue and acknowledge immediately rather than run it inline.
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $address = Address::create([
+            'user_id' => $user->id,
+            'label' => 'Rumah',
+            'recipient_name' => 'Test User',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Tebet Raya No. 1',
+            'city' => 'Jakarta Selatan',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '12810',
+            'is_primary' => true,
+        ]);
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => 'GGR-QUEUE-0001',
+            'address_id' => $address->id,
+            'subtotal' => 20000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 29000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => 'jne',
+            'shipping_service' => 'reg',
+        ]);
+
+        $this->postJson(route('webhook.pakasir'), [
+            'amount' => 29000,
+            'order_id' => 'GGR-QUEUE-0001',
+            'status' => 'completed',
+        ])->assertStatus(200)->assertJson(['status' => 'ok']);
+
+        Queue::assertPushed(ConfirmPakasirPayment::class);
+
+        // An already-paid order acknowledges without re-queuing the confirmation.
+        $order->update(['payment_status' => 'paid', 'status' => 'processing']);
+        Queue::fake();
+
+        $this->postJson(route('webhook.pakasir'), [
+            'amount' => 29000,
+            'order_id' => 'GGR-QUEUE-0001',
+            'status' => 'completed',
+        ])->assertStatus(200)->assertJson(['status' => 'ok']);
+
+        Queue::assertNotPushed(ConfirmPakasirPayment::class);
+
+        // An unknown order is still a 404, cheaply and without queuing anything.
+        $this->postJson(route('webhook.pakasir'), [
+            'order_id' => 'GGR-DOES-NOT-EXIST',
+            'status' => 'completed',
+        ])->assertStatus(404);
+
+        Queue::assertNotPushed(ConfirmPakasirPayment::class);
     }
 
     public function test_settling_payment_moves_order_to_processing_and_books_biteship(): void
