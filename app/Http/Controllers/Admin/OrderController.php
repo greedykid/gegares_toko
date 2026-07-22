@@ -297,7 +297,7 @@ class OrderController extends Controller
         return back()->with('success', 'Pesanan ditandai sudah direfund.');
     }
 
-    public function getTracking(Order $order, BiteshipService $biteship)
+    public function getTracking(Order $order, BiteshipService $biteship, OrderService $orders)
     {
         // Try real API first if tracking number exists
         if ($order->tracking_number) {
@@ -308,16 +308,11 @@ class OrderController extends Controller
             if ($tracking && isset($tracking['success']) && $tracking['success']) {
                 $status = $tracking['status'] ?? 'allocated';
 
-                // Auto-sync local order status based on Biteship status
-                if (in_array($status, ['picking_up', 'picked_up', 'dropping_off', 'out_for_delivery', 'on_the_way', 'in_transit', 'dispatched'])) {
-                    if ($order->status !== 'shipped') {
-                        $order->update(['status' => 'shipped']);
-                    }
-                } elseif ($status === 'delivered') {
-                    if ($order->status !== 'completed') {
-                        $order->update(['status' => 'completed']);
-                    }
-                }
+                // Opening this modal syncs the order with what the courier says,
+                // through the same door the webhook and biteship:sync use. It
+                // used to write 'shipped'/'completed' itself, with no transition
+                // rules — so viewing a cancelled order's tracking revived it.
+                $orders->applyCourierStatus($order, $tracking['status'] ?? null, 'Biteship Tracking');
 
                 $history = collect($tracking['history'] ?? [])->map(function ($h) {
                     return [

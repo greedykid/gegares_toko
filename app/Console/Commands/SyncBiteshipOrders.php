@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Order;
 use App\Services\BiteshipService;
+use App\Services\OrderService;
+use Illuminate\Console\Command;
 
 class SyncBiteshipOrders extends Command
 {
@@ -25,48 +26,47 @@ class SyncBiteshipOrders extends Command
     /**
      * Execute the console command.
      */
-    public function handle(BiteshipService $biteship)
+    public function handle(BiteshipService $biteship, OrderService $orders)
     {
-        $orders = Order::whereNotNull('biteship_order_id')
+        // Only orders still in flight. The old filter also caught cancelled and
+        // completed orders whose courier_tracking_id happened to be empty, and
+        // since it wrote statuses directly it could bring them back to life.
+        $pending = Order::whereNotNull('biteship_order_id')
             ->where('biteship_order_id', '!=', '')
-            ->where(function ($query) {
-                $query->whereNull('courier_tracking_id')
-                      ->orWhereIn('status', ['processing', 'shipped']);
-            })
+            ->whereIn('status', ['processing', 'shipped'])
             ->get();
 
-        if ($orders->isEmpty()) {
+        if ($pending->isEmpty()) {
             $this->info('No orders require syncing.');
+
             return 0;
         }
 
-        foreach ($orders as $order) {
+        foreach ($pending as $order) {
             $this->info("Syncing Order #{$order->order_number}...");
             $result = $biteship->getOrder($order->biteship_order_id);
 
-            if ($result && isset($result['courier'])) {
-                $trackingId = $result['courier']['tracking_id'] ?? null;
-                $waybillId = $result['courier']['waybill_id'] ?? null;
-                $status = $result['status'] ?? null;
-
-                $newStatus = match($status) {
-                    'allocated', 'picking_up', 'pickingUp' => 'processing',
-                    'picked_up', 'picked', 'dropping_off', 'droppingOff', 'out_for_delivery', 'on_the_way', 'in_transit', 'dispatched', 'return_in_transit', 'returnInTransit' => 'shipped',
-                    'delivered' => 'completed',
-                    'cancelled', 'canceled', 'returned' => 'cancelled',
-                    default => $order->status
-                };
-
-                $order->update([
-                    'courier_tracking_id' => $trackingId ?? $order->courier_tracking_id,
-                    'tracking_number' => $waybillId ?? $order->tracking_number,
-                    'status' => $newStatus,
-                ]);
-
-                $this->info("Successfully synced Order #{$order->order_number}. Tracking ID: " . ($trackingId ?? 'null') . ", Status: " . $status);
-            } else {
+            if (! $result || ! isset($result['courier'])) {
                 $this->error("Failed to sync Order #{$order->order_number}.");
+
+                continue;
             }
+
+            $trackingId = $result['courier']['tracking_id'] ?? null;
+            $waybillId = $result['courier']['waybill_id'] ?? null;
+            $status = $result['status'] ?? null;
+
+            $order->update([
+                'courier_tracking_id' => $trackingId ?? $order->courier_tracking_id,
+                'tracking_number' => $waybillId ?? $order->tracking_number,
+            ]);
+
+            // This used to carry its own copy of the status map and write the
+            // result straight onto the order — no transition rules, and a
+            // cancellation that never returned the stock or the coupon slot.
+            $orders->applyCourierStatus($order, $status, 'Biteship Sync');
+
+            $this->info("Successfully synced Order #{$order->order_number}. Tracking ID: ".($trackingId ?? 'null').', Status: '.($status ?? 'null'));
         }
 
         return 0;

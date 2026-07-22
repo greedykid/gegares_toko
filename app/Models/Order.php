@@ -38,6 +38,38 @@ class Order extends Model
             || in_array($target, self::STATUS_TRANSITIONS[$this->status] ?? [], true);
     }
 
+    /**
+     * Biteship's vocabulary translated into ours, or null when it says nothing
+     * about our status.
+     *
+     * This lives here because three callers need it — the webhook, the
+     * ten-minute biteship:sync command and the admin's tracking modal — and a
+     * private copy in each is exactly how they drifted apart: a fix to one left
+     * the other two still writing statuses raw.
+     */
+    public static function mapCourierStatus(?string $courierStatus): ?string
+    {
+        return match ($courierStatus) {
+            'allocated', 'picking_up', 'pickingUp' => 'processing',
+            'picked_up', 'picked', 'dropping_off', 'droppingOff', 'out_for_delivery',
+            'on_the_way', 'in_transit', 'dispatched',
+            'return_in_transit', 'returnInTransit' => 'shipped',
+            'delivered' => 'completed',
+            'cancelled', 'canceled', 'returned' => 'cancelled',
+            default => null,
+        };
+    }
+
+    /**
+     * Whether the courier is telling us the goods are physically back with the
+     * shop, so a cancellation may put them on the shelf again. Only 'returned'
+     * qualifies: 'return_in_transit' is still travelling.
+     */
+    public static function courierStatusReturnsGoods(?string $courierStatus): bool
+    {
+        return $courierStatus === 'returned';
+    }
+
     protected $fillable = [
         'user_id', 'order_number', 'biteship_order_id', 'courier_tracking_id', 'address_id', 'coupon_id', 'discount_amount',
         'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',

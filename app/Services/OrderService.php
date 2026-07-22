@@ -207,6 +207,51 @@ class OrderService
     }
 
     /**
+     * Apply a status reported by the courier.
+     *
+     * The webhook, the ten-minute biteship:sync command and the admin's tracking
+     * modal all learn the same thing from Biteship, and each used to translate
+     * and write the status itself. Two of them skipped both the transition rules
+     * and the cancellation path, so a parcel cancelled at the courier could be
+     * marked cancelled while its stock stayed reserved — and because the order
+     * was cancelled by then, no later cancellation could ever release it.
+     *
+     * @param  string  $source  where the report came from, for the log trail
+     * @return bool true when the order's status actually changed
+     */
+    public function applyCourierStatus(Order $order, ?string $courierStatus, string $source = 'Biteship'): bool
+    {
+        $newStatus = Order::mapCourierStatus($courierStatus);
+
+        if ($newStatus === null || $newStatus === $order->status) {
+            return false;
+        }
+
+        // The courier's view is not allowed to rewrite history: a delivery
+        // notification that arrives late must not drag a completed order back
+        // to "shipped".
+        if (! $order->canTransitionTo($newStatus)) {
+            Log::warning("{$source}: refused status '{$courierStatus}' for Order #{$order->order_number} — cannot move from '{$order->status}' to '{$newStatus}'.");
+
+            return false;
+        }
+
+        if ($newStatus === 'cancelled') {
+            // Never a bare status write: cancelling has to return the stock and
+            // the coupon slot, and tell a paying customer a refund is coming.
+            return $this->cancelAndRelease($order, [
+                'admin_note' => ($order->admin_note ? $order->admin_note.' | ' : '')
+                    ."Dibatalkan otomatis dari Biteship (status: {$courierStatus}).",
+            ], Order::courierStatusReturnsGoods($courierStatus) ?: null);
+        }
+
+        $order->update(['status' => $newStatus]);
+        Log::info("{$source}: Order #{$order->order_number} status updated to {$newStatus}.");
+
+        return true;
+    }
+
+    /**
      * Cancel an order and hand back everything it reserved.
      *
      * Every cancellation path goes through here — the admin's two buttons, the
