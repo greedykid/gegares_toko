@@ -66,10 +66,10 @@
                      <div>
                          <span class="inline-flex px-4 py-2 text-sm font-bold rounded-xl border shadow-sm transition-all duration-300"
                                :class="{
+                                   {{-- liveStatus holds an order status, never a payment status: 'paid' and 'expired' never reach here. --}}
                                    'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800': liveStatus === 'completed',
-                                   'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800': liveStatus === 'paid',
-                                   'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800': liveStatus === 'cancelled' || liveStatus === 'expired',
-                                   'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800': liveStatus !== 'completed' && liveStatus !== 'paid' && liveStatus !== 'cancelled' && liveStatus !== 'expired'
+                                   'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800': liveStatus === 'cancelled',
+                                   'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800': liveStatus !== 'completed' && liveStatus !== 'cancelled'
                                }"
                                x-text="liveStatusLabel">
                              {{ $order->status_label }}
@@ -119,7 +119,7 @@
              @endif
 
              {{-- Visual Stepper Progress Bar Card --}}
-             @if($order->status !== 'cancelled' && $order->status !== 'expired')
+             @if($order->status !== 'cancelled')
              <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80">
                  <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
@@ -131,39 +131,39 @@
                      {{-- Connecting Line (Desktop) --}}
                      <div class="absolute top-5 left-8 right-8 h-1 bg-slate-100 dark:bg-slate-800 hidden md:block rounded-full overflow-hidden">
                          <div class="h-full bg-emerald-500 transition-all duration-500" 
-                              :style="{ width: liveStatus === 'completed' ? '100%' : (liveStatus === 'shipped' ? '66%' : (['paid', 'processing'].includes(liveStatus) ? '33%' : '0%')) }">
+                              :style="{ width: liveStatus === 'completed' ? '100%' : (liveStatus === 'shipped' ? '66%' : (liveStatus === 'processing' ? '33%' : '0%')) }">
                          </div>
                      </div>
 
                      {{-- Step 1: Dipesan --}}
                      <div class="flex flex-row md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto md:flex-1">
                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300"
-                              :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) 
+                              :class="['processing', 'shipped', 'completed'].includes(liveStatus) 
                                   ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
                                   : 'bg-primary-500 border-primary-500 text-white ring-4 ring-primary-500/30 shadow-lg shadow-primary-500/20 animate-pulse-subtle'">
-                             <span x-show="!['paid', 'processing', 'shipped', 'completed'].includes(liveStatus)">1</span>
-                             <svg x-show="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus)" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                             <span x-show="!['processing', 'shipped', 'completed'].includes(liveStatus)">1</span>
+                             <svg x-show="['processing', 'shipped', 'completed'].includes(liveStatus)" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                          </div>
                          <div class="text-left md:text-center">
                              <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100">Pesanan Dibuat</p>
                              <p class="text-[11px] uppercase mt-0.5 tracking-wider"
-                                :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) 
+                                :class="['processing', 'shipped', 'completed'].includes(liveStatus) 
                                     ? 'text-slate-400 dark:text-slate-500 font-bold' 
                                     : 'text-primary-600 dark:text-primary-455 font-black'"
-                                x-text="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) ? 'Selesai' : 'Belum Bayar'">Selesai</p>
+                                x-text="['processing', 'shipped', 'completed'].includes(liveStatus) ? 'Selesai' : 'Belum Bayar'">Selesai</p>
                          </div>
                      </div>
 
                      {{-- Vertical Connector Line (Mobile) --}}
                      <div class="w-0.5 h-6 ml-5 -my-4 md:hidden block transition-colors duration-300"
-                          :class="['paid', 'processing', 'shipped', 'completed'].includes(liveStatus) ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
+                          :class="['processing', 'shipped', 'completed'].includes(liveStatus) ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'"></div>
 
                      {{-- Step 2: Dibayar / Dikemas --}}
                      <div class="flex flex-row md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto md:flex-1">
                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold transition-all duration-300"
                               :class="['shipped', 'completed'].includes(liveStatus) 
                                   ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
-                                  : (['paid', 'processing'].includes(liveStatus)
+                                  : (liveStatus === 'processing'
                                       ? 'bg-primary-500 border-primary-500 text-white ring-4 ring-primary-500/30 shadow-lg shadow-primary-500/20 animate-pulse-subtle'
                                       : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400')">
                              <span x-show="!['shipped', 'completed'].includes(liveStatus)">2</span>
@@ -174,10 +174,10 @@
                              <p class="text-[11px] uppercase mt-0.5 tracking-wider"
                                 :class="['shipped', 'completed'].includes(liveStatus) 
                                     ? 'text-slate-400 dark:text-slate-500 font-bold' 
-                                    : (['paid', 'processing'].includes(liveStatus)
+                                    : (liveStatus === 'processing'
                                         ? 'text-primary-600 dark:text-primary-455 font-black'
                                         : 'text-slate-400 dark:text-slate-655')"
-                                x-text="['shipped', 'completed'].includes(liveStatus) ? 'Selesai' : (['paid', 'processing'].includes(liveStatus) ? 'Diproses' : 'Belum')">Belum</p>
+                                x-text="['shipped', 'completed'].includes(liveStatus) ? 'Selesai' : (liveStatus === 'processing' ? 'Diproses' : 'Belum')">Belum</p>
                          </div>
                      </div>
 
@@ -235,7 +235,7 @@
              @endif
 
              {{-- ETA Banner --}}
-             @if($order->status !== 'cancelled' && $order->status !== 'expired' && $order->status !== 'completed')
+             @if($order->status !== 'cancelled' && $order->status !== 'completed')
              @php
                  $etaText = '';
                  $courier = strtolower($order->shipping_courier);
@@ -309,7 +309,8 @@
                               {{-- Left: Driver Identity --}}
                               <div class="flex items-center gap-4 flex-1 min-w-0">
                                   <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-slate-50 dark:border-slate-800 shadow-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 relative">
-                                      <img :src="trackingData.courier.photo" class="w-full h-full object-cover" alt="Foto Kurir">
+                                      {{-- Biteship does not always send a photo; the circle stays empty rather than showing a stand-in face. --}}
+                                      <img x-show="trackingData.courier.photo" :src="trackingData.courier.photo" class="w-full h-full object-cover" alt="Foto Kurir">
                                       <div class="absolute inset-0 rounded-full ring-1 ring-inset ring-slate-900/10"></div>
                                   </div>
                                   <div class="flex-1 min-w-0">

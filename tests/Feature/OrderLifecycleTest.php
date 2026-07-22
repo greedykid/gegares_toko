@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Address;
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -183,6 +184,30 @@ class OrderLifecycleTest extends TestCase
 
         $this->assertEquals('cancelled', $order->fresh()->status);
         $this->assertEquals(50, $product->fresh()->stock, 'The dropdown must restore stock too.');
+    }
+
+    public function test_cancelling_an_order_frees_the_coupon_it_had_claimed(): void
+    {
+        $this->bindBiteship();
+
+        $coupon = Coupon::create([
+            'code' => 'TERBATAS',
+            'type' => 'fixed',
+            'value' => 5000,
+            'min_purchase' => 0,
+            'is_active' => true,
+            'usage_limit' => 1,
+            'used_count' => 1, // claimed by the order below
+        ]);
+
+        $order = $this->makeOrder(['status' => 'processing', 'coupon_id' => $coupon->id]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.orders.cancel-shipping', $order));
+
+        // The redemption goes back on the shelf with the goods — a cancelled
+        // order must not permanently consume a promo's quota.
+        $this->assertEquals(0, $coupon->fresh()->used_count);
     }
 
     // ── Refund tracking ──────────────────────────────────────────────────────

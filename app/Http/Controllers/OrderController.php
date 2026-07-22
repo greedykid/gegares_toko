@@ -21,9 +21,9 @@ class OrderController extends Controller
         if ($request->filled('status')) {
             $status = $request->status;
             if ($status === 'pending') {
-                $query->whereIn('status', ['pending', 'awaiting_payment']);
+                $query->where('status', 'pending');
             } elseif ($status === 'processing') {
-                $query->whereIn('status', ['paid', 'processing', 'shipped']);
+                $query->whereIn('status', ['processing', 'shipped']);
             } elseif ($status === 'completed') {
                 $query->where('status', 'completed');
             } elseif ($status === 'cancelled') {
@@ -51,13 +51,13 @@ class OrderController extends Controller
 
         $stats = [
             'total' => $counts->sum(),
-            'pending' => ($counts->get('pending', 0) + $counts->get('awaiting_payment', 0)),
-            'processing' => ($counts->get('paid', 0) + $counts->get('processing', 0) + $counts->get('shipped', 0)),
+            'pending' => $counts->get('pending', 0),
+            'processing' => ($counts->get('processing', 0) + $counts->get('shipped', 0)),
             'completed' => $counts->get('completed', 0),
             // Range bounds (not whereMonth/whereYear) so the created_at index can
             // be used — wrapping the column in a function would disable it.
             'monthly_spent' => $user->orders()
-                ->whereNotIn('status', ['pending', 'awaiting_payment', 'cancelled'])
+                ->whereNotIn('status', ['pending', 'cancelled'])
                 ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
                 ->sum('total'),
         ];
@@ -150,7 +150,9 @@ class OrderController extends Controller
                         'name' => $tracking['courier']['name'] ?? 'Kurir Biteship',
                         'phone' => $tracking['courier']['phone'] ?? '-',
                         'plate_number' => $tracking['courier']['plate_number'] ?? 'GGR-TRK',
-                        'photo' => $tracking['courier']['photo'] ?? 'https://i.pravatar.cc/150?u=biteship',
+                        // Null, not a stock portrait: a random face from an avatar
+                        // service would be presented as this courier's photo.
+                        'photo' => $tracking['courier']['photo'] ?? null,
                         'type' => $tracking['courier']['type'] ?? ($order->shipping_courier.' '.$order->shipping_service),
                     ],
                     'link' => $order->tracking_url,
@@ -159,52 +161,16 @@ class OrderController extends Controller
             }
         }
 
-        // Fallback Simulation for testing (matches Admin Dashboard level of detail)
-        if (in_array($order->status, ['processing', 'shipped', 'completed'])) {
-            $status = 'allocated';
-            $label = 'Kurir Menuju Lokasi';
-            $history = [
-                ['status' => 'confirmed', 'note' => 'Pesanan dikonfirmasi', 'time' => $order->updated_at->subMinutes(30)->translatedFormat('d M, H:i')],
-            ];
-
-            if ($order->status === 'shipped') {
-                $status = 'picked_up';
-                $label = 'Pesanan Berhasil Dijemput';
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan', 'time' => $order->updated_at->subMinutes(20)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'picking_up', 'note' => 'Kurir sedang menuju lokasi Anda', 'time' => $order->updated_at->subMinutes(15)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'picked_up', 'note' => 'Pesanan berhasil dijemput oleh kurir', 'time' => $order->updated_at->subMinutes(10)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'on_the_way', 'note' => 'Paket sedang dikirim ke tujuan', 'time' => $order->updated_at->translatedFormat('d M, H:i')];
-            } elseif ($order->status === 'completed') {
-                $status = 'delivered';
-                $label = 'Pesanan Diterima';
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan', 'time' => $order->updated_at->subHours(1)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'picked_up', 'note' => 'Pesanan telah dijemput oleh kurir', 'time' => $order->updated_at->subMinutes(45)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'delivered', 'note' => 'Selesai: Pesanan telah diterima oleh pelanggan', 'time' => $order->updated_at->translatedFormat('d M, H:i')];
-            } else {
-                // processing
-                $history[] = ['status' => 'allocated', 'note' => 'Mencari kurir terdekat...', 'time' => Carbon::now()->subMinutes(5)->translatedFormat('d M, H:i')];
-                $history[] = ['status' => 'allocated', 'note' => 'Kurir telah ditemukan dan sedang menuju lokasi Anda', 'time' => Carbon::now()->subMinutes(2)->translatedFormat('d M, H:i')];
-            }
-
-            $history = array_reverse($history);
-
-            return response()->json([
-                'success' => true,
-                'status' => $status,
-                'status_label' => $label,
-                'courier' => [
-                    'name' => 'Budi Santoso',
-                    'phone' => '081234567890',
-                    'plate_number' => 'B 3546 UIL',
-                    'photo' => 'https://i.pravatar.cc/150?u=budi',
-                    'type' => strtoupper($order->shipping_courier.' '.$order->shipping_service),
-                ],
-                'link' => $order->tracking_url,
-                'history' => $history,
-            ]);
-        }
-
-        return response()->json(['success' => false, 'message' => 'Belum ada informasi pelacakan.']);
+        // No invented courier here. This used to answer with a hardcoded driver
+        // ("Budi Santoso", plate B 3546 UIL) whenever Biteship had nothing yet,
+        // which showed the customer a delivery that was not happening. What the
+        // order itself knows is real; anything else waits for the courier.
+        return response()->json([
+            'success' => false,
+            'status' => $order->status,
+            'status_label' => $order->status_label,
+            'message' => $this->trackingPendingMessage($order),
+        ]);
     }
 
     public function complete(Order $order)
@@ -220,6 +186,17 @@ class OrderController extends Controller
         ]);
 
         return redirect()->route('orders.show', $order)->with('success', 'Pesanan telah selesai. Terima kasih telah berbelanja!');
+    }
+
+    /** Why there is nothing to show yet, in the customer's own terms. */
+    private function trackingPendingMessage(Order $order): string
+    {
+        return match ($order->status) {
+            'pending' => 'Pesanan belum dibayar, jadi belum ada pengiriman yang dijadwalkan.',
+            'processing' => 'Pesanan sedang disiapkan. Nomor resi akan muncul di sini setelah kurir menjemput paket.',
+            'cancelled' => 'Pesanan dibatalkan, tidak ada pengiriman untuk dilacak.',
+            default => 'Belum ada informasi pelacakan dari kurir.',
+        };
     }
 
     private function mapBiteshipStatusToLabel($status)

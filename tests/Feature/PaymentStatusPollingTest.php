@@ -81,7 +81,7 @@ class PaymentStatusPollingTest extends TestCase
         $order = $this->makeOrder($user);
 
         // Whatever the webhook already wrote must be reported straight from the DB.
-        $order->update(['payment_status' => 'paid', 'status' => 'paid']);
+        $order->update(['payment_status' => 'paid', 'status' => 'processing']);
 
         $this->actingAs($user)
             ->getJson(route('orders.status', $order))

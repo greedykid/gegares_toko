@@ -18,11 +18,11 @@
                         </div>
                         <div class="shrink-0 self-start sm:self-auto">
                             @php
+                                // Keyed by order status; 'paid' and 'expired' are payment
+                                // statuses and never appear in this column.
                                 $statusColors = [
                                     'completed' => 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50',
-                                    'paid' => 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-800/50',
                                     'cancelled' => 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50',
-                                    'expired' => 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50',
                                 ];
                                 $defaultColor = 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50';
                                 $statusClass = $statusColors[$order->status] ?? $defaultColor;

@@ -13,6 +13,31 @@ class Order extends Model
 {
     use SoftDeletes;
 
+    /**
+     * Which status an order may move to next. Terminal states stay terminal, and
+     * an order cannot walk backwards (completed → pending, cancelled → shipped).
+     *
+     * This lives on the model rather than in the admin controller because the
+     * Biteship webhook has to obey the same rules: a delivery notification that
+     * arrives late must not drag a completed order back to "shipped".
+     */
+    public const STATUS_TRANSITIONS = [
+        'pending' => ['processing', 'cancelled'],
+        'processing' => ['shipped', 'completed', 'cancelled'],
+        'shipped' => ['completed', 'cancelled'],
+        'completed' => [],
+        'cancelled' => [],
+    ];
+
+    /** Every status an order can hold, in lifecycle order. */
+    public const STATUSES = ['pending', 'processing', 'shipped', 'completed', 'cancelled'];
+
+    public function canTransitionTo(string $target): bool
+    {
+        return $target === $this->status
+            || in_array($target, self::STATUS_TRANSITIONS[$this->status] ?? [], true);
+    }
+
     protected $fillable = [
         'user_id', 'order_number', 'biteship_order_id', 'courier_tracking_id', 'address_id', 'coupon_id', 'discount_amount',
         'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',
@@ -132,9 +157,7 @@ class Order extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending' => 'Menunggu',
-            'awaiting_payment' => 'Menunggu Pembayaran',
-            'paid' => 'Dibayar',
+            'pending' => 'Menunggu Pembayaran',
             'processing' => 'Diproses',
             'shipped' => 'Dikirim',
             'completed' => 'Selesai',
@@ -147,8 +170,6 @@ class Order extends Model
     {
         return match ($this->status) {
             'pending' => 'yellow',
-            'awaiting_payment' => 'orange',
-            'paid' => 'emerald',
             'processing' => 'blue',
             'shipped' => 'indigo',
             'completed' => 'green',

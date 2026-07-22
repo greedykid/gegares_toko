@@ -8,8 +8,10 @@ use App\Models\Address;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Notifications\OrderPlacedNotification;
+use App\Notifications\OrderRefundPendingNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -25,6 +27,13 @@ use Illuminate\Support\Facades\Log;
  * the shipping rate, the coupon, and the address owner. The payment webhook
  * already refuses to trust its payload; this applies the same rule to the step
  * that builds the order in the first place.
+ *
+ * STOCK & COUPON INVARIANT
+ * Both are *reserved* the moment the order is written, and released together by
+ * cancelAndRelease() if the order dies before it ships. Reserving at payment
+ * time instead used to let ten customers check out against one remaining unit:
+ * nine of them paid and only then discovered the shop had nothing to send. The
+ * reservation moves that failure to checkout, where it can still be refused.
  */
 class OrderService
 {
@@ -45,7 +54,8 @@ class OrderService
      * @return array{order: Order, paymentUrl: string}
      *
      * @throws CheckoutException when the request no longer holds (bad address,
-     *                           stale shipping option, invalid coupon, ...).
+     *                           stale shipping option, invalid coupon, stock
+     *                           that ran out while the customer was deciding).
      * @throws PaymentGatewayException when the gateway cannot issue a payment
      *                                 link. The half-written order is rolled back before throwing.
      */
@@ -121,13 +131,22 @@ class OrderService
                 $order->items()->create($line);
             }
 
+            $this->reserveStock($lines);
+
             return $order;
         });
 
         $paymentUrl = $this->pakasir->createPaymentUrl($order);
 
         if (! $paymentUrl) {
-            $order->delete();
+            // The order transaction has already committed, so its stock and
+            // coupon slot are reserved. Hand both back before discarding the
+            // order, or a gateway hiccup would quietly eat the shop's stock.
+            DB::transaction(function () use ($order) {
+                $this->releaseReservations($order, true);
+                $order->delete();
+            });
+
             throw new PaymentGatewayException('Pakasir did not return a payment URL for order '.$order->order_number);
         }
 
@@ -141,6 +160,112 @@ class OrderService
         }
 
         return ['order' => $order, 'paymentUrl' => $paymentUrl];
+    }
+
+    /**
+     * Take the ordered quantities out of stock as part of the order transaction.
+     *
+     * The `stock >= quantity` guard is what makes this safe under concurrency:
+     * two checkouts racing for the last unit both run a conditional UPDATE, and
+     * whichever loses matches zero rows instead of driving stock negative. Losing
+     * rolls the whole order back, so that customer is turned away at checkout
+     * instead of paying for goods the shop cannot send.
+     *
+     * @param  array<int, array<string, mixed>>  $lines
+     *
+     * @throws CheckoutException
+     */
+    protected function reserveStock(array $lines): void
+    {
+        foreach ($lines as $line) {
+            $query = $line['product_variant_id']
+                ? ProductVariant::whereKey($line['product_variant_id'])
+                : Product::whereKey($line['product_id']);
+
+            $affected = $query->where('stock', '>=', $line['quantity'])
+                ->decrement('stock', $line['quantity']);
+
+            if ($affected === 0) {
+                $name = $line['product_name'].($line['variant_name'] ? " ({$line['variant_name']})" : '');
+
+                throw new CheckoutException("Stok '{$name}' tidak lagi mencukupi. Silakan sesuaikan jumlah di keranjang.");
+            }
+        }
+    }
+
+    /**
+     * Cancel an order and hand back everything it reserved.
+     *
+     * Every cancellation path goes through here — the admin's two buttons, the
+     * 24-hour auto-cancel, and the Biteship webhook — so none of them can forget
+     * to return stock, free the coupon slot, or tell a paying customer that a
+     * refund is owed.
+     *
+     * The status flip is a compare-and-swap under a row lock, so two
+     * cancellations racing (the admin and a courier webhook at the same moment)
+     * can only ever restock once.
+     *
+     * @param  array<string, mixed>  $updates  extra columns to write alongside the cancellation
+     * @param  bool|null  $restock  null decides from the status: goods already
+     *                              handed to the courier are not on the shelf to
+     *                              give back. Pass true when the parcel has
+     *                              physically returned to the shop.
+     * @return bool true when this call is the one that cancelled the order
+     */
+    public function cancelAndRelease(Order $order, array $updates = [], ?bool $restock = null): bool
+    {
+        $cancelled = DB::transaction(function () use ($order, $updates, $restock) {
+            $locked = Order::whereKey($order->getKey())->lockForUpdate()->first();
+
+            if (! $locked || in_array($locked->status, ['cancelled', 'completed'], true)) {
+                return false; // Already dead, or finished and no longer cancellable.
+            }
+
+            $this->releaseReservations($locked, $restock ?? $locked->status !== 'shipped');
+
+            $locked->update(array_merge(['status' => 'cancelled'], $updates));
+
+            return true;
+        });
+
+        $order->refresh();
+
+        // Only the call that actually performed the cancellation notifies, so
+        // concurrent cancellations cannot email the customer twice.
+        if ($cancelled && $order->needsRefund() && $order->user) {
+            try {
+                $order->user->notify(new OrderRefundPendingNotification($order));
+            } catch (\Throwable $e) {
+                Log::error('OrderRefundPending notification failed: '.$e->getMessage());
+            }
+        }
+
+        return $cancelled;
+    }
+
+    /**
+     * Put an order's stock and coupon slot back. Caller decides whether the
+     * goods are physically returnable; the coupon slot always is.
+     *
+     * Must run inside a transaction that also settles the order's fate, so the
+     * release and the status change cannot come apart.
+     */
+    protected function releaseReservations(Order $order, bool $restock): void
+    {
+        if ($restock) {
+            foreach ($order->items as $item) {
+                $relation = $item->product_variant_id ? $item->variant() : $item->product();
+                $relation->increment('stock', $item->quantity);
+            }
+        }
+
+        // Without this a promo capped at 100 uses is exhausted by 100 orders
+        // that were never paid for.
+        if ($order->coupon_id) {
+            Coupon::whereKey($order->coupon_id)
+                ->where('used_count', '>', 0)
+                ->decrement('used_count');
+        }
     }
 
     /**

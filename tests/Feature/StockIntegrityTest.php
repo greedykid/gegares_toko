@@ -4,16 +4,21 @@ namespace Tests\Feature;
 
 use App\Models\Address;
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
 use Tests\TestCase;
 
 /**
- * Stock is deducted in exactly one place — when a payment settles. These guard
- * the two ways that invariant used to be broken.
+ * Stock is reserved when an order is written and handed back when it dies.
+ *
+ * The old rule — deduct on payment — let any number of customers check out
+ * against one remaining unit; all but one of them paid before discovering the
+ * shop had nothing to send. These cover both halves of the reservation: it is
+ * taken at checkout, and it always comes back.
  */
 class StockIntegrityTest extends TestCase
 {
@@ -21,21 +26,28 @@ class StockIntegrityTest extends TestCase
 
     private function makeProduct(int $stock): Product
     {
-        $category = Category::create(['name' => 'Snack', 'slug' => 'snack', 'is_active' => true]);
+        $category = Category::firstOrCreate(
+            ['slug' => 'snack'],
+            ['name' => 'Snack', 'is_active' => true]
+        );
 
         return Product::create([
             'category_id' => $category->id,
             'name' => 'Klepon',
-            'slug' => 'klepon',
+            'slug' => 'klepon-'.uniqid(),
             'price' => 10000.00,
             'stock' => $stock,
         ]);
     }
 
-    private function makeOrder(Product $product, int $qty, array $overrides = []): Order
+    private function makeUser(): User
     {
-        $user = User::factory()->create();
-        $address = Address::create([
+        return User::factory()->create(['phone' => '081234567890']);
+    }
+
+    private function makeAddress(User $user): Address
+    {
+        return Address::create([
             'user_id' => $user->id,
             'label' => 'Rumah',
             'recipient_name' => 'Test User',
@@ -45,59 +57,108 @@ class StockIntegrityTest extends TestCase
             'province' => 'DKI Jakarta',
             'postal_code' => '12810',
             'is_primary' => true,
+            'area_id' => 'IDNP6IDNC148IDND836',
+            'latitude' => -6.2243,
+            'longitude' => 106.8432,
         ]);
-
-        $order = Order::create(array_merge([
-            'user_id' => $user->id,
-            'order_number' => 'GGR-STOCK-'.strtoupper(uniqid()),
-            'address_id' => $address->id,
-            'subtotal' => 20000.00,
-            'shipping_cost' => 9000.00,
-            'total' => 29000.00,
-            'status' => 'pending',
-            'payment_status' => 'unpaid',
-            'payment_method' => 'pakasir',
-            'shipping_courier' => 'jne',
-            'shipping_service' => 'reg',
-        ], $overrides));
-
-        $order->items()->create([
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'product_price' => $product->price,
-            'quantity' => $qty,
-            'subtotal' => $product->price * $qty,
-        ]);
-
-        return $order;
     }
 
-    /** Fake Pakasir confirming the payment, then hit the webhook. */
-    private function settleViaWebhook(Order $order): void
+    /** @return array<string, mixed> */
+    private function cartFor(Product $product, int $qty): array
     {
-        config(['pakasir.api_key' => 'test-key']);
-        Http::fake([
-            'app.pakasir.com/api/transactiondetail*' => Http::response([
-                'transaction' => [
-                    'status' => 'completed',
-                    'amount' => (int) $order->total,
-                    'payment_method' => 'qris',
-                ],
-            ], 200),
-        ]);
+        $key = $product->id.'_0';
 
-        $this->postJson(route('webhook.pakasir'), [
-            'order_id' => $order->order_number,
-            'status' => 'completed',
-            'amount' => (int) $order->total,
-        ])->assertOk();
+        return [
+            $key => [
+                'id' => $key,
+                'product_id' => $product->id,
+                'variant_id' => null,
+                'name' => $product->name,
+                'variant_name' => null,
+                'price' => (float) $product->price,
+                'image' => $product->image,
+                'slug' => $product->slug,
+                'quantity' => $qty,
+                'stock' => $product->stock,
+            ],
+        ];
     }
 
-    public function test_auto_cancel_does_not_invent_stock_for_unpaid_orders(): void
+    private function checkout(User $user, Address $address, Product $product, int $qty, array $session = [])
     {
-        // Unpaid orders never deducted stock, so cancelling must not add any back.
+        $this->fakeShippingRate('jne', 'reg', 9000);
+
+        return $this->actingAs($user)
+            ->withSession(array_merge(['cart' => $this->cartFor($product, $qty)], $session))
+            ->post(route('checkout.store'), [
+                'address_id' => $address->id,
+                'shipping_courier' => 'jne',
+                'shipping_service' => 'reg',
+                'payment_method' => 'pakasir',
+            ]);
+    }
+
+    // ── The reservation is taken at checkout ─────────────────────────────────
+
+    public function test_checkout_reserves_stock_before_any_payment(): void
+    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
         $product = $this->makeProduct(10);
-        $order = $this->makeOrder($product, 2);
+
+        $this->checkout($user, $address, $product, 2);
+
+        $this->assertEquals(1, Order::count());
+        $this->assertEquals('unpaid', Order::first()->payment_status);
+        $this->assertEquals(8, $product->fresh()->stock, 'Stock must be held from the moment the order exists.');
+    }
+
+    public function test_a_second_customer_cannot_check_out_against_reserved_stock(): void
+    {
+        $product = $this->makeProduct(2);
+
+        $first = $this->makeUser();
+        $this->checkout($first, $this->makeAddress($first), $product, 2);
+
+        $this->assertEquals(0, $product->fresh()->stock);
+        Session::flush();
+
+        // The last two units are already spoken for. The second customer has to
+        // be turned away here — not after paying.
+        $second = $this->makeUser();
+        $this->checkout($second, $this->makeAddress($second), $product, 2)
+            ->assertSessionHas('error');
+
+        $this->assertEquals(1, Order::count(), 'The oversold order must not exist.');
+        $this->assertEquals(0, $product->fresh()->stock, 'Stock must never go negative.');
+    }
+
+    public function test_a_refused_order_leaves_no_reservation_behind(): void
+    {
+        $product = $this->makeProduct(1);
+
+        $user = $this->makeUser();
+        // Two wanted, only one on the shelf: the whole order rolls back, so the
+        // single unit must still be there for the next customer.
+        $this->checkout($user, $this->makeAddress($user), $product, 2)
+            ->assertSessionHas('error');
+
+        $this->assertEquals(0, Order::count());
+        $this->assertEquals(1, $product->fresh()->stock);
+    }
+
+    // ── The reservation always comes back ────────────────────────────────────
+
+    public function test_auto_cancel_returns_the_stock_it_was_holding(): void
+    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
+        $product = $this->makeProduct(10);
+
+        $this->checkout($user, $address, $product, 2);
+        $this->assertEquals(8, $product->fresh()->stock);
+
+        $order = Order::first();
         $order->forceFill(['created_at' => now()->subHours(30)])->save();
 
         $this->artisan('orders:auto-cancel --hours=24')->assertSuccessful();
@@ -105,36 +166,53 @@ class StockIntegrityTest extends TestCase
         $order->refresh();
         $this->assertEquals('cancelled', $order->status);
         $this->assertEquals('expired', $order->payment_status);
-        $this->assertEquals(10, $product->fresh()->stock, 'Stock must be untouched.');
+        $this->assertEquals(10, $product->fresh()->stock, 'An abandoned order must free its stock.');
     }
 
-    public function test_payment_flags_the_order_when_stock_is_insufficient(): void
+    public function test_auto_cancel_also_frees_the_coupon_slot(): void
     {
-        // Only 1 left but 2 were ordered: stock must not go negative, and the
-        // order must carry a visible warning for the admin.
-        $product = $this->makeProduct(1);
-        $order = $this->makeOrder($product, 2);
-
-        $this->settleViaWebhook($order);
-
-        $order->refresh();
-        $this->assertEquals('paid', $order->payment_status);
-        $this->assertEquals(1, $product->fresh()->stock, 'Stock must not go negative.');
-        // The warning lives in admin_note, not in the customer's own note.
-        $this->assertStringContainsString('PERLU DICEK', $order->admin_note);
-        $this->assertStringContainsString('Klepon x2', $order->admin_note);
-        $this->assertNull($order->notes, 'The customer note must stay untouched.');
-    }
-
-    public function test_payment_leaves_no_warning_when_stock_is_sufficient(): void
-    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
         $product = $this->makeProduct(10);
-        $order = $this->makeOrder($product, 2, ['notes' => 'Tolong bungkus rapi']);
 
-        $this->settleViaWebhook($order);
+        // A promo with a single redemption left.
+        $coupon = Coupon::create([
+            'code' => 'TERBATAS',
+            'type' => 'fixed',
+            'value' => 5000,
+            'min_purchase' => 0,
+            'is_active' => true,
+            'usage_limit' => 1,
+            'used_count' => 0,
+        ]);
 
-        $order->refresh();
-        $this->assertEquals(8, $product->fresh()->stock);
-        $this->assertEquals('Tolong bungkus rapi', $order->notes, 'Customer note must be left alone.');
+        $this->checkout($user, $address, $product, 2, [
+            'coupon' => ['id' => $coupon->id, 'code' => $coupon->code, 'type' => 'fixed', 'value' => 5000.0],
+        ]);
+
+        $this->assertEquals(1, $coupon->fresh()->used_count);
+
+        Order::first()->forceFill(['created_at' => now()->subHours(30)])->save();
+        $this->artisan('orders:auto-cancel --hours=24')->assertSuccessful();
+
+        // Without the release, one order nobody ever paid for would burn the
+        // whole promo.
+        $this->assertEquals(0, $coupon->fresh()->used_count);
+        $this->assertTrue($coupon->fresh()->isValid());
+    }
+
+    public function test_running_auto_cancel_twice_does_not_double_restock(): void
+    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
+        $product = $this->makeProduct(10);
+
+        $this->checkout($user, $address, $product, 2);
+        Order::first()->forceFill(['created_at' => now()->subHours(30)])->save();
+
+        $this->artisan('orders:auto-cancel --hours=24')->assertSuccessful();
+        $this->artisan('orders:auto-cancel --hours=24')->assertSuccessful();
+
+        $this->assertEquals(10, $product->fresh()->stock, 'Releasing twice must not invent stock.');
     }
 }

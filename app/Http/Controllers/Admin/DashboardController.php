@@ -21,7 +21,7 @@ class DashboardController extends Controller
             $orderStats = Order::selectRaw("
                 count(*) as total_orders,
                 sum(case when payment_status = 'paid' then total else 0 end) as total_sales,
-                sum(case when status in ('pending', 'awaiting_payment') then 1 else 0 end) as pending_orders
+                sum(case when status = 'pending' then 1 else 0 end) as pending_orders
             ")->first();
 
             return [
