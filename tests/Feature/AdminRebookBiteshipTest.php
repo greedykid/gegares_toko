@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
@@ -23,7 +24,19 @@ class AdminRebookBiteshipTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // These orders ship grab/same_day, collected only between 09:00 and
+        // 14:00 WIB. Pinning the clock inside that window keeps the test about
+        // re-booking rather than about what time the suite is run.
+        Carbon::setTestNow(Carbon::parse('2026-07-22 10:00', 'Asia/Jakarta'));
+
         $this->admin = User::factory()->create(['role' => 'admin']);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     private function makeOrder(array $overrides = []): Order

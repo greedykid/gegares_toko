@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -25,6 +26,12 @@ class BookBiteshipOrderTest extends TestCase
     {
         parent::setUp();
 
+        // These orders ship grab/same_day, which is only collected between
+        // 09:00 and 14:00 WIB — outside it the job defers instead of booking.
+        // Without pinning the clock these tests would pass or fail depending on
+        // what time of day the suite happened to run.
+        Carbon::setTestNow(Carbon::parse('2026-07-22 10:00', 'Asia/Jakarta'));
+
         $this->user = User::factory()->create();
         $this->address = Address::create([
             'user_id' => $this->user->id,
@@ -39,6 +46,12 @@ class BookBiteshipOrderTest extends TestCase
             'latitude' => -6.2243,
             'longitude' => 106.8432,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     /**

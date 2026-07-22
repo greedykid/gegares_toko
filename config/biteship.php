@@ -8,4 +8,27 @@ return [
     'base_url' => 'https://api.biteship.com/v1',
     'origin_area_id' => env('BITESHIP_ORIGIN_AREA_ID', 'IDNP6IDNC147IDND829'),
     'timeout' => 30,
+
+    /*
+    | When each same-day courier will actually collect a parcel.
+    |
+    | These are the courier's hours, not the shop's: they are what decides
+    | whether a booking can be made at all, so both the checkout notice and the
+    | booking job read them from here. They used to be hardcoded inside
+    | BiteshipService, where nothing else could see them.
+    |
+    | Couriers not listed here are treated as bookable at any hour.
+    */
+    'pickup_timezone' => 'Asia/Jakarta',
+
+    'pickup_windows' => [
+        'grab' => ['opens_at' => 9, 'closes_at' => 14],
+        'gojek' => ['opens_at' => 9, 'closes_at' => 15],
+    ],
+
+    // Only these service types depend on the window above. 'instant' is
+    // deliberately absent: its hours are not the same-day hours and we have no
+    // confirmed figure for them, so applying these numbers to it would be a
+    // guess about someone else's API. Add it here once the real hours are known.
+    'pickup_window_services' => ['same_day', 'sameday'],
 ];

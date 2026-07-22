@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\StoreSetting;
 use App\Models\User;
+use App\Support\CourierSchedule;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -274,34 +275,20 @@ class BiteshipService
             $courierCompany = strtolower($order->shipping_courier);
             $courierType = strtolower($order->shipping_service);
 
-            $deliveryType = 'now';
-            $deliveryDate = null;
-            $deliveryTime = null;
+            // Outside a same-day courier's hours this used to ask Biteship for a
+            // 'scheduled' delivery at 09:00 the next morning. Biteship refuses —
+            // "Courier is not available for scheduled delivery" — because these
+            // couriers are on demand: they collect now or not at all. The order
+            // then sat paid and unbooked, because the three retries were spent
+            // within minutes and the admin's re-book button recomputed the same
+            // doomed request.
+            //
+            // The booking is always "now"; waiting for the window is
+            // BookBiteshipOrder's job, via CourierSchedule.
+            if (! CourierSchedule::isOpenNow($courierCompany, $courierType)) {
+                $opensAt = CourierSchedule::nextOpening($courierCompany, $courierType);
 
-            // Check if it's a same day service (Grab/Gojek sameday) and check if we are outside the service hours
-            $isSameDay = in_array($courierCompany, ['grab', 'gojek']) && in_array($courierType, ['same_day', 'sameday']);
-
-            if ($isSameDay) {
-                $now = now()->timezone('Asia/Jakarta');
-                $hour = (int) $now->format('H');
-
-                // Grab Same Day: 09:00 - 14:00, Gojek Same Day: 09:00 - 15:00
-                $maxHour = ($courierCompany === 'grab') ? 14 : 15;
-
-                if ($hour >= $maxHour || $hour < 9) {
-                    $deliveryType = 'scheduled';
-
-                    if ($hour >= $maxHour) {
-                        // Schedule for tomorrow at 09:00
-                        $scheduledDate = $now->copy()->addDay();
-                    } else {
-                        // Schedule for today at 09:00
-                        $scheduledDate = $now->copy();
-                    }
-
-                    $deliveryDate = $scheduledDate->format('Y-m-d');
-                    $deliveryTime = '09:00';
-                }
+                return ['error' => 'Kurir '.strtoupper($courierCompany).' belum bisa menjemput di luar jam operasional. Penjemputan berikutnya mulai '.$opensAt?->translatedFormat('d M H:i').' WIB.'];
             }
 
             $payload = [
@@ -327,15 +314,10 @@ class BiteshipService
                 'destination_note' => $destination['note'],
                 'courier_company' => $courierCompany,
                 'courier_type' => $courierType,
-                'delivery_type' => $deliveryType,
+                'delivery_type' => 'now',
                 'order_note' => "Order #{$order->order_number}",
                 'items' => $items,
             ];
-
-            if ($deliveryType === 'scheduled') {
-                $payload['delivery_date'] = $deliveryDate;
-                $payload['delivery_time'] = $deliveryTime;
-            }
 
             Log::info('Biteship Create Order Payload: '.json_encode($payload));
 
