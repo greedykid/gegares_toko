@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Services\BiteshipService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ManageAddresses extends Component
@@ -172,12 +173,9 @@ class ManageAddresses extends Component
             'area_id.required' => 'Silakan pilih area/kecamatan dari daftar pencarian.',
         ]);
 
-        if ($this->is_primary) {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $user->addresses()->update(['is_primary' => false]);
-        }
-        
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         $locationPayload = [
             'name' => $this->label,
             'contact_name' => $this->recipient_name,
@@ -189,50 +187,55 @@ class ManageAddresses extends Component
             'type' => 'destination'
         ];
 
+        // Shared columns; is_primary is written inside the same transaction that
+        // clears the other primaries.
+        $fields = [
+            'label' => $this->label,
+            'recipient_name' => $this->recipient_name,
+            'phone' => $this->phone,
+            'area_id' => $this->area_id,
+            'city' => $this->city,
+            'province' => $this->province,
+            'postal_code' => $this->postal_code,
+            'address_line' => $this->address_line,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'is_primary' => $this->is_primary,
+        ];
+
         if ($this->isEditing) {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
             $address = Address::where('user_id', $user->id)->findOrFail($this->editId);
-            
+
+            // Biteship location sync is network I/O — do it before the DB
+            // transaction so a slow API call never holds a write lock open.
             if ($address->biteship_location_id) {
                 $biteshipService->updateLocation($address->biteship_location_id, $locationPayload);
+                $fields['biteship_location_id'] = $address->biteship_location_id;
             } else {
-                $address->biteship_location_id = $biteshipService->createLocation($locationPayload);
+                $fields['biteship_location_id'] = $biteshipService->createLocation($locationPayload);
             }
 
-            $address->update([
-                'label' => $this->label,
-                'recipient_name' => $this->recipient_name,
-                'phone' => $this->phone,
-                'area_id' => $this->area_id,
-                'city' => $this->city,
-                'province' => $this->province,
-                'postal_code' => $this->postal_code,
-                'address_line' => $this->address_line,
-                'latitude' => $this->latitude,
-                'longitude' => $this->longitude,
-                'is_primary' => $this->is_primary,
-            ]);
-        } else {
-            $biteshipLocationId = $biteshipService->createLocation($locationPayload);
+            // Clearing the other primaries and writing this address must be
+            // atomic — a failure between them used to leave the account with no
+            // primary address at all.
+            DB::transaction(function () use ($user, $address, $fields) {
+                if ($this->is_primary) {
+                    $user->addresses()->where('id', '!=', $address->id)->update(['is_primary' => false]);
+                }
 
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $address = $user->addresses()->create([
-                'label' => $this->label,
-                'recipient_name' => $this->recipient_name,
-                'phone' => $this->phone,
-                'area_id' => $this->area_id,
-                'city' => $this->city,
-                'province' => $this->province,
-                'postal_code' => $this->postal_code,
-                'address_line' => $this->address_line,
-                'latitude' => $this->latitude,
-                'longitude' => $this->longitude,
-                'is_primary' => $this->is_primary,
-                'biteship_location_id' => $biteshipLocationId,
-            ]);
-            
+                $address->update($fields);
+            });
+        } else {
+            $fields['biteship_location_id'] = $biteshipService->createLocation($locationPayload);
+
+            $address = DB::transaction(function () use ($user, $fields) {
+                if ($this->is_primary) {
+                    $user->addresses()->update(['is_primary' => false]);
+                }
+
+                return $user->addresses()->create($fields);
+            });
+
             $this->selectedAddressId = $address->id;
             $this->dispatch('addressSelected', addressId: $address->id);
         }
@@ -246,9 +249,14 @@ class ManageAddresses extends Component
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $user->addresses()->update(['is_primary' => false]);
-        Address::where('user_id', $user->id)->where('id', $id)->update(['is_primary' => true]);
-        
+
+        // Atomic so a failure between the two writes can't leave the account
+        // with no primary address.
+        DB::transaction(function () use ($user, $id) {
+            $user->addresses()->update(['is_primary' => false]);
+            $user->addresses()->where('id', $id)->update(['is_primary' => true]);
+        });
+
         $this->loadAddresses();
     }
 

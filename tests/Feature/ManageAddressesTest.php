@@ -119,4 +119,68 @@ class ManageAddressesTest extends TestCase
         $address->refresh();
         $this->assertNotNull($address->deleted_at);
     }
+
+    /** @return array<string, mixed> */
+    private function addressFields(array $overrides = []): array
+    {
+        return array_merge([
+            'label' => 'Rumah',
+            'recipient_name' => 'Budi',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Contoh No. 1',
+            'city' => 'Jakarta Barat',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '11320',
+        ], $overrides);
+    }
+
+    public function test_saving_a_new_primary_address_demotes_the_previous_one(): void
+    {
+        $user = User::factory()->create();
+        $old = Address::create($this->addressFields([
+            'user_id' => $user->id,
+            'label' => 'Lama',
+            'area_id' => 'IDNP6IDNC147IDND829',
+            'is_primary' => true,
+        ]));
+
+        $mock = $this->createMock(BiteshipService::class);
+        $mock->method('createLocation')->willReturn('loc-new');
+        $this->app->instance(BiteshipService::class, $mock);
+
+        $this->actingAs($user);
+
+        Livewire::test(ManageAddresses::class)
+            ->call('createNew')
+            ->set('label', 'Baru')
+            ->set('recipient_name', 'Budi')
+            ->set('phone', '081200000000')
+            ->set('area_id', 'IDNP6IDNC147IDND829')
+            ->set('city', 'Jakarta Barat')
+            ->set('province', 'DKI Jakarta')
+            ->set('postal_code', '11320')
+            ->set('address_line', 'Jl. Baru No. 2')
+            ->set('is_primary', true)
+            ->call('save');
+
+        // Exactly one primary, and it is the new address.
+        $this->assertEquals(1, $user->addresses()->where('is_primary', true)->count());
+        $this->assertFalse($old->fresh()->is_primary);
+        $this->assertEquals('Baru', $user->addresses()->where('is_primary', true)->first()->label);
+    }
+
+    public function test_set_primary_moves_the_flag_to_exactly_one_address(): void
+    {
+        $user = User::factory()->create();
+        $a = Address::create($this->addressFields(['user_id' => $user->id, 'label' => 'A', 'is_primary' => true]));
+        $b = Address::create($this->addressFields(['user_id' => $user->id, 'label' => 'B', 'is_primary' => false]));
+
+        $this->actingAs($user);
+
+        Livewire::test(ManageAddresses::class)->call('setPrimary', $b->id);
+
+        $this->assertFalse($a->fresh()->is_primary);
+        $this->assertTrue($b->fresh()->is_primary);
+        $this->assertEquals(1, $user->addresses()->where('is_primary', true)->count());
+    }
 }

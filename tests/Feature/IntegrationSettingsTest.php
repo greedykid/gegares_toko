@@ -48,6 +48,24 @@ class IntegrationSettingsTest extends TestCase
         $this->assertSame('from-database', config('pakasir.api_key'));
     }
 
+    public function test_recaptcha_keys_can_be_managed_and_override_env(): void
+    {
+        config(['services.recaptcha.site' => 'env-site', 'services.recaptcha.secret' => 'env-secret']);
+
+        IntegrationSettings::put([
+            'recaptcha_site_key' => 'db-site',
+            'recaptcha_secret_key' => 'db-secret',
+        ]);
+        IntegrationSettings::applyToConfig();
+
+        $this->assertSame('db-site', config('services.recaptcha.site'));
+        $this->assertSame('db-secret', config('services.recaptcha.secret'));
+
+        // The secret is encrypted at rest like the other secret fields.
+        $raw = DB::table('app_credentials')->where('key', 'recaptcha_secret_key')->value('value');
+        $this->assertStringNotContainsString('db-secret', (string) $raw);
+    }
+
     public function test_a_blank_row_leaves_the_env_value_alone(): void
     {
         config(['biteship.api_key' => 'from-env']);
