@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Tests\TestCase;
@@ -16,6 +17,22 @@ use Tests\TestCase;
 class PakasirPaymentTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Courier booking now waits for the shop to be open (06:00–17:00 by
+        // default), so a payment settled at midnight defers instead of booking.
+        // Pinned inside opening hours to keep these tests about the payment.
+        Carbon::setTestNow(Carbon::parse('2026-07-22 10:00', 'Asia/Jakarta'));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     public function test_checkout_creates_order_and_generates_pakasir_link(): void
     {

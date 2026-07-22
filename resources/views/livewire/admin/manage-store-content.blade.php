@@ -537,6 +537,34 @@
                                 @error('contact_hours') <span
                                     class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- The text above is what visitors read; these two are what the
+                                 shipping logic acts on. An order placed outside them waits for
+                                 opening before a courier is called, because nobody is here to
+                                 hand the parcel over. --}}
+                            <div>
+                                <label
+                                    class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Jam Buka Toko (Penjemputan Kurir)</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 ml-1">Buka</span>
+                                        <input type="time" wire:model.defer="opens_at"
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-semibold text-sm">
+                                        @error('opens_at') <span
+                                            class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div>
+                                        <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 ml-1">Tutup</span>
+                                        <input type="time" wire:model.defer="closes_at"
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-semibold text-sm">
+                                        @error('closes_at') <span
+                                            class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 ml-1 leading-snug">
+                                    Pesanan di luar jam ini tetap diterima, tetapi kurir baru dipanggil saat toko buka kembali.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,7 @@ use App\Exceptions\CheckoutException;
 use App\Exceptions\PaymentGatewayException;
 use App\Services\CartService;
 use App\Services\OrderService;
+use App\Support\StoreSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -31,7 +32,16 @@ class CheckoutController extends Controller
         $coupon = $cartService->getCoupon();
         $addresses = auth()->user()->addresses()->orderByDesc('is_primary')->get();
 
-        return view('checkout.index', compact('cartItems', 'subtotal', 'discountAmount', 'coupon', 'addresses'));
+        // Ordering while the shop is shut is allowed, but not silently: the
+        // parcel cannot be collected until someone is here to hand it over, so
+        // the page warns and asks for confirmation before taking the money.
+        $storeOpen = StoreSchedule::isOpenNow();
+        $storeOpensAt = StoreSchedule::nextOpening();
+
+        return view('checkout.index', compact(
+            'cartItems', 'subtotal', 'discountAmount', 'coupon', 'addresses',
+            'storeOpen', 'storeOpensAt'
+        ));
     }
 
     public function store(Request $request, CartService $cartService, OrderService $orderService)

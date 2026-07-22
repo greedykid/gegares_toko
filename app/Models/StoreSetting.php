@@ -45,6 +45,10 @@ class StoreSetting extends Model
         // Contact Content
         'contact_whatsapp',
         'contact_hours',
+        // contact_hours is the free text shown on the contact page; these two
+        // are what the shipping logic reads. See App\Support\StoreSchedule.
+        'opens_at',
+        'closes_at',
 
         // Footer
         'payment_logos',

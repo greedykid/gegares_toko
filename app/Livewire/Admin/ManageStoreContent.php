@@ -42,6 +42,11 @@ class ManageStoreContent extends Component
     // Contact Fields
     public $contact_whatsapp;
     public $contact_hours;
+
+    /** Machine-readable trading hours; contact_hours stays the free-text blurb. */
+    public $opens_at;
+
+    public $closes_at;
     public $contact_phone;
     public $contact_email;
 
@@ -175,6 +180,8 @@ class ManageStoreContent extends Component
             'about_gallery_subtitle' => 'required|string',
             'contact_whatsapp' => 'required|string|max:20',
             'contact_hours' => 'required|string',
+            'opens_at' => 'required|date_format:H:i',
+            'closes_at' => 'required|date_format:H:i|after:opens_at',
             'contact_phone' => 'required|string|max:20',
             'contact_email' => 'required|email|max:255',
             'new_gallery_images.*' => 'nullable|image|max:2048', // 2MB Max
@@ -228,6 +235,8 @@ class ManageStoreContent extends Component
         $setting->about_gallery_subtitle = $this->about_gallery_subtitle;
         $setting->contact_whatsapp = $this->contact_whatsapp;
         $setting->contact_hours = $this->contact_hours;
+        $setting->opens_at = $this->opens_at;
+        $setting->closes_at = $this->closes_at;
         $setting->contact_phone = $this->contact_phone;
         $setting->contact_email = $this->contact_email;
         $setting->payment_logos = $this->payment_logos;

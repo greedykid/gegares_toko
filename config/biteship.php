@@ -26,9 +26,14 @@ return [
         'gojek' => ['opens_at' => 9, 'closes_at' => 15],
     ],
 
-    // Only these service types depend on the window above. 'instant' is
-    // deliberately absent: its hours are not the same-day hours and we have no
-    // confirmed figure for them, so applying these numbers to it would be a
-    // guess about someone else's API. Add it here once the real hours are known.
+    // Only these service types depend on the window above.
+    //
+    // 'instant' is deliberately absent, and production data says to keep it that
+    // way: of ten instant orders, the nine that were paid all booked -- at 02:23,
+    // 02:39, 05:09, 06:32, 08:26 and 20:30 WIB among others. Biteship accepts an
+    // instant booking round the clock. Same-day in the same period never booked
+    // once outside 09:00-15:00. Adding 'instant' here would show customers a
+    // false warning and, worse, hold their order until morning while a courier
+    // was available immediately.
     'pickup_window_services' => ['same_day', 'sameday'],
 ];
