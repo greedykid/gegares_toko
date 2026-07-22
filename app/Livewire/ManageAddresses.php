@@ -39,6 +39,9 @@ class ManageAddresses extends Component
     public $areaSearchResults = [];
     public $addressSearchQuery = '';
     public $addressSearchResults = [];
+    // The chosen area/kecamatan name, kept so the landmark search can be scoped
+    // to it (results funnel down from the area picked above).
+    public $area_name = '';
 
     public function mount($selectedAddressId = null)
     {
@@ -64,25 +67,49 @@ class ManageAddresses extends Component
 
     public function updatedAddressSearchQuery()
     {
-        if (strlen($this->addressSearchQuery) > 3) {
-            $cacheKey = 'address_search_' . md5($this->addressSearchQuery);
-            $this->addressSearchResults = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function() {
-                $response = Http::withHeaders([
-                    'User-Agent' => 'GegaresEcommerce/1.0 (contact@gegares.com)'
-                ])->get('https://nominatim.openstreetmap.org/search', [
-                    'q' => $this->addressSearchQuery,
-                    'format' => 'json',
-                    'viewbox' => '106.685,-6.107,106.973,-6.370',
-                    'bounded' => 1,
-                    'limit' => 5,
-                    'addressdetails' => 1
-                ]);
-
-                return $response->successful() ? $response->json() : [];
-            });
-        } else {
+        // Funnel: the landmark search is only meaningful once an area/kecamatan
+        // is chosen — its results are scoped to that area.
+        if (empty($this->area_id) || strlen($this->addressSearchQuery) <= 3) {
             $this->addressSearchResults = [];
+
+            return;
         }
+
+        // Narrow the query to the selected area by appending its
+        // kecamatan/city/province, so "Jl. Mangga" resolves within the chosen
+        // kecamatan instead of every Mangga street in Jakarta.
+        $context = collect([$this->area_name, $this->city, $this->province])
+            ->filter()
+            ->implode(', ');
+        $fullQuery = trim($this->addressSearchQuery) . ($context ? ', ' . $context : '');
+
+        // When the area gave us real coordinates, bound the search to a ~4km box
+        // around them; otherwise fall back to the Jakarta-wide box.
+        $isDefaultCentre = (float) $this->latitude === -6.2 && (float) $this->longitude === 106.816666;
+        $hasCoords = $this->latitude && $this->longitude && ! $isDefaultCentre;
+        $delta = 0.04;
+        $viewbox = $hasCoords
+            ? ($this->longitude - $delta) . ',' . ($this->latitude + $delta) . ',' . ($this->longitude + $delta) . ',' . ($this->latitude - $delta)
+            : '106.685,-6.107,106.973,-6.370';
+
+        // Cache key includes the area scope so results for different kecamatan
+        // never collide.
+        $cacheKey = 'address_search_' . md5($fullQuery . '|' . $viewbox);
+
+        $this->addressSearchResults = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($fullQuery, $viewbox) {
+            $response = Http::withHeaders([
+                'User-Agent' => 'GegaresEcommerce/1.0 (contact@gegares.com)',
+            ])->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $fullQuery,
+                'format' => 'json',
+                'viewbox' => $viewbox,
+                'bounded' => 1,
+                'limit' => 5,
+                'addressdetails' => 1,
+            ]);
+
+            return $response->successful() ? $response->json() : [];
+        });
     }
 
     public function selectAddressResult($displayName, $lat, $lon)
@@ -110,6 +137,7 @@ class ManageAddresses extends Component
     public function selectArea($id, $name, $city, $province, $postalCode, $latitude = null, $longitude = null)
     {
         $this->area_id = $id;
+        $this->area_name = $name;
         $this->searchQuery = $name . ', ' . $city;
         $this->city = $city;
         $this->province = $province;
@@ -119,6 +147,9 @@ class ManageAddresses extends Component
             $this->longitude = (float) $longitude;
         }
         $this->areaSearchResults = [];
+        // Picking a new area invalidates any landmark results scoped to the old
+        // one; clear them so the next search re-scopes cleanly.
+        $this->addressSearchResults = [];
     }
 
     public function createNew()
@@ -310,8 +341,10 @@ class ManageAddresses extends Component
         $this->longitude = 106.8166660;
         $this->editId = null;
         $this->searchQuery = '';
+        $this->area_name = '';
         $this->addressSearchQuery = '';
         $this->addressSearchResults = [];
+        $this->areaSearchResults = [];
     }
 
     public function render()

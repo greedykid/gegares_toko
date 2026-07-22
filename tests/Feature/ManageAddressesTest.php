@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -182,5 +183,48 @@ class ManageAddressesTest extends TestCase
         $this->assertFalse($a->fresh()->is_primary);
         $this->assertTrue($b->fresh()->is_primary);
         $this->assertEquals(1, $user->addresses()->where('is_primary', true)->count());
+    }
+
+    public function test_landmark_search_does_nothing_until_an_area_is_chosen(): void
+    {
+        Http::fake();
+        $this->actingAs(User::factory()->create());
+
+        Livewire::test(ManageAddresses::class)
+            ->set('area_id', '')
+            ->set('addressSearchQuery', 'Jalan Mangga Besar')
+            ->assertSet('addressSearchResults', []);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_landmark_search_is_scoped_to_the_selected_area(): void
+    {
+        Http::fake([
+            'nominatim.openstreetmap.org/*' => Http::response([
+                ['display_name' => 'Jl. Mangga Besar, Taman Sari', 'lat' => '-6.14', 'lon' => '106.82'],
+            ], 200),
+        ]);
+
+        $this->actingAs(User::factory()->create());
+
+        $component = Livewire::test(ManageAddresses::class)
+            ->set('area_id', 'IDNP6IDNC147IDND829')
+            ->set('area_name', 'Taman Sari')
+            ->set('city', 'Jakarta Barat')
+            ->set('province', 'DKI Jakarta')
+            ->set('latitude', -6.145)
+            ->set('longitude', 106.82)
+            ->set('addressSearchQuery', 'Jalan Mangga Besar');
+
+        $this->assertCount(1, $component->get('addressSearchResults'));
+
+        // The query was narrowed to the chosen area and bounded to a box.
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), 'nominatim.openstreetmap.org')
+                && str_contains($request['q'], 'Taman Sari')
+                && str_contains($request['q'], 'Jakarta Barat')
+                && (string) $request['bounded'] === '1';
+        });
     }
 }
