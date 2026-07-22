@@ -50,6 +50,10 @@ class CheckoutController extends Controller
             'shipping_service' => 'required|string',
             'payment_method' => 'required|string|in:pakasir',
             'notes' => 'nullable|string',
+            // Not the price we charge — the page re-quotes server-side. This is
+            // only what the customer was shown, so a rate that moved before they
+            // submitted can be pointed out instead of silently billed.
+            'shipping_cost' => 'nullable|numeric|min:0',
         ]);
 
         if (empty($cartService->getItems())) {
@@ -69,6 +73,7 @@ class CheckoutController extends Controller
                 'shipping_service' => $request->shipping_service,
                 'payment_method' => $request->payment_method,
                 'notes' => $request->notes,
+                'expected_shipping_cost' => $request->shipping_cost,
             ]);
         } catch (CheckoutException $e) {
             return back()->with('error', $e->getMessage());

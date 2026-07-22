@@ -50,7 +50,7 @@ class OrderService
      * `shipping_cost` is deliberately NOT accepted from the caller — it is
      * re-quoted from Biteship for the chosen courier and service.
      *
-     * @param  array{address_id:int, shipping_courier:string, shipping_service:string, payment_method?:string, notes?:string|null}  $params
+     * @param  array{address_id:int, shipping_courier:string, shipping_service:string, payment_method?:string, notes?:string|null, expected_shipping_cost?:float|null}  $params
      * @return array{order: Order, paymentUrl: string}
      *
      * @throws CheckoutException when the request no longer holds (bad address,
@@ -83,6 +83,7 @@ class OrderService
             $items,
             $params['shipping_courier'],
             $params['shipping_service'],
+            isset($params['expected_shipping_cost']) ? (float) $params['expected_shipping_cost'] : null,
         );
 
         [$coupon, $discount] = $this->resolveCoupon($user, $subtotal);
@@ -389,11 +390,25 @@ class OrderService
 
     /**
      * Re-quote the chosen courier service from Biteship. The cost posted by the
-     * browser is ignored: without this a customer could send shipping_cost=0 and
-     * the shop would still pay the real courier fee.
+     * browser never decides what is charged: without this a customer could send
+     * shipping_cost=0 and the shop would still pay the real courier fee.
+     *
+     * It is still worth knowing what the customer was shown, though. Rates are
+     * cached for five minutes, so a checkout page left open longer than that can
+     * be quoted a different price on submit — and charging more than the total
+     * someone agreed to, without a word, is not something to do quietly. A
+     * higher quote stops the order so the customer sees the new figure first; a
+     * lower one just goes through in their favour.
+     *
+     * @param  float|null  $expected  what the browser displayed, for comparison only
      */
-    protected function resolveShippingCost(Address $address, array $items, string $courier, string $service): float
-    {
+    protected function resolveShippingCost(
+        Address $address,
+        array $items,
+        string $courier,
+        string $service,
+        ?float $expected = null,
+    ): float {
         if (empty($address->area_id)) {
             throw new CheckoutException('Alamat pengiriman belum lengkap (area belum dipilih). Silakan perbarui alamat Anda.');
         }
@@ -409,7 +424,17 @@ class OrderService
         foreach ($rates as $rate) {
             if (($rate['courier_code'] ?? null) === $courier
                 && ($rate['courier_service_code'] ?? null) === $service) {
-                return (float) ($rate['price'] ?? 0);
+                $price = (float) ($rate['price'] ?? 0);
+
+                if ($expected !== null && $price > $expected) {
+                    throw new CheckoutException(
+                        'Ongkos kirim berubah dari Rp '.number_format($expected, 0, ',', '.').
+                        ' menjadi Rp '.number_format($price, 0, ',', '.').
+                        '. Silakan periksa kembali total pesanan Anda sebelum melanjutkan.'
+                    );
+                }
+
+                return $price;
             }
         }
 
