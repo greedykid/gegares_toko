@@ -43,7 +43,12 @@ class ToggleWishlist extends Component
             $productName = \App\Models\Product::find($this->productId)?->name ?? 'Produk';
             $this->dispatch('toast', type: 'info', message: "{$productName} dihapus dari wishlist");
         } else {
-            Wishlist::create([
+            // firstOrCreate, not create: the button decides from this component's
+            // cached isWishlisted, so two toggles racing (or a second component
+            // for the same product) could both take the "add" path. The unique
+            // (user_id, product_id) index already forbids a duplicate row — this
+            // keeps that from surfacing as a QueryException.
+            Wishlist::firstOrCreate([
                 'user_id' => auth()->id(),
                 'product_id' => $this->productId,
             ]);
