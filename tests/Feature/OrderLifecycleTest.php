@@ -59,6 +59,10 @@ class OrderLifecycleTest extends TestCase
             'status' => 'processing',
             'payment_status' => 'paid',
             'payment_method' => 'qris',
+            // A live order holds its stock off the shelf; without the marker
+            // this would be an order created before reservations existed, which
+            // has nothing to give back.
+            'stock_reserved_at' => now(),
             'shipping_courier' => 'grab',
             'shipping_service' => 'same_day',
         ], $overrides));

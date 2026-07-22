@@ -109,6 +109,10 @@ class OrderService
                 'notes' => $params['notes'] ?? null,
                 // System marker, kept out of the customer-written note.
                 'source' => $params['source'] ?? 'web',
+                // This order is about to take its stock off the shelf a few lines
+                // down. Both happen in one transaction, so the marker is never
+                // set for stock that was not actually taken.
+                'stock_reserved_at' => now(),
             ]);
 
             if ($coupon) {
@@ -177,6 +181,15 @@ class OrderService
      */
     protected function reserveStock(array $lines): void
     {
+        // Take the rows in one fixed order, never in cart order. Two carts
+        // holding the same two products in opposite order would otherwise each
+        // hold the row the other is waiting for — a deadlock on any engine with
+        // row-level locking.
+        usort($lines, function (array $a, array $b) {
+            return [$a['product_variant_id'] ? 1 : 0, $a['product_variant_id'] ?? $a['product_id']]
+                <=> [$b['product_variant_id'] ? 1 : 0, $b['product_variant_id'] ?? $b['product_id']];
+        });
+
         foreach ($lines as $line) {
             $query = $line['product_variant_id']
                 ? ProductVariant::whereKey($line['product_variant_id'])
@@ -252,15 +265,25 @@ class OrderService
      */
     protected function releaseReservations(Order $order, bool $restock): void
     {
-        if ($restock) {
-            foreach ($order->items as $item) {
-                $relation = $item->product_variant_id ? $item->variant() : $item->product();
-                $relation->increment('stock', $item->quantity);
+        // Only give back what this order actually took. Orders written before
+        // stock was reserved at checkout carry no marker: they took nothing, and
+        // restocking them would invent units that never left the shelf. Clearing
+        // the marker as part of the release is also what makes a second release
+        // a no-op, rather than trusting every caller to check the status first.
+        if ($order->stock_reserved_at !== null) {
+            if ($restock) {
+                foreach ($order->items as $item) {
+                    $relation = $item->product_variant_id ? $item->variant() : $item->product();
+                    $relation->increment('stock', $item->quantity);
+                }
             }
+
+            $order->stock_reserved_at = null;
+            $order->save();
         }
 
-        // Without this a promo capped at 100 uses is exhausted by 100 orders
-        // that were never paid for.
+        // The coupon is claimed for every order regardless of when it was made,
+        // so this one needs no marker.
         if ($order->coupon_id) {
             Coupon::whereKey($order->coupon_id)
                 ->where('used_count', '>', 0)

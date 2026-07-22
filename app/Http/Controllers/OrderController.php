@@ -78,6 +78,16 @@ class OrderController extends Controller
     {
         abort_if((int) $order->user_id !== (int) Auth::id(), 403);
 
+        // The status matters as much as the payment status here. Auto-cancel
+        // marks the payment 'expired', but an order cancelled by an admin keeps
+        // payment_status 'unpaid' — so without the first check its QRIS page
+        // stayed open and the customer could pay an order that no longer exists,
+        // handing the shop a refund it never needed to make.
+        if ($order->status === 'cancelled') {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Pesanan ini sudah dibatalkan, jadi tidak bisa dibayar.');
+        }
+
         if (in_array($order->payment_status, ['failed', 'expired'])) {
             return redirect()->route('orders.show', $order)
                 ->with('error', 'Pesanan ini sudah tidak bisa dibayar.');

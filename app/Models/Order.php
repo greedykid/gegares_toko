@@ -43,6 +43,7 @@ class Order extends Model
         'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',
         'pakasir_order_id', 'shipping_courier', 'shipping_service',
         'tracking_number', 'notes', 'admin_note', 'source', 'paid_at', 'refunded_at',
+        'stock_reserved_at',
     ];
 
     /**
@@ -84,6 +85,7 @@ class Order extends Model
             'total' => 'decimal:2',
             'paid_at' => 'datetime',
             'refunded_at' => 'datetime',
+            'stock_reserved_at' => 'datetime',
         ];
     }
 

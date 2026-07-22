@@ -133,7 +133,12 @@ class WebhookController extends Controller
             $retryKey = 'biteship_reallocation_retries_'.$order->id;
             $retries = Cache::get($retryKey, 0);
 
-            if ($retries < 2) {
+            // Re-allocation rewinds the order to "processing" to book a fresh
+            // driver, so it is only honest for an order that has not moved past
+            // that point. A rejection arriving after the parcel was picked up (or
+            // after the order was cancelled) would otherwise reverse a later
+            // state and re-book a shipment that is already under way.
+            if ($retries < 2 && $order->canTransitionTo('processing')) {
                 $newRetries = $retries + 1;
                 Cache::put($retryKey, $newRetries, now()->addDay());
                 Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Re-allocation attempt #{$newRetries} initiated.");
@@ -151,6 +156,8 @@ class WebhookController extends Controller
                 if (! (app()->runningUnitTests() && ! app()->bound(BiteshipService::class))) {
                     BookBiteshipOrder::dispatch($order->id);
                 }
+            } elseif (! $order->canTransitionTo('processing')) {
+                Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}', but the order is already '{$order->status}'. Left untouched for manual administrator action.");
             } else {
                 Log::warning("Biteship Webhook: Courier status for Order #{$order->order_number} is '{$status}'. Exceeded max reallocation attempts (2). Leaving status as processing for manual administrator action.");
 
