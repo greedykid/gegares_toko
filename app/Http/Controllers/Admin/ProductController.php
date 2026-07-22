@@ -28,7 +28,24 @@ class ProductController extends Controller
             $direction = 'desc';
         }
 
-        $query = Product::with(['category', 'images', 'variants']);
+        // How many units are still on the shelf but already spoken for. Stock is
+        // reserved at checkout, so the `stock` column is what is still sellable,
+        // not what is in the warehouse; without this number an admin doing a
+        // stocktake would type the physical count into a field that means
+        // something else and promise the reserved units twice.
+        //
+        // Only orders whose goods have not left count: 'shipped' and 'completed'
+        // carry the marker too — they took stock out and never give it back —
+        // but those units are physically gone, so counting them would overstate
+        // the warehouse. Same rule cancelAndRelease() uses to decide a restock.
+        $query = Product::with(['category', 'images', 'variants'])
+            ->withSum([
+                'orderItems as reserved_quantity' => fn ($q) => $q->whereHas(
+                    'order',
+                    fn ($o) => $o->whereNotNull('stock_reserved_at')
+                        ->whereIn('status', ['pending', 'processing'])
+                ),
+            ], 'quantity');
 
         // Filtering
         $query->when($request->search, function ($q, $search) {
