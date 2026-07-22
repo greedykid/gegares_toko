@@ -21,44 +21,49 @@ class GoogleController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-            
+
+            // Resolve to a single $user across every branch. The old code only
+            // assigned $user when matching by google_id, so a new signup or an
+            // email-linked account left it null and the `$user->phone` check
+            // below threw "property on null" — which the catch turned into a
+            // generic "Google gagal" even though the account had just been
+            // created and logged in.
             $user = User::where('google_id', $googleUser->id)->first();
-            
+
             if ($user) {
                 // Update avatar and name just in case
                 $user->update([
                     'google_avatar' => $googleUser->avatar,
-                    'name' => $googleUser->name
+                    'name' => $googleUser->name,
                 ]);
-                Auth::login($user);
             } else {
-                // Check if user exists with the same email
-                $userByEmail = User::where('email', $googleUser->email)->first();
-                
-                if ($userByEmail) {
-                    $userByEmail->update([
+                // Link a pre-existing password account with the same email
+                // instead of creating a duplicate.
+                $user = User::where('email', $googleUser->email)->first();
+
+                if ($user) {
+                    $user->update([
                         'google_id' => $googleUser->id,
-                        'google_avatar' => $googleUser->avatar
+                        'google_avatar' => $googleUser->avatar,
                     ]);
-                    Auth::login($userByEmail);
                 } else {
-                    $newUser = User::create([
+                    $user = User::create([
                         'name' => $googleUser->name,
                         'email' => $googleUser->email,
                         'google_id' => $googleUser->id,
                         'google_avatar' => $googleUser->avatar,
                         'role' => 'user', // Default role
-                        'password' => Hash::make(Str::random(16)) // Generate random password
+                        'password' => Hash::make(Str::random(16)), // Generate random password
                     ]);
-                    
-                    Auth::login($newUser);
                 }
             }
-            
-            if (!$user->phone) {
+
+            Auth::login($user);
+
+            if (! $user->phone) {
                 return redirect()->route('settings.complete-profile');
             }
-            
+
             return redirect()->intended(route('home'));
             
         } catch (Exception $e) {
