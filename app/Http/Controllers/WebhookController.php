@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\BookBiteshipOrder;
+use App\Jobs\ConfirmPakasirPayment;
 use App\Models\Order;
 use App\Services\BiteshipService;
 use App\Services\OrderService;
@@ -18,20 +19,42 @@ class WebhookController extends Controller
 
     public function pakasir(Request $request, PakasirService $pakasirService)
     {
-        // Log only the non-sensitive fields we actually act on, never the raw
-        // payload — it is a payment notification and may carry customer details.
-        Log::info('Pakasir webhook received', Arr::only(
+        // Carry only the non-sensitive fields the confirmation actually reads —
+        // never the raw payload — for both the log and the queued job.
+        $payload = Arr::only(
             $request->all(),
             ['order_id', 'status', 'amount', 'payment_method', 'completed_at']
-        ));
+        );
 
-        $order = $pakasirService->handleNotification($request->all());
+        Log::info('Pakasir webhook received', $payload);
 
-        if ($order) {
-            return response()->json(['status' => 'ok']);
+        $orderId = $payload['order_id'] ?? null;
+        if (! $orderId) {
+            Log::warning('Pakasir Webhook: Missing order_id in payload');
+
+            return response()->json(['status' => 'error', 'message' => 'missing order_id'], 400);
         }
 
-        return response()->json(['status' => 'error'], 404);
+        // A quick indexed lookup is all the request does. The authoritative
+        // re-confirmation against Pakasir's API — a multi-attempt sweep with a
+        // sleep between rounds — is handed to the queue so the gateway gets an
+        // immediate 200 instead of holding the connection open long enough to
+        // time the notification out. The payment page's polling is a second path
+        // to paid, so a briefly-delayed job never leaves the customer stuck.
+        $order = $pakasirService->findOrderByPayloadId($orderId);
+
+        if (! $order) {
+            Log::warning("Pakasir Webhook: Order not found for ID {$orderId}");
+
+            return response()->json(['status' => 'error'], 404);
+        }
+
+        // Already settled — acknowledge without re-queuing the confirmation.
+        if ($order->payment_status !== 'paid') {
+            ConfirmPakasirPayment::dispatch($payload);
+        }
+
+        return response()->json(['status' => 'ok']);
     }
 
     public function biteship(Request $request)

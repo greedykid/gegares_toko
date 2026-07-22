@@ -218,7 +218,10 @@ class BookBiteshipOrderTest extends TestCase
 
     public function test_it_is_dispatched_when_payment_settles(): void
     {
-        Queue::fake();
+        // Fake only the courier booking: the payment confirmation is itself a
+        // queued job now (ConfirmPakasirPayment), so it must still run on the
+        // sync connection for the webhook to settle the order.
+        Queue::fake([BookBiteshipOrder::class]);
 
         // Bind the service so markOrderPaid's test guard allows dispatch.
         $this->app->instance(BiteshipService::class, $this->createMock(BiteshipService::class));
@@ -235,7 +238,9 @@ class BookBiteshipOrderTest extends TestCase
 
     public function test_it_is_not_dispatched_when_the_order_is_already_booked(): void
     {
-        Queue::fake();
+        // See above: only the courier booking is faked so the confirmation job
+        // still runs and settles the order.
+        Queue::fake([BookBiteshipOrder::class]);
 
         $this->app->instance(BiteshipService::class, $this->createMock(BiteshipService::class));
 
