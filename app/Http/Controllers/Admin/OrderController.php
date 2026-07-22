@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\OrderRefundedNotification;
 use App\Services\BiteshipService;
 use App\Services\OrderService;
+use App\Support\CourierSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -205,6 +206,18 @@ class OrderController extends Controller
     {
         if ($order->status !== 'processing') {
             return back()->with('error', 'Hanya pesanan yang sudah dibayar dan sedang diproses yang dapat dibooking ke Biteship.');
+        }
+
+        // Say why it cannot go now, and when it will. Pressing this outside the
+        // courier's hours used to return Biteship's own "Courier is not
+        // available for scheduled delivery", which told the admin neither the
+        // reason nor that the booking is already queued for the morning.
+        if (! CourierSchedule::isOpenNow($order->shipping_courier, $order->shipping_service)) {
+            $opensAt = CourierSchedule::nextOpening($order->shipping_courier, $order->shipping_service);
+
+            return back()->with('error', 'Kurir '.strtoupper((string) $order->shipping_courier)
+                .' hanya menjemput pada jam operasionalnya. Booking otomatis sudah dijadwalkan mulai '
+                .$opensAt?->translatedFormat('d M H:i').' WIB — tidak perlu diproses manual.');
         }
 
         $result = $biteship->createOrder($order);
