@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ReviewController extends Controller
 {
@@ -110,8 +111,18 @@ class ReviewController extends Controller
 
     public function destroy(Review $review)
     {
+        // Reclaim the uploaded image now rather than leaving an orphan file in
+        // storage. The row is soft-deleted (kept for the audit trail); null the
+        // column so a later restore doesn't point at a file that's gone.
+        if ($review->image) {
+            Storage::disk('public')->delete($review->image);
+            $review->image = null;
+            $review->save();
+        }
+
         $review->delete();
         $review->product->updateRating();
+
         return back()->with('success', 'Ulasan dihapus.');
     }
 }

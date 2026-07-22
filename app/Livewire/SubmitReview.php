@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
 use App\Services\ImageOptimizer;
+use App\Support\ContentModeration;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -100,28 +102,42 @@ class SubmitReview extends Component
             $imagePath = app(ImageOptimizer::class)->store($this->image, 'reviews');
         }
 
-        $this->existingReview = Review::create([
-            'user_id' => Auth::id(),
-            'order_id' => $this->orderId,
-            'product_id' => $this->productId,
-            'rating' => $this->rating,
-            'comment' => $this->comment,
-            'image' => $imagePath,
-            // Published immediately by choice; the admin moderates after the fact
-            // and can unpublish or delete from the reviews screen, which
-            // recalculates the product rating.
-            'is_approved' => true,
-        ]);
+        // Clean reviews publish instantly (the fast path the shop wants); ones
+        // with abusive language are held as not-approved for an admin to look at
+        // first, so they neither show publicly nor move the rating until then.
+        $held = ContentModeration::containsProfanity($this->comment);
+
+        try {
+            $this->existingReview = Review::create([
+                'user_id' => Auth::id(),
+                'order_id' => $this->orderId,
+                'product_id' => $this->productId,
+                'rating' => $this->rating,
+                'comment' => $this->comment,
+                'image' => $imagePath,
+                'is_approved' => ! $held,
+            ]);
+        } catch (UniqueConstraintViolationException $e) {
+            // A concurrent submit (or a moderator-removed earlier review) already
+            // holds this slot — treat it as done rather than erroring out.
+            $this->isSubmitted = true;
+            $this->dispatch('toast', type: 'info', message: 'Anda sudah pernah mengulas produk ini untuk pesanan tersebut.');
+
+            return;
+        }
 
         $this->isSubmitted = true;
 
-        // Update product average rating
+        // Update product average rating (only approved reviews count, so a held
+        // review leaves the rating untouched until it is approved).
         $product = Product::find($this->productId);
         if ($product) {
             $product->updateRating();
         }
 
-        $this->dispatch('toast', type: 'success', message: 'Terima kasih! Ulasan Anda berhasil dikirim.');
+        $this->dispatch('toast', type: 'success', message: $held
+            ? 'Ulasan Anda terkirim dan sedang ditinjau admin sebelum ditampilkan.'
+            : 'Terima kasih! Ulasan Anda berhasil dikirim.');
     }
 
     public function render()
