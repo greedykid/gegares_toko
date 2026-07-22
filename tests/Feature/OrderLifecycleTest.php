@@ -30,7 +30,9 @@ class OrderLifecycleTest extends TestCase
 
     private function makeOrder(array $overrides = []): Order
     {
-        $user = User::factory()->create(['role' => 'user']);
+        // Phone set: the check_phone middleware would otherwise bounce the
+        // customer to the complete-profile page instead of their order.
+        $user = User::factory()->create(['role' => 'user', 'phone' => '081234567890']);
         $address = Address::create([
             'user_id' => $user->id,
             'label' => 'Rumah',
@@ -206,6 +208,46 @@ class OrderLifecycleTest extends TestCase
         $order->refresh();
         $this->assertNotNull($order->refunded_at);
         $this->assertFalse($order->needsRefund());
+    }
+
+    // ── What the customer sees on a cancelled order ──────────────────────────
+
+    public function test_the_customer_is_told_how_to_ask_for_a_refund(): void
+    {
+        $order = $this->makeOrder(['status' => 'cancelled', 'payment_status' => 'paid']);
+
+        $this->actingAs($order->user)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('Pengembalian Dana')
+            ->assertSee('Chat Admin untuk Refund')
+            ->assertSee('https://wa.me/', false);
+    }
+
+    public function test_a_cancelled_unpaid_order_is_not_promised_a_refund(): void
+    {
+        // Nothing was ever paid, so there is nothing to return.
+        $order = $this->makeOrder(['status' => 'cancelled', 'payment_status' => 'expired']);
+
+        $this->actingAs($order->user)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertDontSee('Chat Admin untuk Refund');
+    }
+
+    public function test_a_refunded_order_says_so_instead(): void
+    {
+        $order = $this->makeOrder([
+            'status' => 'cancelled',
+            'payment_status' => 'paid',
+            'refunded_at' => now(),
+        ]);
+
+        $this->actingAs($order->user)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('Dana Telah Dikembalikan')
+            ->assertDontSee('Chat Admin untuk Refund');
     }
 
     public function test_an_order_that_owes_nothing_cannot_be_marked_refunded(): void
