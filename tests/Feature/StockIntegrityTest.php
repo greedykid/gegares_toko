@@ -201,6 +201,62 @@ class StockIntegrityTest extends TestCase
         $this->assertTrue($coupon->fresh()->isValid());
     }
 
+    public function test_an_order_predating_reservations_is_never_restocked(): void
+    {
+        // Orders written before stock was reserved at checkout carry no marker.
+        // They took nothing off the shelf, so cancelling one must give nothing
+        // back — the shop would otherwise gain a unit it never had.
+        $product = $this->makeProduct(10);
+        $user = $this->makeUser();
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'order_number' => 'GGR-LEGACY-'.strtoupper(uniqid()),
+            'address_id' => $this->makeAddress($user)->id,
+            'subtotal' => 20000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 29000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'pakasir',
+            'shipping_courier' => 'jne',
+            'shipping_service' => 'reg',
+            // stock_reserved_at deliberately absent: this is a pre-migration order.
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_price' => $product->price,
+            'quantity' => 2,
+            'subtotal' => 20000.00,
+        ]);
+        $order->forceFill(['created_at' => now()->subHours(30)])->save();
+
+        $this->artisan('orders:auto-cancel --hours=24')->assertSuccessful();
+
+        $this->assertEquals('cancelled', $order->fresh()->status);
+        $this->assertEquals(10, $product->fresh()->stock, 'A legacy order must not invent stock.');
+    }
+
+    public function test_a_cancelled_order_can_no_longer_be_paid(): void
+    {
+        $user = $this->makeUser();
+        $address = $this->makeAddress($user);
+        $product = $this->makeProduct(10);
+
+        $this->checkout($user, $address, $product, 2);
+        $order = Order::first();
+
+        // Cancelled by an admin, so payment_status stays 'unpaid' — the QRIS
+        // page used to remain open on exactly this combination.
+        app(\App\Services\OrderService::class)->cancelAndRelease($order);
+
+        $this->actingAs($user)
+            ->get(route('orders.payment', $order))
+            ->assertRedirect(route('orders.show', $order))
+            ->assertSessionHas('error');
+    }
+
     public function test_running_auto_cancel_twice_does_not_double_restock(): void
     {
         $user = $this->makeUser();

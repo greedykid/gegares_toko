@@ -243,6 +243,10 @@ class BiteshipWebhookTest extends TestCase
             'status' => 'processing',
             'payment_status' => 'paid',
             'payment_method' => 'qris',
+            // A live order holds its stock off the shelf; without the marker
+            // this would be an order created before reservations existed, which
+            // has nothing to give back.
+            'stock_reserved_at' => now(),
             'shipping_courier' => 'grab',
             'shipping_service' => 'same_day',
             'biteship_order_id' => 'biteship-cancel-1',
@@ -332,6 +336,25 @@ class BiteshipWebhookTest extends TestCase
         // The goods are with the courier, not on the shelf — counting them back
         // in would sell units the shop does not physically hold.
         $this->assertEquals(48, $product->fresh()->stock);
+    }
+
+    public function test_a_rejection_after_pickup_does_not_reverse_a_shipped_order(): void
+    {
+        $product = $this->makeProduct(48);
+        $order = $this->paidOrderHolding($product, 2, ['status' => 'shipped']);
+
+        $this->postJson(route('webhook.biteship'), [
+            'event' => 'order.status',
+            'data' => ['order_id' => 'biteship-cancel-1', 'status' => 'rejected'],
+        ])->assertStatus(200);
+
+        $order->refresh();
+
+        // Re-allocation rewinds an order to "processing" to find a new driver.
+        // Doing that to a parcel already in transit would reverse a later state
+        // and book a second shipment for goods that have left.
+        $this->assertEquals('shipped', $order->status);
+        $this->assertEquals('biteship-cancel-1', $order->biteship_order_id, 'The live booking must not be cleared.');
     }
 
     // ── A late webhook cannot rewrite history ────────────────────────────────
