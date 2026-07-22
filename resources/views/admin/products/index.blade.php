@@ -16,7 +16,7 @@
 <div x-data="{ 
     showModal: false, 
     editMode: false, 
-    form: { id:null, slug:'', name:'', category_id:'', description:'', price:'', stock:'', is_featured:false, image:'' },
+    form: { id:null, slug:'', name:'', category_id:'', description:'', price:'', stock:'', reserved_quantity:0, is_featured:false, image:'' },
     imagePreview: null,
     removeImageField: false,
     
@@ -128,7 +128,7 @@
     </div>
 
     <div class="flex justify-end mb-6">
-        <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',is_featured:false,image:''};"
+        <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',reserved_quantity:0,is_featured:false,image:''};"
                 class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">+ Tambah Produk</button>
     </div>
 
@@ -427,8 +427,17 @@
                                 </form>
 
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold {{ $product->isOutOfStock() ? 'bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 border border-red-200/50 dark:border-red-950/30' : ($product->isLowStock() ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-650 dark:text-amber-400 border border-amber-200/50 dark:border-amber-950/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700') }}">
-                                    Stok: {{ $product->stock }}
+                                    Tersedia: {{ $product->stock }}
                                 </span>
+
+                                {{-- Held by live orders. Shown only when there is
+                                     something to hold, so the common case stays quiet. --}}
+                                @if($product->reserved_quantity)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-900/30"
+                                          title="Sudah dipesan pelanggan dan dipotong dari stok tersedia. Total di gudang: {{ $product->stock + $product->reserved_quantity }}.">
+                                        {{ $product->reserved_quantity }} tertahan
+                                    </span>
+                                @endif
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -447,7 +456,7 @@
                         </td>
                         <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
                             <div class="relative group/tooltip inline-flex">
-                                <button @click="resetGallery(); showModal=true; editMode=true; form={id:{{ $product->id }},slug:'{{ $product->slug }}',name:'{{ addslashes($product->name) }}',category_id:'{{ $product->category_id }}',description:'{{ addslashes($product->description) }}',price:'{{ $product->price }}',stock:'{{ $product->stock }}',is_featured:{{ $product->is_featured ? 'true' : 'false' }}, image: '{{ $product->image }}'}; existingGallery={{ $product->images->toJson() }}; variants={{ $product->variants->toJson() }};"
+                                <button @click="resetGallery(); showModal=true; editMode=true; form={id:{{ $product->id }},slug:'{{ $product->slug }}',name:'{{ addslashes($product->name) }}',category_id:'{{ $product->category_id }}',description:'{{ addslashes($product->description) }}',price:'{{ $product->price }}',stock:'{{ $product->stock }}',reserved_quantity:{{ (int) $product->reserved_quantity }},is_featured:{{ $product->is_featured ? 'true' : 'false' }}, image: '{{ $product->image }}'}; existingGallery={{ $product->images->toJson() }}; variants={{ $product->variants->toJson() }};"
                                         class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                                 </button>
@@ -575,8 +584,21 @@
                             <input type="number" name="price" x-model="form.price" required min="0" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Stok</label>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Stok Tersedia</label>
                             <input type="number" name="stock" x-model="form.stock" required min="0" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+                            {{-- The column means "still sellable", not "in the warehouse":
+                                 an order reserves its units the moment it is placed. Saying so
+                                 here is what stops a stocktake being typed straight into it. --}}
+                            <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400 leading-snug"
+                               x-show="!editMode || !form.reserved_quantity">
+                                Jumlah yang masih bisa dipesan, bukan jumlah di gudang.
+                            </p>
+                            <template x-if="editMode && form.reserved_quantity">
+                                <p class="mt-1 text-[11px] text-indigo-600 dark:text-indigo-400 leading-snug">
+                                    <span x-text="form.reserved_quantity"></span> unit sedang ditahan pesanan aktif,
+                                    jadi total di gudang <span class="font-bold" x-text="Number(form.stock || 0) + Number(form.reserved_quantity)"></span>.
+                                </p>
+                            </template>
                         </div>
                     </div>
                     {{-- Primary and Gallery Images --}}
