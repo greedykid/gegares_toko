@@ -114,6 +114,14 @@
                 class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 underline">Daftar
                 sekarang</a>
         </p>
+
+        <p class="mt-4 text-center text-xs text-slate-400 dark:text-slate-500 font-medium leading-relaxed">
+            Dengan masuk, Anda menyetujui
+            <a href="{{ route('terms') }}" class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 underline">Syarat &amp; Ketentuan</a>
+            dan
+            <a href="{{ route('privacy') }}" class="font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 underline">Kebijakan Privasi</a>
+            kami.
+        </p>
     </div>
 
 @endsection

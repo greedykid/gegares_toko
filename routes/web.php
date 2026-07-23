@@ -40,6 +40,9 @@ Route::get('/produk', [ProductController::class, 'index'])->name('products.index
 Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/tentang', fn () => view('pages.about'))->name('about');
 Route::get('/kontak', fn () => view('pages.contact'))->name('contact');
+Route::get('/info-pengiriman', fn () => view('pages.shipping'))->name('shipping');
+Route::get('/kebijakan-privasi', fn () => view('pages.privacy'))->name('privacy');
+Route::get('/syarat-ketentuan', fn () => view('pages.terms'))->name('terms');
 
 // ─── Auth Routes (Guest) ───
 Route::middleware('guest')->group(function () {
