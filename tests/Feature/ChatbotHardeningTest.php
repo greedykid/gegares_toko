@@ -197,4 +197,30 @@ class ChatbotHardeningTest extends TestCase
 
         \Illuminate\Support\Carbon::setTestNow();
     }
+
+    public function test_system_prompt_includes_ongkir_for_a_saved_address_and_cart(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        \App\Models\Address::create([
+            'user_id' => $user->id, 'label' => 'Rumah', 'recipient_name' => 'Budi',
+            'phone' => '081234567890', 'address_line' => 'Jl. Contoh 1', 'city' => 'Jakarta Barat',
+            'province' => 'DKI Jakarta', 'postal_code' => '11320', 'area_id' => 'IDNP6IDNC147IDND829',
+            'is_primary' => true,
+        ]);
+
+        $product = $this->makeProduct('Klepon', 'klepon-ongkir');
+        app(\App\Services\CartService::class)->add($product->id, 1);
+
+        $mock = $this->createMock(\App\Services\BiteshipService::class);
+        $mock->method('getShippingRates')->willReturn([
+            ['courier_code' => 'gojek', 'courier_service_code' => 'instant', 'price' => 21000],
+        ]);
+        $this->app->instance(\App\Services\BiteshipService::class, $mock);
+
+        $this->actingAs($user);
+        $prompt = app(\App\Services\Chatbot\ChatbotContextBuilder::class)->systemPrompt();
+
+        $this->assertStringContainsString('Ongkir ke alamat TERSIMPAN', $prompt);
+        $this->assertStringContainsString('Rp 21.000', $prompt);
+    }
 }
