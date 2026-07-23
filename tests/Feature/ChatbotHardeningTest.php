@@ -181,4 +181,20 @@ class ChatbotHardeningTest extends TestCase
 
         $this->assertStringContainsString('ANTI-PENGULANGAN', $prompt);
     }
+
+    public function test_system_prompt_lists_current_courier_availability(): void
+    {
+        // 16:40 WIB: instant runs round the clock; same day's cutoff has passed.
+        \Illuminate\Support\Carbon::setTestNow(\Illuminate\Support\Carbon::parse('2026-07-23 16:40', 'Asia/Jakarta'));
+        $this->actingAs(User::factory()->create());
+
+        $prompt = app(\App\Services\Chatbot\ChatbotContextBuilder::class)->systemPrompt();
+
+        $this->assertStringContainsString('KETERSEDIAAN KURIR', $prompt);
+        $this->assertStringContainsString('GOJEK Instant', $prompt);
+        $this->assertMatchesRegularExpression('/Instant[^\n]*TERSEDIA/', $prompt);
+        $this->assertMatchesRegularExpression('/Same Day[^\n]*BELUM tersedia/', $prompt);
+
+        \Illuminate\Support\Carbon::setTestNow();
+    }
 }
