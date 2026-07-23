@@ -41,6 +41,7 @@ class ChatbotContextBuilder
         $cartContext = $this->cartContext();
         $timeContext = $this->timeContext();
         $courierAvailability = $this->courierAvailability();
+        $shippingRates = $this->shippingRatesContext();
 
         $userName = Auth::check() ? Auth::user()->name : 'Pengunjung';
 
@@ -138,7 +139,11 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
 
 # KETERSEDIAAN KURIR SAAT INI
 {$courierAvailability}
-Instruksi: Jika user bertanya 'kurir/metode pengiriman apa yang tersedia sekarang', 'bisa dikirim sekarang tidak', atau sejenisnya — JAWAB berdasarkan data di atas. Sebutkan kurir yang TERSEDIA sekarang, dan yang penjemputannya ditunda beserta waktunya. JANGAN cuma menjawab 'lihat di halaman Checkout'. Ongkir pasti tetap dihitung di Checkout sesuai alamat.
+Instruksi: Jika user bertanya 'kurir/metode pengiriman apa yang tersedia sekarang', 'bisa dikirim sekarang tidak', atau sejenisnya — JAWAB berdasarkan data di atas. Sebutkan kurir yang TERSEDIA sekarang, dan yang penjemputannya ditunda beserta waktunya. JANGAN cuma menjawab 'lihat di halaman Checkout'.
+
+# ONGKIR (BIAYA KIRIM)
+{$shippingRates}
+Instruksi: Jika user bertanya berapa ongkir/biaya kirim, GUNAKAN angka di atas bila tersedia (itu ongkir nyata ke alamat TERSIMPAN user untuk isi keranjangnya). Jika data ongkir belum tersedia (alamat belum lengkap / keranjang kosong), jelaskan apa yang perlu dilakukan dulu. Untuk alamat yang BERBEDA dari alamat tersimpan (mis. user menyebut nama jalan lain), jujur bahwa ongkir dihitung otomatis di Checkout setelah alamat itu dipilih — jarak menentukan tarif. JANGAN PERNAH mengarang nominal ongkir.
 
 # DATA PESANAN USER (⚠️ HANYA GUNAKAN JIKA USER BERTANYA TENTANG PESANAN MEREKA)
 {$orderContext}
@@ -193,6 +198,58 @@ saran1|saran2|saran3";
             : 'Toko sedang TUTUP — semua kurir baru bisa menjemput setelah toko buka.';
 
         return 'Waktu sekarang: '.$now->translatedFormat('l, d M Y H:i').' WIB. '.$storeNote."\n".implode("\n", $lines);
+    }
+
+    /**
+     * Real shipping costs to the customer's saved address for their current cart,
+     * so the chatbot can answer "berapa ongkir" with the same figures the checkout
+     * page shows instead of always deferring. Only computed when both an address
+     * and a cart exist; the rate call is the cached one checkout uses.
+     */
+    protected function shippingRatesContext(): string
+    {
+        if (! Auth::check()) {
+            return 'Ongkir dihitung otomatis di halaman Checkout setelah user login, memilih alamat, dan keranjang terisi.';
+        }
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $address = $user->addresses()->orderByDesc('is_primary')->first();
+        $items = app(\App\Services\CartService::class)->getItems();
+
+        if (! $address || empty($address->area_id)) {
+            return 'User belum punya alamat pengiriman lengkap (dengan area/kecamatan), jadi ongkir belum bisa dihitung. Arahkan user menambah/melengkapi alamat lebih dulu.';
+        }
+        if (empty($items)) {
+            return 'Keranjang user masih kosong. Ongkir dihitung dari alamat + isi keranjang, jadi minta user menambahkan produk dulu.';
+        }
+
+        // Don't hit the real Biteship API from the test suite unless a mock is bound.
+        if (app()->runningUnitTests() && ! app()->bound(\App\Services\BiteshipService::class)) {
+            return 'Ongkir tersedia dan dihitung dari alamat tersimpan + isi keranjang user.';
+        }
+
+        $rates = app(\App\Services\BiteshipService::class)->getShippingRates(
+            $address->area_id,
+            $items,
+            null,
+            $address->latitude ? (float) $address->latitude : null,
+            $address->longitude ? (float) $address->longitude : null,
+        );
+
+        if (empty($rates)) {
+            return 'Ongkir ke alamat tersimpan user belum bisa dihitung saat ini (kurir tidak mengembalikan tarif). Arahkan user mencoba lagi di halaman Checkout.';
+        }
+
+        $dest = trim(($address->label ? $address->label.' — ' : '').($address->city ?? 'alamat tersimpan'));
+
+        $lines = [];
+        foreach ($rates as $r) {
+            $lines[] = '- '.strtoupper($r['courier_code'] ?? '').' '.strtoupper((string) ($r['courier_service_code'] ?? '')).
+                ': Rp '.number_format((float) ($r['price'] ?? 0), 0, ',', '.');
+        }
+
+        return 'Ongkir ke alamat TERSIMPAN user ('.$dest.') untuk isi keranjang saat ini:'."\n".implode("\n", $lines);
     }
 
     /**
