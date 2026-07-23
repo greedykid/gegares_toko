@@ -102,6 +102,16 @@
                                                 $rate['courier_service_code'] ?? null
                                             );
                                             $storeShut = ! \App\Support\StoreSchedule::isOpenNow();
+                                            // The shop is open but this service still can't be collected:
+                                            // that only happens for a Same Day courier whose daily cutoff
+                                            // has passed, so it earns its own, clearer message.
+                                            $sameDayCutoff = ! $storeShut && \App\Support\CourierSchedule::hasPickupWindow(
+                                                $rate['courier_code'] ?? null,
+                                                $rate['courier_service_code'] ?? null
+                                            );
+                                            $notice = $storeShut
+                                                ? 'Toko sedang tutup.'
+                                                : ($sameDayCutoff ? 'Batas jemput layanan Same Day hari ini sudah lewat.' : 'Di luar jam jemput kurir.');
                                         @endphp
                                         @if($opensAt)
                                             <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1 flex items-start gap-1.5 font-semibold">
@@ -109,8 +119,8 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
                                                 </svg>
                                                 <span>
-                                                    {{ $storeShut ? 'Toko sedang tutup.' : 'Di luar jam jemput kurir.' }}
-                                                    Pesanan tetap kami terima, dijemput {{ $opensAt->translatedFormat('l, d M') }} mulai {{ $opensAt->format('H:i') }} WIB.
+                                                    {{ $notice }}
+                                                    Pesanan tetap kami terima, dijemput {{ $opensAt->translatedFormat('l, d M') }} mulai {{ $opensAt->format('H:i') }} WIB.@if($sameDayCutoff) Untuk pengiriman hari ini, pilih layanan <span class="font-bold">Instant</span>.@endif
                                                 </span>
                                             </p>
                                         @endif
