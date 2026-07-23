@@ -234,10 +234,10 @@
              </div>
              @endif
 
-             {{-- ETA Banner — dynamic: before the parcel is handed over, if the chosen
-                  courier is past its pickup cutoff (or the shop was shut when ordered)
-                  it says when it will actually be collected; otherwise it shows the
-                  normal delivery estimate. --}}
+             {{-- ETA Banner — dynamic: before the parcel is handed over, if a pickup
+                  is not possible right now (the courier is past its cutoff, or the
+                  shop is currently shut) it says when it will actually be collected;
+                  otherwise it shows the normal delivery estimate. --}}
              @if($order->status !== 'cancelled' && $order->status !== 'completed')
              @php
                  $etaText = '';
@@ -258,9 +258,14 @@
 
                  // Only meaningful before pickup. nextOpening() combines the shop's
                  // hours and the courier's window (e.g. a Same Day cutoff), so it is
-                 // null once a pickup is actually possible.
+                 // null once a pickup is actually possible. Reckon from now(), not
+                 // created_at: a pickup can only happen from the present moment on,
+                 // and this is exactly what BookBiteshipOrder does when it defers a
+                 // booking — so an order placed while a pickup was still possible but
+                 // paid after the cutoff (or after close) shows the real collection
+                 // time, not the stale one it had at checkout.
                  $pickupAt = in_array($order->status, ['pending', 'processing'])
-                     ? \App\Support\CourierSchedule::nextOpening($order->shipping_courier, $order->shipping_service, $order->created_at)
+                     ? \App\Support\CourierSchedule::nextOpening($order->shipping_courier, $order->shipping_service)
                      : null;
              @endphp
              <div class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-3xl p-5 flex items-center gap-4">
@@ -269,9 +274,15 @@
                  </div>
                  <div>
                      @if($pickupAt)
+                         @php $pastCutoff = \App\Support\CourierSchedule::hasPickupWindow($order->shipping_courier, $order->shipping_service) && ! \App\Support\CourierSchedule::isOpenNow($order->shipping_courier, $order->shipping_service) && \App\Support\StoreSchedule::isOpenNow(); @endphp
                          <p class="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">Menunggu Penjemputan Kurir</p>
                          <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
-                             Sudah melewati batas jemput {{ strtoupper($order->shipping_courier) }} {{ strtoupper(str_replace('_', ' ', $order->shipping_service)) }}. Pesanan tetap disiapkan dan dijemput
+                             @if($pastCutoff)
+                                 Sudah melewati batas jemput {{ strtoupper($order->shipping_courier) }} {{ strtoupper(str_replace('_', ' ', $order->shipping_service)) }}.
+                             @else
+                                 Toko sedang tutup, kurir belum bisa menjemput.
+                             @endif
+                             Pesanan tetap disiapkan dan dijemput
                              <span class="text-amber-700 dark:text-amber-300">{{ $pickupAt->translatedFormat('l, d M') }} pukul {{ $pickupAt->format('H:i') }} WIB</span>.
                          </p>
                      @else
