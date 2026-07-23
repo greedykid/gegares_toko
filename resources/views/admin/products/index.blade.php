@@ -290,7 +290,10 @@
         </form>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+    <div x-data="adminListView('products')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+        <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
+            @include('admin.partials.view-toggle')
+        </div>
         <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
             <table class="w-full">
                 <thead>
@@ -385,7 +388,7 @@
                 <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                     @forelse($products as $product)
                     <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                        <td class="px-6 py-4">
+                        <td data-label="Produk" class="px-6 py-4">
                             <div class="flex items-center gap-3.5">
                                 <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-slate-700/60 shadow-xs">
                                     @if($product->image)
@@ -404,14 +407,14 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title="{{ $product->description ?: '-' }}">{{ $product->description ?: '-' }}</td>
-                        <td class="px-6 py-4">
+                        <td data-label="Deskripsi" class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title="{{ $product->description ?: '-' }}">{{ $product->description ?: '-' }}</td>
+                        <td data-label="Kategori" class="px-6 py-4">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700">
                                 {{ $product->category->name ?? '-' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-right font-bold text-slate-900 dark:text-slate-100">{{ $product->formatted_price }}</td>
-                        <td class="px-6 py-4">
+                        <td data-label="Harga" class="px-6 py-4 text-sm text-right font-bold text-slate-900 dark:text-slate-100">{{ $product->formatted_price }}</td>
+                        <td data-label="Stok" class="px-6 py-4">
                             {{-- Availability switch (what customers see) plus the stock
                                  counter, which keeps running behind the scenes. --}}
                             <div class="flex flex-col items-center gap-1.5">
@@ -440,7 +443,7 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td data-label="Unggulan" class="px-6 py-4">
                             <div class="flex items-center justify-center">
                                 <form method="POST" action="{{ route('admin.products.toggle-featured', $product) }}" class="inline-flex items-center gap-2">
                                     @csrf @method('PATCH')
@@ -454,7 +457,7 @@
                                 </form>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                        <td data-label="Aksi" class="px-6 py-4 text-right flex items-center justify-end gap-2">
                             <div class="relative group/tooltip inline-flex">
                                 <button @click="resetGallery(); showModal=true; editMode=true; form={id:{{ $product->id }},slug:'{{ $product->slug }}',name:'{{ addslashes($product->name) }}',category_id:'{{ $product->category_id }}',description:'{{ addslashes($product->description) }}',price:'{{ $product->price }}',stock:'{{ $product->stock }}',reserved_quantity:{{ (int) $product->reserved_quantity }},is_featured:{{ $product->is_featured ? 'true' : 'false' }}, image: '{{ $product->image }}'}; existingGallery={{ $product->images->toJson() }}; variants={{ $product->variants->toJson() }};"
                                         class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">

@@ -24,6 +24,20 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
+    <style>
+        /* Grid/card view for admin list tables: the SAME <table> is restyled into
+           cards when its wrapper gets .admin-grid-view, toggled per page. */
+        .admin-grid-view table { border-collapse: separate; border-spacing: 0; }
+        .admin-grid-view thead { display: none; }
+        .admin-grid-view tbody { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.9rem; padding: 0.9rem; }
+        .admin-grid-view tbody tr { display: flex; flex-direction: column; gap: 0.55rem; border: 1px solid rgb(226 232 240); border-radius: 1rem; padding: 0.85rem 1rem; }
+        .dark .admin-grid-view tbody tr { border-color: rgb(30 41 59); }
+        .admin-grid-view tbody td { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 0 !important; text-align: left !important; border: none !important; white-space: normal !important; }
+        .admin-grid-view tbody td[data-label]::before { content: attr(data-label); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: rgb(148 163 184); flex-shrink: 0; }
+        .admin-grid-view tbody td[data-label="Aksi"] { justify-content: flex-end; border-top: 1px solid rgb(241 245 249) !important; padding-top: 0.6rem !important; margin-top: 0.15rem; }
+        .dark .admin-grid-view tbody td[data-label="Aksi"] { border-top-color: rgb(30 41 59) !important; }
+        .admin-grid-view tbody td[data-label="Aksi"]::before { display: none; }
+    </style>
     @stack('styles')
     @livewireStyles
 </head>
@@ -338,6 +352,18 @@
     </div>
     <script>
         function toastManager() { return { toasts: [], addToast(d) { const id = Date.now(); this.toasts.push({ id, ...d, visible: true }); setTimeout(() => this.removeToast(id), 4000) }, removeToast(id) { const t = this.toasts.find(t => t.id === id); if (t) t.visible = false; setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id) }, 300) } } }
+    </script>
+    <script>
+        // Per-page grid/table toggle state, remembered in localStorage.
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('adminListView', (key) => ({
+                grid: false,
+                init() {
+                    this.grid = localStorage.getItem('adminView:' + key) === 'grid';
+                    this.$watch('grid', (v) => localStorage.setItem('adminView:' + key, v ? 'grid' : 'table'));
+                },
+            }));
+        });
     </script>
     @stack('scripts')
 </body>

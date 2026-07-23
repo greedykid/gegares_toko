@@ -285,7 +285,10 @@
             @endif
         </div>
     </div>
-<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+<div x-data="adminListView('orders')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+    <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
+        @include('admin.partials.view-toggle')
+    </div>
     <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         <table class="w-full">
             <thead>
@@ -369,23 +372,23 @@
             <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                 @forelse($orders as $order)
                 <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                    <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">
+                    <td data-label="No. Pesanan" class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">
                         {{ $order->order_number }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-650 dark:text-slate-350">
+                    <td data-label="Pelanggan" class="px-6 py-4 text-sm text-slate-650 dark:text-slate-350">
                         {{ $order->user->name ?? '-' }}
                     </td>
-                    <td class="px-6 py-4 text-sm text-right font-bold text-slate-900 dark:text-slate-100">
+                    <td data-label="Total" class="px-6 py-4 text-sm text-right font-bold text-slate-900 dark:text-slate-100">
                         {{ $order->formatted_total }}
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Status" class="px-6 py-4">
                         <div class="flex justify-center">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold {{ match($order->status_color) { 'green','emerald' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-950/30', 'red' => 'bg-red-50 dark:bg-red-950/40 text-red-655 dark:text-red-400 border border-red-200/50 dark:border-red-950/30', 'orange' => 'bg-orange-50 dark:bg-orange-950/40 text-orange-655 dark:text-orange-400 border border-orange-200/50 dark:border-orange-950/30', 'yellow' => 'bg-yellow-50 dark:bg-yellow-950/40 text-yellow-655 dark:text-yellow-400 border border-yellow-200/50 dark:border-yellow-950/30', default => 'bg-blue-50 dark:bg-blue-950/40 text-blue-655 dark:text-blue-400 border border-blue-200/50 dark:border-blue-950/30' } }}">
                                 {{ $order->status_label }}
                             </span>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Pembayaran" class="px-6 py-4">
                         <div class="flex justify-center">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $order->payment_status === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }}">
                                 @if($order->payment_status === 'paid')
@@ -396,10 +399,10 @@
                             </span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-right text-slate-400 dark:text-slate-500">
+                    <td data-label="Tanggal" class="px-6 py-4 text-sm text-right text-slate-400 dark:text-slate-500">
                         {{ $order->created_at->format('d/m/Y') }}
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td data-label="Aksi" class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             @if($order->tracking_number || $order->courier_tracking_id)
                             <div class="relative group/tooltip inline-flex">
