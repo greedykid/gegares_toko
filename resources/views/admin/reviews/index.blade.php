@@ -218,7 +218,10 @@
 </div>
 @endif
 
-<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+<div x-data="adminListView('reviews')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+    <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
+        @include('admin.partials.view-toggle')
+    </div>
     <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         <table class="w-full">
             <thead>
@@ -269,7 +272,7 @@
             <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                 @forelse($reviews as $review)
                 <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                    <td class="px-6 py-4">
+                    <td data-label="Pengguna" class="px-6 py-4">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 shrink-0 flex items-center justify-center">
                                 <div class="w-full h-full bg-primary-50 dark:bg-primary-950/40 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold text-xs">
@@ -282,10 +285,10 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    <td data-label="Produk" class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">
                         {{ $review->product->name ?? '-' }}
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Gambar" class="px-6 py-4">
                         <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-700/60 shadow-xs mx-auto shrink-0">
                             @if($review->image)
                                 <button type="button" @click="reviewImage = '{{ asset('storage/'.$review->image) }}'" class="w-full h-full cursor-zoom-in hover:scale-105 transition-transform">
@@ -300,7 +303,7 @@
                             @endif
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Rating" class="px-6 py-4">
                         <div class="flex items-center justify-center gap-0.5">
                             @for($i = 1; $i <= 5; $i++)
                                 <svg class="w-3.5 h-3.5 {{ $i <= $review->rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200 dark:text-slate-700 fill-slate-200 dark:fill-slate-700' }}" viewBox="0 0 20 20" fill="currentColor">
@@ -309,17 +312,17 @@
                             @endfor
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-xs transition-colors truncate" title="{{ $review->comment ?? '-' }}">
+                    <td data-label="Komentar" class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-xs transition-colors truncate" title="{{ $review->comment ?? '-' }}">
                         {{ $review->comment ?? '-' }}
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Status" class="px-6 py-4">
                         <div class="flex justify-center">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $review->is_approved ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-250/30 dark:border-amber-900/30' }}">
                                 {{ $review->is_approved ? 'Disetujui' : 'Pending' }}
                             </span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td data-label="Aksi" class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <div class="relative group/tooltip inline-flex">
                                 <form method="POST" action="{{ route('admin.reviews.update', $review) }}" class="inline">

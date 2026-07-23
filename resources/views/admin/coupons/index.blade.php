@@ -30,7 +30,10 @@
 </div>
 @endif
 
-<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+<div x-data="adminListView('coupons')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+    <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
+        @include('admin.partials.view-toggle')
+    </div>
     <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         <table class="w-full">
             <thead>
@@ -97,13 +100,13 @@
             <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                 @forelse($coupons as $coupon)
                 <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                    <td class="px-6 py-4">
+                    <td data-label="Kode Kupon" class="px-6 py-4">
                         <div class="flex flex-col">
                             <span class="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider text-sm">{{ $coupon->code }}</span>
                             <span class="text-[10px] text-slate-400 dark:text-slate-500 tracking-wide mt-1 leading-none">Min. Beli: Rp {{ number_format($coupon->min_purchase, 0, ',', '.') }}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Tipe & Nilai" class="px-6 py-4">
                         @if($coupon->type == 'percent')
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30">
                                 {{ rtrim(rtrim($coupon->value, '0'), '.') }}%
@@ -114,7 +117,7 @@
                             </span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    <td data-label="Sisa Kuota" class="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
                         @if($coupon->usage_limit)
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700">
                                 {{ $coupon->usage_limit - $coupon->used_count }} / {{ $coupon->usage_limit }}
@@ -123,7 +126,7 @@
                             <span class="italic text-slate-400 dark:text-slate-500">Tak Terbatas</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4">
+                    <td data-label="Status" class="px-6 py-4">
                         <div class="flex flex-col gap-1.5 items-start">
                             @if($coupon->is_active && (!$coupon->end_date || $coupon->end_date > now()))
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30">Aktif</span>
@@ -137,7 +140,7 @@
                             @endif
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td data-label="Aksi" class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <button x-data="" @click="$dispatch('open-modal', 'edit-coupon-{{ $coupon->id }}')" 
                                     class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">

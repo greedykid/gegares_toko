@@ -80,7 +80,10 @@
         </button>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300 overflow-hidden">
+    <div x-data="adminListView('categories')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300 overflow-hidden">
+        <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
+            @include('admin.partials.view-toggle')
+        </div>
         <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
             <table class="w-full">
                 <thead>
@@ -147,7 +150,7 @@
                 <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                     @foreach($categories as $cat)
                     <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                        <td class="px-6 py-4">
+                        <td data-label="Nama" class="px-6 py-4">
                             <div class="flex items-center gap-3.5">
                                 <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-slate-700/60 shadow-xs">
                                     @if($cat->image)
@@ -166,19 +169,19 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
+                        <td data-label="Deskripsi" class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
                             @if($cat->description)
                                 <span class="max-w-xs truncate block" title="{{ $cat->description }}">{{ $cat->description }}</span>
                             @else
                                 <span class="italic text-slate-450 dark:text-slate-600">Tidak ada deskripsi</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td data-label="Produk" class="px-6 py-4 text-center">
                             <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700">
                                 {{ $cat->products_count }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td data-label="Status" class="px-6 py-4">
                             <div class="flex items-center justify-center">
                                 <form method="POST" action="{{ route('admin.categories.toggle-status', $cat) }}" class="inline-flex items-center gap-2.5">
                                     @csrf @method('PATCH')
@@ -192,7 +195,7 @@
                                 </form>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                        <td data-label="Aksi" class="px-6 py-4 text-right flex items-center justify-end gap-2">
                             <div class="relative group/tooltip inline-flex">
                                 <button @click="showModal = true; editMode = true; form = { id: {{ $cat->id }}, slug: '{{ $cat->slug }}', name: '{{ $cat->name }}', description: '{{ addslashes($cat->description) }}', is_active: {{ $cat->is_active ? 'true' : 'false' }}, image: '{{ $cat->image }}' }; imagePreview = null;"
                                         class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">

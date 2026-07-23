@@ -67,7 +67,10 @@
                 class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all duration-200">+ Tambah Pengguna</button>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+    <div x-data="adminListView('users')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+        <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
+            @include('admin.partials.view-toggle')
+        </div>
         <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
             <table class="w-full">
                 <thead>
@@ -134,7 +137,7 @@
                 <tbody class="divide-y divide-slate-100/65 dark:divide-slate-800/60">
                     @forelse($users as $user)
                     <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                        <td class="px-6 py-4">
+                        <td data-label="Nama" class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-linear-to-br {{ $user->isAdmin() ? 'from-purple-400 to-purple-600' : 'from-primary-400 to-primary-600' }} flex items-center justify-center text-white text-xs font-bold shadow-xs shrink-0">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -142,14 +145,14 @@
                                 <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $user->name }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{{ $user->email }}</td>
-                        <td class="px-6 py-4 text-center">
+                        <td data-label="Email" class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{{ $user->email }}</td>
+                        <td data-label="Role" class="px-6 py-4 text-center">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold {{ $user->isAdmin() ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/50 dark:border-purple-950/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700' }}">
                                 {{ ucfirst($user->role) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-right text-slate-400 dark:text-slate-500">{{ $user->created_at->format('d/m/Y') }}</td>
-                        <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                        <td data-label="Bergabung" class="px-6 py-4 text-sm text-right text-slate-400 dark:text-slate-500">{{ $user->created_at->format('d/m/Y') }}</td>
+                        <td data-label="Aksi" class="px-6 py-4 text-right flex items-center justify-end gap-2">
                             <div class="relative group/tooltip inline-flex">
                                 <button @click="showModal=true; editMode=true; form={id:{{ $user->id }},name:'{{ addslashes($user->name) }}',email:'{{ $user->email }}',role:'{{ $user->role }}',password:''}"
                                         class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
