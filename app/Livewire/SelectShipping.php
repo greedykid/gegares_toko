@@ -92,7 +92,17 @@ class SelectShipping extends Component
     public function updatedSelectedRate($value)
     {
         $this->selectedRate = $value;
-        $this->dispatch('shippingRateSelected', selection: $value);
+
+        // Tell the checkout flow when this courier can actually collect the
+        // parcel, so it can warn before payment if the chosen service is already
+        // past its pickup cutoff (empty string means it can be collected now).
+        [$courier, $service] = array_pad(explode('|', (string) $value), 3, null);
+        $opensAt = \App\Support\CourierSchedule::nextOpening($courier, $service);
+        $pickupOpensAt = $opensAt
+            ? $opensAt->translatedFormat('l, d M').' pukul '.$opensAt->format('H:i').' WIB'
+            : '';
+
+        $this->dispatch('shippingRateSelected', selection: $value, pickupOpensAt: $pickupOpensAt);
     }
 
     public function render()

@@ -19,7 +19,7 @@
          afterwards. Inside opening hours this never fires. --}}
     <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" x-ref="checkoutForm"
           @submit="
-              if (storeOpen || closedAcknowledged) { loading = true; return; }
+              if ((storeOpen && !courierOpensAt) || closedAcknowledged) { loading = true; return; }
               $event.preventDefault();
               showClosedModal = true;
           ">
@@ -249,11 +249,20 @@
                     </svg>
                 </div>
                 <div class="min-w-0">
-                    <h3 id="closedModalTitle" class="text-base font-black text-slate-900 dark:text-slate-100">Toko Sedang Tutup</h3>
+                    <h3 id="closedModalTitle" class="text-base font-black text-slate-900 dark:text-slate-100"
+                        x-text="storeOpen ? 'Kurir Belum Bisa Menjemput' : 'Toko Sedang Tutup'">Toko Sedang Tutup</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
-                        Pesanan Kakak tetap kami terima dan langsung kami siapkan. Hanya saja kurir
-                        baru bisa menjemput setelah toko buka, yaitu
-                        <span class="font-bold text-slate-900 dark:text-slate-200" x-text="storeOpensAt"></span>.
+                        <template x-if="!storeOpen">
+                            <span>Pesanan Kakak tetap kami terima dan langsung kami siapkan. Hanya saja kurir
+                                baru bisa menjemput setelah toko buka, yaitu
+                                <span class="font-bold text-slate-900 dark:text-slate-200" x-text="storeOpensAt"></span>.</span>
+                        </template>
+                        <template x-if="storeOpen">
+                            <span>Pesanan Kakak tetap kami terima dan langsung kami siapkan. Hanya saja layanan
+                                <span class="font-bold text-slate-900 dark:text-slate-200" x-text="shippingInfo"></span>
+                                sudah melewati batas jemput hari ini, sehingga baru dijemput
+                                <span class="font-bold text-slate-900 dark:text-slate-200" x-text="courierOpensAt"></span>.</span>
+                        </template>
                     </p>
                     <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
                         Lanjutkan pembayaran sekarang?
@@ -293,6 +302,9 @@ function registerCheckoutFlow() {
             // page left open across closing time still asks before charging.
             storeOpen: {{ $storeOpen ? 'true' : 'false' }},
             storeOpensAt: @json($storeOpensAt?->translatedFormat('l, d M') . ($storeOpensAt ? ' pukul '.$storeOpensAt->format('H:i').' WIB' : '')),
+            // When set, the chosen courier is past its pickup cutoff today; filled
+            // from the shipping selection so we can warn even while the shop is open.
+            courierOpensAt: '',
             showClosedModal: false,
             closedAcknowledged: false,
 
@@ -318,11 +330,13 @@ function registerCheckoutFlow() {
                         this.shippingService = service;
                         this.shippingCost = parseInt(price);
                         this.shippingInfo = `${courier.toUpperCase()} ${service}`;
+                        this.courierOpensAt = event.detail.pickupOpensAt || '';
                     } else {
                         this.shippingCourier = '';
                         this.shippingService = '';
                         this.shippingCost = 0;
                         this.shippingInfo = '';
+                        this.courierOpensAt = '';
                     }
                 });
             }
