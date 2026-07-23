@@ -40,6 +40,7 @@ class ChatbotContextBuilder
         $couponInfo = $this->couponsContext();
         $cartContext = $this->cartContext();
         $timeContext = $this->timeContext();
+        $courierAvailability = $this->courierAvailability();
 
         $userName = Auth::check() ? Auth::user()->name : 'Pengunjung';
 
@@ -135,6 +136,10 @@ JANGAN PERNAH mengarang deskripsi produk sendiri — gunakan deskripsi yang tert
 # INFO TOKO & CARA PESAN
 {$storeInfo}
 
+# KETERSEDIAAN KURIR SAAT INI
+{$courierAvailability}
+Instruksi: Jika user bertanya 'kurir/metode pengiriman apa yang tersedia sekarang', 'bisa dikirim sekarang tidak', atau sejenisnya — JAWAB berdasarkan data di atas. Sebutkan kurir yang TERSEDIA sekarang, dan yang penjemputannya ditunda beserta waktunya. JANGAN cuma menjawab 'lihat di halaman Checkout'. Ongkir pasti tetap dihitung di Checkout sesuai alamat.
+
 # DATA PESANAN USER (⚠️ HANYA GUNAKAN JIKA USER BERTANYA TENTANG PESANAN MEREKA)
 {$orderContext}
 
@@ -150,6 +155,44 @@ Instruksi: Jika user bertanya tentang promo, diskon, atau kupon, berikan informa
 Setelah menjawab, pikirkan 2-3 pertanyaan lanjutan yang RELEVAN DENGAN JAWABAN SAAT INI dan tulis di akhir respons:
 ---SUGGESTIONS---
 saran1|saran2|saran3";
+    }
+
+    /**
+     * Which couriers can actually collect a parcel right now, so the chatbot can
+     * answer "metode pengiriman apa yang tersedia saat ini" instead of deferring
+     * everything to the checkout page. Reads the same CourierSchedule the checkout
+     * notice and booking job use, so the answer never contradicts the UI.
+     */
+    protected function courierAvailability(): string
+    {
+        $now = \Illuminate\Support\Carbon::now(config('biteship.pickup_timezone', 'Asia/Jakarta'));
+
+        // The services the shop offers via Gojek & Grab.
+        $services = [
+            ['gojek', 'instant', 'GOJEK Instant (estimasi ~1-2 jam)'],
+            ['gojek', 'same_day', 'GOJEK Same Day (estimasi 6-8 jam)'],
+            ['grab', 'instant', 'GRAB Instant (estimasi 1-3 jam)'],
+            ['grab', 'same_day', 'GRAB Same Day (estimasi 4-8 jam)'],
+        ];
+
+        $lines = [];
+        foreach ($services as [$courier, $service, $label]) {
+            if (\App\Support\CourierSchedule::isOpenNow($courier, $service)) {
+                $lines[] = "- {$label}: TERSEDIA, bisa dijemput sekarang.";
+            } else {
+                $opensAt = \App\Support\CourierSchedule::nextOpening($courier, $service);
+                $when = $opensAt
+                    ? $opensAt->translatedFormat('l, d M').' pukul '.$opensAt->format('H:i').' WIB'
+                    : 'belum bisa dijadwalkan';
+                $lines[] = "- {$label}: BELUM tersedia (di luar jam jemput). Penjemputan berikutnya {$when}.";
+            }
+        }
+
+        $storeNote = \App\Support\StoreSchedule::isOpenNow()
+            ? 'Toko sedang BUKA.'
+            : 'Toko sedang TUTUP — semua kurir baru bisa menjemput setelah toko buka.';
+
+        return 'Waktu sekarang: '.$now->translatedFormat('l, d M Y H:i').' WIB. '.$storeNote."\n".implode("\n", $lines);
     }
 
     /**
