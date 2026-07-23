@@ -556,9 +556,9 @@
                     <p class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-6">Bantuan</p>
                     <ul class="space-y-4">
                         <li><a href="{{ route('home') }}#faq" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">FAQ</a></li>
-                        <li><a href="#" @click.prevent="$dispatch('open-support-modal', 'shipping')" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Info Pengiriman</a></li>
-                        <li><a href="#" @click.prevent="$dispatch('open-support-modal', 'privacy')" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Kebijakan Privasi</a></li>
-                        <li><a href="#" @click.prevent="$dispatch('open-support-modal', 'terms')" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Syarat & Ketentuan</a></li>
+                        <li><a href="{{ route('shipping') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Info Pengiriman</a></li>
+                        <li><a href="{{ route('privacy') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Kebijakan Privasi</a></li>
+                        <li><a href="{{ route('terms') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Syarat & Ketentuan</a></li>
                     </ul>
                 </div>
             </div>
@@ -582,91 +582,6 @@
             </div>
         </div>
     </footer>
-
-    {{-- ─── GLOBAL SUPPORT MODAL ─── --}}
-    <div x-data="{ 
-            isOpen: false, 
-            title: '', 
-            content: '',
-            openSupport(type) {
-                this.isOpen = true;
-                if (type === 'shipping') {
-                    this.title = 'Info Pengiriman';
-                    this.content = `<div class=\'space-y-4\'>
-                        <p class=\'font-bold text-slate-900 dark:text-white\'>Metode Pengiriman Jajanan Gegares</p>
-                        <p>Kami sangat peduli dengan kesegaran jajanan pasar tradisional Anda. Oleh karena itu, semua pengiriman makanan kami diproses menggunakan kurir rekanan terintegrasi (Biteship):</p>
-                        <ul class=\'list-disc list-inside space-y-2 pl-2\'>
-                            <li><strong>Pengiriman Instan:</strong> Paket akan tiba dalam waktu 1-2 jam setelah diserahkan ke kurir. Sangat direkomendasikan untuk kue basah dan gorengan hangat.</li>
-                            <li><strong>Pengiriman Sameday:</strong> Paket akan tiba di hari yang sama dalam waktu 6-8 jam. Pilihan ekonomis untuk produk getuk, serabi, dan lontong.</li>
-                        </ul>
-                        <p class=\'text-xs text-slate-500 dark:text-slate-400 italic\'>*Catatan: Semua jajanan dibuat fresh di pagi hari dan mulai dikirim dari toko kami mulai pukul 08:00 WIB.</p>
-                    </div>`;
-                } else if (type === 'privacy') {
-                    this.title = 'Kebijakan Privasi';
-                    this.content = `<div class=\'space-y-4\'>
-                        <p class=\'font-bold text-slate-900 dark:text-white\'>Perlindungan Data Pelanggan Gegares</p>
-                        <p>Gegares berkomitmen penuh untuk melindungi privasi informasi pribadi Anda. Informasi yang kami kumpulkan meliputi:</p>
-                        <ul class=\'list-disc list-inside space-y-2 pl-2\'>
-                            <li><strong>Data Profil:</strong> Nama, alamat email, nomor telepon, dan alamat pengiriman Anda untuk kelancaran pengiriman pesanan.</li>
-                            <li><strong>Keamanan Data:</strong> Kami mengamankan data sandi Anda menggunakan enkripsi hashing SHA-256 dan melakukan masking otomatis untuk mencegah kebocoran data.</li>
-                        </ul>
-                        <p>Kami menjamin bahwa data pribadi Anda tidak akan pernah dijual atau dibagikan kepada pihak ketiga di luar keperluan pengiriman logistik (Biteship) dan sistem pembayaran aman (Pakasir).</p>
-                    </div>`;
-                } else if (type === 'terms') {
-                    this.title = 'Syarat & Ketentuan';
-                    this.content = `<div class=\'space-y-4\'>
-                        <p class=\'font-bold text-slate-900 dark:text-white\'>Ketentuan Layanan Pemesanan Jajanan</p>
-                        <p>Dengan melakukan pemesanan di situs Gegares, Anda menyetujui ketentuan berikut:</p>
-                        <ul class=\'list-disc list-inside space-y-2 pl-2\'>
-                            <li><strong>Kesegaran Jajanan:</strong> Karena produk kami bebas pengawet, kami menyarankan konsumsi di hari yang sama atau mengikuti tips penyimpanan yang tertera di chatbot kami.</li>
-                            <li><strong>Pembatalan Pesanan:</strong> Pesanan yang sudah diproses oleh admin dapur tidak dapat dibatalkan atau diubah karena jajanan dibuat fresh secara terjadwal.</li>
-                            <li><strong>Pembayaran:</strong> Semua transaksi dilakukan secara instan dan aman menggunakan payment gateway resmi Pakasir.</li>
-                        </ul>
-                    </div>`;
-                }
-            }
-        }"
-        @open-support-modal.window="openSupport($event.detail)"
-        x-show="isOpen" 
-        class="fixed inset-0 z-100 flex items-center justify-center p-4" 
-        style="display:none;"
-        x-cloak>
-        
-        {{-- Backdrop --}}
-        <div x-show="isOpen" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs" 
-             @click="isOpen = false"></div>
-        
-        {{-- Modal Body --}}
-        <div x-show="isOpen"
-             x-transition:enter="transition cubic-bezier(0.34, 1.56, 0.64, 1) duration-400"
-             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-             x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-             class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-6 md:p-8 z-10 overflow-hidden text-left">
-            
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4 mb-6">
-                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight" x-text="title"></h3>
-                <button @click="isOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            
-            <div class="text-sm text-slate-600 dark:text-slate-350 leading-relaxed" x-html="content"></div>
-            
-            <div class="mt-8 flex justify-end border-t border-slate-100 dark:border-slate-800/60 pt-4">
-                <button @click="isOpen = false" class="px-5 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 active:scale-95 transition-all duration-200 shadow-sm">Mengerti</button>
-            </div>
-        </div>
-    </div>
 
     @livewireScripts
     @stack('scripts')
