@@ -78,28 +78,6 @@
                  </div>
              </div>
 
-             {{-- Ordered while the shop was shut: carry the checkout's closed-shop
-                  notice onto the order so the customer keeps that context — the
-                  parcel is prepared now but a courier can only collect it once the
-                  shop opens. Only while it still matters (not yet handed over). --}}
-             @if(in_array($order->status, ['pending', 'processing']) && ! \App\Support\StoreSchedule::isOpenNow($order->created_at))
-                 @php $pickupOpensAt = \App\Support\StoreSchedule::nextOpening($order->created_at); @endphp
-                 @if($pickupOpensAt)
-                 <div class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-3xl p-5 flex items-start gap-4">
-                     <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                     </div>
-                     <div>
-                         <p class="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">Dikirim Saat Toko Buka</p>
-                         <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
-                             Pesanan ini dibuat di luar jam buka toko. Pesanan tetap kami siapkan, dan kurir baru menjemput setelah toko buka, yaitu
-                             <span class="text-amber-700 dark:text-amber-300">{{ $pickupOpensAt->translatedFormat('l, d M') }} pukul {{ $pickupOpensAt->format('H:i') }} WIB</span>.
-                         </p>
-                     </div>
-                 </div>
-                 @endif
-             @endif
-
              {{-- Cancelled but already paid: tell the customer their money is coming
                   back and give them a direct line to ask about it. --}}
              @if($order->needsRefund())
@@ -256,7 +234,10 @@
              </div>
              @endif
 
-             {{-- ETA Banner --}}
+             {{-- ETA Banner — dynamic: before the parcel is handed over, if the chosen
+                  courier is past its pickup cutoff (or the shop was shut when ordered)
+                  it says when it will actually be collected; otherwise it shows the
+                  normal delivery estimate. --}}
              @if($order->status !== 'cancelled' && $order->status !== 'completed')
              @php
                  $etaText = '';
@@ -274,16 +255,31 @@
                  } else {
                      $etaText = 'Estimasi Tiba: 1 - 3 Hari Kerja (Layanan Reguler)';
                  }
+
+                 // Only meaningful before pickup. nextOpening() combines the shop's
+                 // hours and the courier's window (e.g. a Same Day cutoff), so it is
+                 // null once a pickup is actually possible.
+                 $pickupAt = in_array($order->status, ['pending', 'processing'])
+                     ? \App\Support\CourierSchedule::nextOpening($order->shipping_courier, $order->shipping_service, $order->created_at)
+                     : null;
              @endphp
              <div class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-3xl p-5 flex items-center gap-4">
                  <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                     <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                     <svg class="w-5 h-5 {{ $pickupAt ? '' : 'animate-pulse' }}" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                  </div>
                  <div>
-                     <p class="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">Estimasi Waktu Pengiriman</p>
-                     <p class="text-sm font-bold text-slate-800 dark:text-slate-200">
-                         {{ $etaText }}
-                     </p>
+                     @if($pickupAt)
+                         <p class="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">Menunggu Penjemputan Kurir</p>
+                         <p class="text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
+                             Sudah melewati batas jemput {{ strtoupper($order->shipping_courier) }} {{ strtoupper(str_replace('_', ' ', $order->shipping_service)) }}. Pesanan tetap disiapkan dan dijemput
+                             <span class="text-amber-700 dark:text-amber-300">{{ $pickupAt->translatedFormat('l, d M') }} pukul {{ $pickupAt->format('H:i') }} WIB</span>.
+                         </p>
+                     @else
+                         <p class="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">Estimasi Waktu Pengiriman</p>
+                         <p class="text-sm font-bold text-slate-800 dark:text-slate-200">
+                             {{ $etaText }}
+                         </p>
+                     @endif
                  </div>
              </div>
              @endif
