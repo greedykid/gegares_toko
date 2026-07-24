@@ -1,15 +1,15 @@
 @startuml
-skinparam dpi 300
-skinparam defaultFontName "Arial"
-skinparam ActivityFontSize 13
+skinparam dpi 180
+skinparam defaultFontName "SansSerif"
+skinparam ActivityFontSize 12
 skinparam ActivityBorderColor #742A2A
 skinparam ActivityBackgroundColor #FFF5F5
 skinparam ActivityDiamondBorderColor #9B2C2C
 skinparam ActivityDiamondBackgroundColor #FEFCBF
-skinparam SwimlaneTitleFontSize 16
+skinparam SwimlaneTitleFontSize 14
 skinparam SwimlaneTitleFontStyle bold
-skinparam SwimlaneBorderColor #CBD5E0
-skinparam SwimlaneWidth 350
+skinparam SwimlaneBorderColor #A0AEC0
+skinparam SwimlaneWidth 280
 
 title **ACTIVITY DIAGRAM ADMIN - GEGARES**
 
@@ -18,90 +18,73 @@ start
 :Membuka Halaman Login Admin (/admin/login);
 
 |Sistem|
-:Menampilkan Halaman Form Login Admin;
+:Menampilkan Form Login Admin;
 
 |Admin|
 :Mengisi Email & Password Admin;
 
 |Sistem|
 :Validasi Authentikasi & Middleware is_admin;
-if (Validasi Auth Admin?) then (Gagal / bukan Admin)
+if (Hasil Validasi Auth?) then (Gagal / Bukan Admin)
   :Menampilkan Pesan Access Denied / Error;
   stop
-else (Berhasil / Valid)
+else (Berhasil / Valid Admin)
   :Menampilkan Dashboard Panel Admin;
 endif
 
 |Admin|
-fork
-  :Kelola Kategori Produk;
-  |Sistem|
-  :Menampilkan Halaman Manajemen Kategori;
-  |Admin|
-  :Tambah / Edit / Hapus Kategori & Toggle Status Aktif;
-  |Sistem|
-  :Update Database Kategori;
+:Mengakses Menu Manajemen Toko;
+note right
+  Dashboard Admin memberikan akses ke
+  7 modul utama manajemen operasional
+end note
 
-fork again
-  :Kelola Produk & Varian;
-  |Sistem|
-  :Menampilkan Halaman Manajemen Produk;
-  |Admin|
-  :Tambah / Edit / Hapus Produk, Varian, Multi-Foto & Toggle Featured;
-  |Sistem|
-  :Update Database Produk & Galeri Image;
+:Kelola Kategori Produk;
+|Sistem|
+:Menampilkan Halaman Manajemen Kategori;
+:Update Database Kategori (Tambah/Edit/Hapus/Status);
 
-fork again
-  :Kelola Kode Promo / Kupon;
-  |Sistem|
-  :Menampilkan Halaman Kelola Kode Promo;
-  |Admin|
-  :Tambah / Edit / Hapus Kupon (Fixed/Percent, Kuota, Tanggal);
-  |Sistem|
-  :Update Database Kupon;
+|Admin|
+:Kelola Produk & Varian;
+|Sistem|
+:Menampilkan Halaman Manajemen Produk;
+:Update Database Produk, Varian & Galeri Foto;
 
-fork again
-  :Kelola Pesanan;
-  |Sistem|
-  :Menampilkan Halaman Manajemen Pesanan & Filter Periode;
-  |Admin|
-  :Lihat Detail Pesanan, Update Status, Manual Booking Biteship & Export CSV;
-  |Sistem|
-  :Update Status Pesanan & Generate File Export;
+|Admin|
+:Kelola Kode Promo / Kupon;
+|Sistem|
+:Menampilkan Halaman Kelola Kode Promo;
+:Update Database Kupon (Diskon/Kuota/Masa Berlaku);
 
-fork again
-  :Moderasi Ulasan Pelanggan;
-  |Sistem|
-  :Menampilkan Halaman Kelola Ulasan (Pending Review);
-  |Admin|
-  :Setujui (Approve) atau Tolak (Reject/Hapus) Ulasan;
-  |Sistem|
-  :Update Status Approval & Recalculate Rating Produk;
+|Admin|
+:Kelola Pesanan & Pengiriman;
+|Sistem|
+:Menampilkan Halaman Manajemen Pesanan & Filter Periode;
+:Update Status Order, Booking Biteship & Export CSV;
 
-fork again
-  :Kelola Data Pengguna;
-  |Sistem|
-  :Menampilkan Halaman Manajemen Pengguna;
-  |Admin|
-  :Lihat Daftar User & Kelola Role / Status Akun;
-  |Sistem|
-  :Update Database Pengguna;
+|Admin|
+:Moderasi Ulasan Pelanggan;
+|Sistem|
+:Menampilkan Halaman Kelola Ulasan (Pending Review);
+:Update Approval Status & Recalculate Rating Produk;
 
-fork again
-  :Pengaturan Toko & Konten Halaman;
-  |Sistem|
-  :Menampilkan Form Pengaturan Toko & Content Editor;
-  |Admin|
-  :Edit Alamat Toko (Biteship Origin), Hero Banner, FAQ, About, WA & Jam Ops;
-  |Sistem|
-  :Simpan Konfigurasi ke store_settings;
-end fork
+|Admin|
+:Kelola Data Pengguna;
+|Sistem|
+:Menampilkan Halaman Manajemen Pengguna;
+:Update Database User & Pengaturan Role;
+
+|Admin|
+:Pengaturan Toko & Konten Halaman;
+|Sistem|
+:Menampilkan Form Pengaturan Toko & Content Editor;
+:Simpan Konfigurasi ke store_settings (Alamat, Hero, FAQ, About);
 
 |Admin|
 :Mengklik Tombol Logout Admin;
 
 |Sistem|
-:Invalidate Admin Session & Redirect ke Login Admin;
+:Invalidate Admin Session & Redirect ke Form Login Admin;
 
 |Admin|
 stop

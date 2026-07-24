@@ -1,15 +1,15 @@
 @startuml
-skinparam dpi 300
-skinparam defaultFontName "Arial"
-skinparam ActivityFontSize 13
+skinparam dpi 180
+skinparam defaultFontName "SansSerif"
+skinparam ActivityFontSize 12
 skinparam ActivityBorderColor #1A365D
 skinparam ActivityBackgroundColor #EBF8FF
 skinparam ActivityDiamondBorderColor #2B6CB0
 skinparam ActivityDiamondBackgroundColor #FEFCBF
-skinparam SwimlaneTitleFontSize 16
+skinparam SwimlaneTitleFontSize 14
 skinparam SwimlaneTitleFontStyle bold
-skinparam SwimlaneBorderColor #CBD5E0
-skinparam SwimlaneWidth 350
+skinparam SwimlaneBorderColor #A0AEC0
+skinparam SwimlaneWidth 280
 
 title **ACTIVITY DIAGRAM PELANGGAN - GEGARES**
 
@@ -21,15 +21,15 @@ start
 :Menampilkan Halaman Depan (Homepage);
 
 |Pelanggan|
-if (Sudah Punya Akun?) then (Belum Akun / Reg)
+if (Status Akun / Autentikasi?) then (Belum Punya Akun)
   :Mengklik Menu Daftar;
   |Sistem|
   :Menampilkan Form Pendaftaran;
   |Pelanggan|
   :Mengisi Form Registrasi;
   |Sistem|
-  :Menyimpan Data Akun Baru;
-else if (Lupa Password?) then (Lupa Pass)
+  :Menyimpan Data Akun Baru & Logged In;
+else if (Lupa Password?) then (Lupa Password)
   :Mengklik Lupa Password;
   |Sistem|
   :Menampilkan Form Lupa Password;
@@ -38,40 +38,30 @@ else if (Lupa Password?) then (Lupa Pass)
   |Sistem|
   :Mengirim Link Reset via Email;
   |Pelanggan|
-  :Membuka Link Reset & Form Pass Baru;
+  :Membuka Link Reset & Form Password Baru;
   |Sistem|
-  :Memperbarui Password Database;
-else (Sudah Akun)
+  :Memperbarui Password Database & Redirect Login;
+else (Sudah Punya Akun)
+  :Mengisi Form Login / Google Sign-In;
+  |Sistem|
+  :Validasi Credential / Token OAuth;
+  if (Hasil Validasi?) then (Gagal / Salah)
+    :Menampilkan Pesan Error Login;
+    stop
+  else (Berhasil)
+    :Menampilkan Halaman Depan (Logged In);
+  endif
 endif
 
 |Pelanggan|
-:Mengisi Form Login / Google Auth;
+:Mengeksplorasi Produk & Interaksi;
+note right
+  - Pencarian Typo-Tolerant
+  - Filter Kategori
+  - Chatbot AI (Gemini Grounding)
+  - Snap & Buy (Foto Jajanan)
+end note
 
-|Sistem|
-:Validasi Credential / Token Login;
-if (Hasil Validasi?) then (Gagal / Salah)
-  :Menampilkan Pesan Error Auth;
-  stop
-else (Berhasil)
-  :Menampilkan Halaman Depan (Logged In);
-endif
-
-|Pelanggan|
-fork
-  :Mencari Produk (Search Typo-Tolerant / Filter Kategori);
-fork again
-  :Membuka Chatbot AI (Gemini);
-  |Sistem|
-  :Menampilkan Widget Chatbot & Grounding Katalog;
-  |Pelanggan|
-  :Kirim Pesan / Intent Pembelian / Foto Jajanan;
-  |Sistem|
-  :Rekomendasi Produk & Tombol Beli Langsung;
-fork again
-  :Membuka Halaman Detail Produk & Varian;
-end fork
-
-|Pelanggan|
 :Menambah Produk ke Keranjang / Wishlist;
 
 |Sistem|
@@ -81,7 +71,7 @@ end fork
 :Menekan Tombol Checkout;
 
 |Sistem|
-:Validasi Nomor Telepon & Menampilkan Form Checkout;
+:Validasi Telepon & Menampilkan Form Checkout;
 
 |Pelanggan|
 :Memilih Alamat Pengiriman & Pilih Kurir;
@@ -110,10 +100,10 @@ else (Lunas / Paid)
 endif
 
 |Pelanggan|
-:Memantau Pelacakan Pengiriman (Biteship Tracking);
+:Memantau Pelacakan Pengiriman;
 
 |Sistem|
-:Menampilkan Status Resi & Tracking Real-time;
+:Menampilkan Status Resi & Biteship Tracking Real-time;
 
 |Pelanggan|
 :Menerima Pesanan & Konfirmasi Diterima;
@@ -125,7 +115,7 @@ endif
 :Menulis Ulasan Produk (Rating, Teks & Foto);
 
 |Sistem|
-:Menyimpan Ulasan (Status Pending Moderasi Admin);
+:Menyimpan Ulasan (Menunggu Moderasi Admin);
 
 |Pelanggan|
 :Mengklik Logout;
