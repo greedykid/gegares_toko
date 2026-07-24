@@ -95,9 +95,7 @@
                 <div class="flex items-center gap-6 lg:gap-10">
                     {{-- Left: Logo --}}
                     <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                        <div class="relative flex items-center justify-center w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 transition-all duration-300 group-hover:scale-105 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/50">
-                            <img src="{{ asset('images/logo.png') }}" alt="Gegares Logo" width="32" height="32" class="w-8 h-8 object-contain group-hover:rotate-12 transition-transform duration-500 relative z-10 dark:brightness-110">
-                        </div>
+                        <img src="{{ asset('images/logo.png') }}" alt="Gegares Logo" width="48" height="48" class="w-12 h-12 object-contain transition-transform duration-500 group-hover:scale-105 group-hover:rotate-12 dark:brightness-110">
                         <span class="hidden sm:block text-xl lg:text-2xl font-black tracking-tight text-slate-900 dark:text-white transition-colors duration-200 group-hover:text-primary-600 dark:group-hover:text-primary-400">gegares</span>
                     </a>
 
@@ -156,12 +154,11 @@
                         </div>
                     @endauth
 
-                    {{-- Cart (visible on all screens) --}}
-                    @auth
-                        <div class="relative inline-flex items-center">
-                            @livewire('cart-icon')
-                        </div>
-                    @endauth
+                    {{-- Cart (visible on all screens, guests included — the cart is
+                         session-based and login is only needed at the final checkout step) --}}
+                    <div class="relative inline-flex items-center">
+                        @livewire('cart-icon')
+                    </div>
 
                     @auth
                         {{-- Notifications --}}
@@ -461,8 +458,11 @@
     </div>
 
     {{-- ─── CART DRAWER ─── --}}
+    {{-- Cart drawer is rendered for guests too: it listens for add-to-cart and
+         emits cart-updated, so without it a guest's "Tambah ke Keranjang" button
+         has no listener and hangs on its loading state. Wishlist stays per-user. --}}
+    @livewire('cart-drawer')
     @auth
-        @livewire('cart-drawer')
         @livewire('wishlist-drawer')
     @endauth
 

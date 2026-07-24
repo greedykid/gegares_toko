@@ -89,35 +89,28 @@
             @if($product->isOutOfStock())
                 <span class="flex items-center justify-center w-full px-3 py-2.5 text-[11px] font-bold bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl uppercase tracking-wider cursor-not-allowed">Stok Habis</span>
             @else
-                @auth
-                    <button
-                        x-data="{ loading: false }"
-                        @click="loading = true; Livewire.dispatch('add-to-cart', { productId: {{ $product->id }} })"
-                        @cart-updated.window="loading = false"
-                        :disabled="loading"
-                        :class="loading ? 'opacity-85 cursor-not-allowed' : ''"
-                        class="flex items-center justify-center gap-1.5 sm:gap-2 w-full px-2 sm:px-3 py-2.5 rounded-xl bg-primary-700 text-white text-[11px] sm:text-xs font-bold whitespace-nowrap hover:bg-primary-800 transition-all duration-300 active:scale-[0.98] shadow-sm shadow-primary-700/20"
-                        title="Tambah ke Keranjang"
-                        aria-label="Beli {{ $product->name }}">
-                        <svg x-show="loading" class="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display:none;">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <svg x-show="!loading" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                        {{-- Label depends on the CARD width (container query), not the
-                             viewport: at 4 columns the card is too narrow for the full
-                             phrase, so the suffix is dropped until the card has room. --}}
-                        <span x-show="loading" style="display:none">Memproses...</span>
-                        <span x-show="!loading">Tambah<span class="hidden @min-[232px]:inline"> ke Keranjang</span></span>
-                    </button>
-                @else
-                    <a href="{{ route('login') }}"
-                       class="flex items-center justify-center gap-1.5 sm:gap-2 w-full px-2 sm:px-3 py-2.5 rounded-xl bg-primary-700 text-white text-[11px] sm:text-xs font-bold whitespace-nowrap hover:bg-primary-800 transition-all duration-300 active:scale-[0.98] shadow-sm shadow-primary-700/20"
-                       aria-label="Beli {{ $product->name }}">
-                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                        <span>Tambah<span class="hidden @min-[232px]:inline"> ke Keranjang</span></span>
-                    </a>
-                @endauth
+                {{-- Add-to-cart is open to guests too: the cart lives in the session,
+                     login is only required at the final checkout step. --}}
+                <button
+                    x-data="{ loading: false }"
+                    @click="loading = true; Livewire.dispatch('add-to-cart', { productId: {{ $product->id }} })"
+                    @cart-updated.window="loading = false"
+                    :disabled="loading"
+                    :class="loading ? 'opacity-85 cursor-not-allowed' : ''"
+                    class="flex items-center justify-center gap-1.5 sm:gap-2 w-full px-2 sm:px-3 py-2.5 rounded-xl bg-primary-700 text-white text-[11px] sm:text-xs font-bold whitespace-nowrap hover:bg-primary-800 transition-all duration-300 active:scale-[0.98] shadow-sm shadow-primary-700/20"
+                    title="Tambah ke Keranjang"
+                    aria-label="Beli {{ $product->name }}">
+                    <svg x-show="loading" class="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display:none;">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <svg x-show="!loading" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                    {{-- Label depends on the CARD width (container query), not the
+                         viewport: at 4 columns the card is too narrow for the full
+                         phrase, so the suffix is dropped until the card has room. --}}
+                    <span x-show="loading" style="display:none">Memproses...</span>
+                    <span x-show="!loading">Tambah<span class="hidden @min-[232px]:inline"> ke Keranjang</span></span>
+                </button>
             @endif
         </div>
     </div>

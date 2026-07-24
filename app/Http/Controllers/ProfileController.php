@@ -89,7 +89,9 @@ class ProfileController extends Controller
             'phone' => $request->phone,
         ]);
 
-        return redirect()->route('home')->with('success', 'Profil berhasil dilengkapi. Selamat berbelanja!');
+        // A guest who registered via Google mid-checkout completes their phone
+        // here; honour the pending destination so they resume the order.
+        return redirect()->intended(route('home'))->with('success', 'Profil berhasil dilengkapi. Selamat berbelanja!');
     }
 
     public function deleteAvatar()

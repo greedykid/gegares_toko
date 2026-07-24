@@ -310,25 +310,20 @@
 
                         {{-- Buttons --}}
                         <div class="flex gap-2.5">
-                            @auth
-                                <button @click="loading = true; Livewire.dispatch('add-to-cart-qty', { productId: {{ $product->id }}, quantity: qty, variantId: selectedVariantId })"
-                                        @cart-updated.window="loading = false"
-                                        :disabled="loading"
-                                        :class="loading ? 'opacity-70 cursor-not-allowed' : ''"
-                                        class="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-primary-600/20">
-                                    <svg x-show="loading" class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display:none;">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <svg x-show="!loading" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                                    <span x-text="loading ? 'Memproses...' : 'Tambah ke Keranjang'">Tambah ke Keranjang</span>
-                                </button>
-                            @else
-                                <a href="{{ route('login') }}" class="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-all active:scale-[0.98] shadow-lg shadow-primary-600/20">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                                    Masuk untuk Belanja
-                                </a>
-                            @endauth
+                            {{-- Add-to-cart is open to guests: the cart is session-based and
+                                 login is only required at the final checkout step. --}}
+                            <button @click="loading = true; Livewire.dispatch('add-to-cart-qty', { productId: {{ $product->id }}, quantity: qty, variantId: selectedVariantId })"
+                                    @cart-updated.window="loading = false"
+                                    :disabled="loading"
+                                    :class="loading ? 'opacity-70 cursor-not-allowed' : ''"
+                                    class="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-primary-600/20">
+                                <svg x-show="loading" class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="display:none;">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <svg x-show="!loading" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                                <span x-text="loading ? 'Memproses...' : 'Tambah ke Keranjang'">Tambah ke Keranjang</span>
+                            </button>
 
                             <div class="flex gap-2">
                                 @auth

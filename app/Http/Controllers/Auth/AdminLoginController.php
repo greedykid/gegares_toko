@@ -43,7 +43,13 @@ class AdminLoginController extends Controller
             }
 
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+
+            // Drop any guest checkout left in this session so an admin login never
+            // resumes a customer's pending order, and go straight to the dashboard
+            // (no intended() — that would follow the guest's checkout.resume URL).
+            $request->session()->forget(['url.intended', 'checkout.pending', 'checkout.guest_address']);
+
+            return redirect()->route('admin.dashboard');
         }
 
         return back()->withErrors([

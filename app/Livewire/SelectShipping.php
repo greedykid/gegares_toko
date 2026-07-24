@@ -20,22 +20,27 @@ class SelectShipping extends Component
     {
         $this->cartItems = $cartItems;
 
-        // Auto-detect selected address on initial page load
-        if ($selectedAddressId) {
-            $this->selectedAddressId = $selectedAddressId;
-        } else {
-            // Fallback: pick the user's primary (or first) address
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $primaryAddress = $user?->addresses()
-                ->orderByDesc('is_primary')
-                ->first();
-            if ($primaryAddress) {
-                $this->selectedAddressId = (string) $primaryAddress->id;
+        if (Auth::check()) {
+            // Auto-detect selected address on initial page load
+            if ($selectedAddressId) {
+                $this->selectedAddressId = $selectedAddressId;
+            } else {
+                // Fallback: pick the user's primary (or first) address
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+                $primaryAddress = $user?->addresses()
+                    ->orderByDesc('is_primary')
+                    ->first();
+                if ($primaryAddress) {
+                    $this->selectedAddressId = (string) $primaryAddress->id;
+                }
             }
-        }
 
-        if ($this->selectedAddressId) {
+            if ($this->selectedAddressId) {
+                $this->fetchRates();
+            }
+        } elseif (! empty(session('checkout.guest_address.area_id'))) {
+            // Guest with an address already stashed in the session: quote from it.
             $this->fetchRates();
         }
     }
@@ -47,22 +52,63 @@ class SelectShipping extends Component
         $this->fetchRates();
     }
 
+    // A guest saved/changed their session address; re-quote couriers.
+    #[On('guestAddressUpdated')]
+    public function handleGuestAddressUpdated()
+    {
+        $this->fetchRates();
+    }
+
+    /**
+     * The shipping destination: either the chosen DB address (logged-in) or the
+     * guest's session address. Returns [areaId, lat, lng] or null.
+     */
+    protected function destination(): ?array
+    {
+        if ($this->selectedAddressId) {
+            $address = Address::find($this->selectedAddressId);
+
+            if (! $address || empty($address->area_id)) {
+                return null;
+            }
+
+            return [
+                $address->area_id,
+                $address->latitude ? (float) $address->latitude : null,
+                $address->longitude ? (float) $address->longitude : null,
+            ];
+        }
+
+        // Guest: read the address stashed by GuestAddressForm.
+        $guest = session('checkout.guest_address');
+        if (is_array($guest) && ! empty($guest['area_id'])) {
+            return [
+                $guest['area_id'],
+                isset($guest['latitude']) ? (float) $guest['latitude'] : null,
+                isset($guest['longitude']) ? (float) $guest['longitude'] : null,
+            ];
+        }
+
+        return null;
+    }
+
     public function fetchRates()
     {
         $this->rates = [];
         $this->selectedRate = null;
         $this->hasValidArea = true;
 
-        if (!$this->selectedAddressId) {
+        $destination = $this->destination();
+
+        if ($destination === null) {
+            // Only flag an invalid area when the shopper actually has an address
+            // that lacks a serviceable area; an empty guest form is just "not yet".
+            $this->hasValidArea = ! ($this->selectedAddressId || ! empty(session('checkout.guest_address.area_id')));
+
             return;
         }
 
-        $address = Address::find($this->selectedAddressId);
-        
-        if (!$address || empty($address->area_id)) {
-            $this->hasValidArea = false;
-            return;
-        }
+        [$areaId, $lat, $lng] = $destination;
 
         $cartService = app(\App\Services\CartService::class);
         $cartItems = $cartService->getItems();
@@ -74,11 +120,11 @@ class SelectShipping extends Component
 
         $biteshipService = app(BiteshipService::class);
         $this->rates = $biteshipService->getShippingRates(
-            $address->area_id,
+            $areaId,
             $cartItems,
             null,
-            $address->latitude ? (float) $address->latitude : null,
-            $address->longitude ? (float) $address->longitude : null
+            $lat,
+            $lng
         );
         
         // Auto-select first available rate if possible
@@ -107,6 +153,10 @@ class SelectShipping extends Component
 
     public function render()
     {
-        return view('livewire.select-shipping');
+        // For a guest there is no selectedAddressId (rates are quoted from the
+        // session address), so the view must not key its empty state on it alone.
+        $hasAddress = (bool) ($this->selectedAddressId || ! empty(session('checkout.guest_address.area_id')));
+
+        return view('livewire.select-shipping', compact('hasAddress'));
     }
 }

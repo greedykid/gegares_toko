@@ -44,6 +44,8 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect('/');
+        // Honour a pending destination (e.g. a guest who filled checkout and had
+        // to register at the final step) so they land back on it, not the home page.
+        return redirect()->intended('/');
     }
 }
