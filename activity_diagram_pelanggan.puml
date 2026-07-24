@@ -22,18 +22,21 @@ start
 
 |Pelanggan|
 if (Status Akun?) then (Belum Punya Akun)
+  |Pelanggan|
   :Mengisi Form Pendaftaran;
   |Sistem|
   :Menyimpan Data Akun Baru;
 else if (Lupa Password?) then (Lupa Password)
+  |Pelanggan|
   :Mengisi Email Lupa Password;
   |Sistem|
   :Kirim Link Reset Email & Simpan Password Baru;
 else (Sudah Punya Akun)
+  |Pelanggan|
   :Mengisi Form Login / Login Google;
   |Sistem|
   :Validasi Data Login & Akun;
-  if (Hasil Validasi?) then (Gagal)
+  if (Hasil Validasi Login?) then (Gagal)
     :Menampilkan Pesan Kesalahan Login;
     stop
   else (Berhasil)
