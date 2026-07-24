@@ -13,7 +13,7 @@
         </div>
     </div>
     
-    @if(!$selectedAddressId)
+    @if(!$hasAddress)
         <div class="p-8 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
             <svg class="w-10 h-10 text-slate-350 dark:text-slate-650 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -24,7 +24,7 @@
     @else
         <div class="space-y-3 relative">
             {{-- Loading State Overlay --}}
-            <div wire:loading wire:target="handleAddressSelected, fetchRates" class="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
+            <div wire:loading wire:target="handleAddressSelected, handleGuestAddressUpdated, fetchRates" class="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
                 <div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl shadow-lg border border-slate-150 dark:border-slate-800">
                     <svg class="animate-spin h-5 w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -35,7 +35,7 @@
             </div>
 
             @if(!$hasValidArea)
-                <div wire:loading.remove wire:target="handleAddressSelected, fetchRates" class="p-6 border border-red-200 dark:border-red-900/50 rounded-2xl bg-red-50 dark:bg-red-900/10">
+                <div wire:loading.remove wire:target="handleAddressSelected, handleGuestAddressUpdated, fetchRates" class="p-6 border border-red-200 dark:border-red-900/50 rounded-2xl bg-red-50 dark:bg-red-900/10">
                     <div class="flex gap-3">
                         <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
                         <div>
@@ -45,7 +45,7 @@
                     </div>
                 </div>
             @elseif(count($rates) === 0)
-                <div wire:loading.remove wire:target="handleAddressSelected, fetchRates" class="p-6 text-center border border-slate-150 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950/20">
+                <div wire:loading.remove wire:target="handleAddressSelected, handleGuestAddressUpdated, fetchRates" class="p-6 text-center border border-slate-150 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950/20">
                     <svg class="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0 1 18 0Z"/></svg>
                     <p class="text-sm text-slate-600 dark:text-slate-400 font-bold">Tidak ada kurir pengiriman yang tersedia untuk lokasi ini.</p>
                 </div>

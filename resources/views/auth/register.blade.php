@@ -7,6 +7,13 @@
     <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-2">Buat Akun Baru</h1>
     <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8">Daftar untuk mulai belanja jajanan pasar tradisional premium.</p>
 
+    @if(session()->has('checkout.pending'))
+        <div class="mb-6 p-4 rounded-xl bg-primary-50 dark:bg-primary-950/30 border border-primary-200 dark:border-primary-900/50 flex items-start gap-3">
+            <svg class="w-5 h-5 shrink-0 text-primary-600 dark:text-primary-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+            <p class="text-sm font-semibold text-primary-800 dark:text-primary-300">Selesaikan pendaftaran untuk melanjutkan pesanan Anda.</p>
+        </div>
+    @endif
+
     @if($errors->any())
         <div class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
             @foreach($errors->all() as $error)
