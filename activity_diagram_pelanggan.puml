@@ -18,7 +18,7 @@ start
 :Membuka Website Gegares;
 
 |Sistem|
-:Menampilkan Halaman Depan & Katalog Jajanan;
+:Menampilkan Halaman Utama & Katalog;
 
 |Pelanggan|
 if (Status Akun?) then (Belum Punya Akun)
@@ -37,9 +37,11 @@ else (Sudah Punya Akun)
     :Menampilkan Pesan Kesalahan Login;
     stop
   else (Berhasil)
-    :Menampilkan Halaman Depan (Sudah Login);
   endif
 endif
+
+|Sistem|
+:Menampilkan Katalog Jajanan & Fitur AI;
 
 |Pelanggan|
 :Pilih / Cari Jajanan Pasar (Pencarian, Filter Kategori, atau Asisten AI Gemini);
