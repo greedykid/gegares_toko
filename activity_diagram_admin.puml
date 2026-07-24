@@ -9,9 +9,9 @@ skinparam ActivityDiamondBackgroundColor #FEFCBF
 skinparam SwimlaneTitleFontSize 14
 skinparam SwimlaneTitleFontStyle bold
 skinparam SwimlaneBorderColor #A0AEC0
-skinparam SwimlaneWidth 260
+skinparam SwimlaneWidth 300
 
-title **ACTIVITY DIAGRAM ADMIN (SEDERHANA) - GEGARES**
+title **ACTIVITY DIAGRAM ADMIN - GEGARES**
 
 |Admin|
 start
@@ -21,35 +21,42 @@ start
 :Menampilkan Form Login Admin;
 
 |Admin|
-:Input Email & Password Admin;
+:Mengisi Email & Password Admin;
 
 |Sistem|
-:Validasi Auth Admin (Middleware is_admin);
-if (Validasi Auth?) then (Gagal)
-  :Tampilkan Pesan Error Access Denied;
+:Validasi Authentikasi & Middleware is_admin;
+if (Hasil Validasi Auth?) then (Gagal / Bukan Admin)
+  :Menampilkan Pesan Access Denied / Error;
   stop
-else (Berhasil)
+else (Berhasil / Valid Admin)
   :Menampilkan Dashboard Panel Admin;
 endif
 
 |Admin|
-:Pilih Operasi Manajemen Toko;
+:Akses Panel Operasi Toko;
 note right
-  - Kelola Kategori & Produk
-  - Kelola Promo / Kupon
-  - Kelola Pesanan & Biteship
-  - Moderasi Ulasan
-  - Kelola User & Content Toko
+  Admin dapat mengelola 7 modul utama:
+  1. Kategori Produk
+  2. Produk & Varian (Galeri Foto)
+  3. Kode Promo / Kupon
+  4. Pesanan & Biteship (Export CSV)
+  5. Moderasi Ulasan Pelanggan
+  6. Data Pengguna & Role
+  7. Pengaturan Toko (Biteship Origin, Content Editor)
 end note
 
+|Admin|
+:Melakukan Pengelolaan Toko (CRUD / Update Data);
+
 |Sistem|
-:Menampilkan Halaman Manajemen & Simpan Changes ke Database;
+:Memproses Perubahan & Update Database MySQL;
+:Menampilkan Notifikasi Berhasil & Data Terbaru;
 
 |Admin|
-:Logout Admin;
+:Mengklik Tombol Logout Admin;
 
 |Sistem|
-:Destroy Admin Session & Redirect Login;
+:Invalidate Admin Session & Redirect ke Form Login Admin;
 
 |Admin|
 stop

@@ -9,60 +9,97 @@ skinparam ActivityDiamondBackgroundColor #FEFCBF
 skinparam SwimlaneTitleFontSize 14
 skinparam SwimlaneTitleFontStyle bold
 skinparam SwimlaneBorderColor #A0AEC0
-skinparam SwimlaneWidth 260
+skinparam SwimlaneWidth 280
 
-title **ACTIVITY DIAGRAM PELANGGAN (SEDERHANA) - GEGARES**
+title **ACTIVITY DIAGRAM PELANGGAN - GEGARES**
 
 |Pelanggan|
 start
 :Membuka Website Gegares;
 
 |Sistem|
-:Menampilkan Halaman Depan & Katalog;
+:Menampilkan Halaman Depan & Katalog Jajanan;
 
 |Pelanggan|
-if (Sudah Login?) then (Belum)
-  :Login / Registrasi Akun;
+if (Status Akun?) then (Belum Punya Akun)
+  :Mengisi Form Registrasi;
   |Sistem|
-  :Validasi Akun & Set Session;
-else (Ya)
+  :Menyimpan Akun Baru;
+else if (Lupa Password?) then (Lupa Password)
+  :Mengisi Email Lupa Password;
+  |Sistem|
+  :Kirim Link Reset via Email & Update Password;
+else (Sudah Akun)
+  :Mengisi Form Login / Google Auth;
+  |Sistem|
+  :Validasi Credentials & Session;
+  if (Hasil Validasi?) then (Gagal)
+    :Menampilkan Pesan Error Login;
+    stop
+  else (Berhasil)
+    :Menampilkan Halaman (Logged In);
+  endif
 endif
 
 |Pelanggan|
-:Cari / Pilih Jajanan Pasar (Katalog / AI Chatbot);
+split
+  :Mencari Produk (Search Typo-Tolerant / Filter Kategori);
+split again
+  :Interaksi Chatbot AI Gemini (Tanya Produk / Snap & Buy Foto);
+end split
 
 |Sistem|
-:Menampilkan Detail Produk;
+:Menampilkan Detail Produk / Respon AI Chatbot;
 
 |Pelanggan|
-:Tambah ke Keranjang & Checkout;
+:Menambah Produk ke Keranjang / Wishlist;
 
 |Sistem|
-:Hitung Ongkir (Biteship) & Tampilkan QRIS Pakasir;
+:Update State Keranjang & Wishlist (Livewire);
 
 |Pelanggan|
-:Bayar Pesanan via QRIS Pakasir;
+:Melakukan Checkout Pesanan;
 
 |Sistem|
-:Verifikasi Webhook Pakasir & Update Status Paid;
+:Validasi Telepon & Tampilkan Form Checkout;
+
+|Pelanggan|
+:Pilih Alamat Pengiriman & Pilih Kurir;
+
+|Sistem|
+:Kalkulasi Ongkir Real-time via Biteship API;
+
+|Pelanggan|
+:Input Kupon Promo (Opsional) & Scan QRIS Pakasir;
+
+|Sistem|
+:Webhook Pakasir + Verifikasi Otoritatif API;
 if (Status Pembayaran?) then (Gagal / Expired)
-  :Pesanan Dibatalkan;
+  :Status Order Pending / Cancelled;
   stop
-else (Berhasil / Paid)
-  :Kurangi Stok & Auto-Booking Kurir (Biteship);
+else (Lunas / Paid)
+  :Update Order Status = Paid;
+  :Pengurangan Stok Atomik (DB Transaction);
+  :Auto Booking Kurir via Biteship API;
 endif
 
 |Pelanggan|
-:Lacak Pengiriman & Terima Pesanan;
+:Lacak Pengiriman (Biteship Tracking) & Terima Pesanan;
 
 |Sistem|
-:Update Status Completed;
+:Update Status Order = Completed;
 
 |Pelanggan|
-:Beri Ulasan Produk (Opsional);
+:Menulis Ulasan Produk (Rating, Teks & Foto);
 
 |Sistem|
-:Simpan Ulasan Pelanggan;
+:Menyimpan Ulasan (Menunggu Moderasi Admin);
+
+|Pelanggan|
+:Mengklik Logout;
+
+|Sistem|
+:Destroy Session & Redirect Guest;
 
 |Pelanggan|
 stop
