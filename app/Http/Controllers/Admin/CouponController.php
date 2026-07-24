@@ -26,13 +26,20 @@ class CouponController extends Controller
 
         $query = Coupon::query();
 
+        $query->when($request->search, fn ($q, $s) => $q->where('code', 'like', '%'.$s.'%'));
+        $query->when($request->filled('is_active'), fn ($q) => $q->where('is_active', (int) $request->is_active));
+
         if ($sort === 'created_at') {
             $query->orderBy('created_at', $direction);
         } else {
             $query->orderBy($sort, $direction);
         }
 
-        $coupons = $query->paginate(10)->withQueryString();
+        $coupons = $query->paginate(10)->appends($request->except('partial'));
+
+        if ($request->boolean('partial')) {
+            return view('admin.coupons._table', compact('coupons'));
+        }
 
         return view('admin.coupons.index', compact('coupons'));
     }
@@ -86,5 +93,18 @@ class CouponController extends Controller
         $coupon->delete();
 
         return redirect()->back()->with('success', 'Kupon berhasil dihapus!');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:coupons,id',
+        ])['ids'];
+
+        $count = Coupon::whereIn('id', $ids)->count();
+        Coupon::whereIn('id', $ids)->delete();
+
+        return back()->with('success', "{$count} kupon berhasil dihapus.");
     }
 }

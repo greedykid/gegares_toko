@@ -22,7 +22,15 @@ class UserController extends Controller
             $direction = 'desc';
         }
 
-        $users = User::orderBy($sort, $direction)->paginate(15)->withQueryString();
+        $users = User::query()
+            ->when($request->search, fn ($q, $s) => $q->where(fn ($w) => $w->where('name', 'like', '%'.$s.'%')->orWhere('email', 'like', '%'.$s.'%')))
+            ->when($request->filled('role'), fn ($q) => $q->where('role', $request->role))
+            ->orderBy($sort, $direction)
+            ->paginate(15)->appends($request->except('partial'));
+
+        if ($request->boolean('partial')) {
+            return view('admin.users._table', compact('users'));
+        }
         $userStats = User::selectRaw("
             count(*) as total,
             sum(case when role = 'admin' then 1 else 0 end) as admin_count,
@@ -95,5 +103,26 @@ class UserController extends Controller
 
         $user->delete();
         return back()->with('success', 'Pengguna berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:users,id',
+        ])['ids'];
+
+        // Never delete yourself or admin accounts via bulk action.
+        $deletable = User::whereIn('id', $ids)
+            ->where('id', '!=', auth()->id())
+            ->where('role', '!=', 'admin');
+
+        $count = $deletable->count();
+        (clone $deletable)->delete();
+
+        $skipped = count($ids) - $count;
+        $msg = "{$count} pengguna berhasil dihapus.".($skipped > 0 ? " {$skipped} dilewati (admin/akun sendiri)." : '');
+
+        return back()->with('success', $msg);
     }
 }

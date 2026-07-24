@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -79,7 +80,8 @@ class ProductController extends Controller
             $query->orderBy($sort, $direction);
         }
 
-        $products = $query->paginate(15)->appends($request->query());
+        // Exclude `partial` so pagination links never point at the AJAX fragment.
+        $products = $query->paginate(15)->appends($request->except('partial'));
         $categories = Category::all();
 
         $productStats = Product::selectRaw('
@@ -93,6 +95,11 @@ class ProductController extends Controller
         $featuredProducts = $productStats->featured ?? 0;
         $outOfStock = $productStats->out_of_stock ?? 0;
         $lowStock = $productStats->low_stock ?? 0;
+
+        // Live search / filter swaps just the table via AJAX.
+        if ($request->boolean('partial')) {
+            return view('admin.products._table', compact('products'));
+        }
 
         return view('admin.products.index', compact(
             'products',
@@ -258,6 +265,118 @@ class ProductController extends Controller
         $product->delete();
 
         return back()->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /**
+     * Delete several products at once from the table's multi-select bar.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:products,id',
+        ])['ids'];
+
+        $count = Product::whereIn('id', $ids)->count();
+        Product::whereIn('id', $ids)->delete();
+
+        return back()->with('success', "{$count} produk berhasil dihapus.");
+    }
+
+    /**
+     * Stream all products as a CSV the admin can edit and re-import.
+     */
+    public function export()
+    {
+        $columns = ['name', 'slug', 'category', 'price', 'stock', 'is_available', 'is_featured', 'description'];
+        $filename = 'produk-'.now()->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($columns) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $columns);
+            Product::with('category')->orderBy('name')->chunk(200, function ($products) use ($out) {
+                foreach ($products as $p) {
+                    fputcsv($out, [
+                        $p->name,
+                        $p->slug,
+                        $p->category?->name,
+                        $p->price,
+                        $p->stock,
+                        $p->is_available ? 1 : 0,
+                        $p->is_featured ? 1 : 0,
+                        $p->description,
+                    ]);
+                }
+            });
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Import products from a CSV exported above. Rows are matched by slug
+     * (updated) or created; a valid existing category name is required.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:5120',
+        ], [], ['file' => 'berkas CSV']);
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (! $handle) {
+            return back()->with('error', 'Gagal membaca berkas CSV.');
+        }
+
+        $header = fgetcsv($handle);
+        if (! $header) {
+            fclose($handle);
+            return back()->with('error', 'Berkas CSV kosong.');
+        }
+        $header = array_map(fn ($h) => strtolower(trim($h)), $header);
+
+        $categories = Category::pluck('id', 'name');
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        DB::transaction(function () use ($handle, $header, $categories, &$created, &$updated, &$skipped) {
+            while (($row = fgetcsv($handle)) !== false) {
+                if (count(array_filter($row, fn ($v) => trim((string) $v) !== '')) === 0) {
+                    continue; // blank line
+                }
+                $data = array_combine($header, array_pad($row, count($header), null));
+
+                $name = trim((string) ($data['name'] ?? ''));
+                $categoryId = $categories[trim((string) ($data['category'] ?? ''))] ?? null;
+                if ($name === '' || ! $categoryId) {
+                    $skipped++;
+                    continue;
+                }
+
+                $slug = Str::slug(trim((string) ($data['slug'] ?? '')) ?: $name);
+                $attrs = [
+                    'name' => $name,
+                    'category_id' => $categoryId,
+                    'price' => (int) round((float) ($data['price'] ?? 0)),
+                    'stock' => max(0, (int) ($data['stock'] ?? 0)),
+                    'is_available' => (int) ($data['is_available'] ?? 1) === 1,
+                    'is_featured' => (int) ($data['is_featured'] ?? 0) === 1,
+                    'description' => trim((string) ($data['description'] ?? '')) ?: null,
+                ];
+
+                $product = Product::where('slug', $slug)->first();
+                if ($product) {
+                    $product->update($attrs);
+                    $updated++;
+                } else {
+                    Product::create($attrs + ['slug' => $slug]);
+                    $created++;
+                }
+            }
+        });
+        fclose($handle);
+
+        return back()->with('success', "Impor selesai — {$created} dibuat, {$updated} diperbarui, {$skipped} dilewati.");
     }
 
     public function toggleFeatured(Product $product)

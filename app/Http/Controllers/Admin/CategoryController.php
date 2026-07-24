@@ -28,13 +28,20 @@ class CategoryController extends Controller
 
         $query = Category::withCount('products');
 
+        $query->when($request->search, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'));
+        $query->when($request->filled('is_active'), fn ($q) => $q->where('is_active', (int) $request->is_active));
+
         if ($sort === 'created_at') {
             $query->orderBy('created_at', $direction);
         } else {
             $query->orderBy($sort, $direction);
         }
 
-        $categories = $query->paginate(15)->withQueryString();
+        $categories = $query->paginate(15)->appends($request->except('partial'));
+
+        if ($request->boolean('partial')) {
+            return view('admin.categories._table', compact('categories'));
+        }
         $categoryStats = Category::selectRaw("
             count(*) as total,
             sum(case when is_active = 1 then 1 else 0 end) as active_count,
@@ -101,6 +108,19 @@ class CategoryController extends Controller
     {
         $category->delete();
         return back()->with('success', 'Kategori berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:categories,id',
+        ])['ids'];
+
+        $count = Category::whereIn('id', $ids)->count();
+        Category::whereIn('id', $ids)->delete();
+
+        return back()->with('success', "{$count} kategori berhasil dihapus.");
     }
 
     public function toggleStatus(Category $category)

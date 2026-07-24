@@ -79,6 +79,44 @@
         if (mainInput) mainInput.value = '';
     }
 }">
+    {{-- Page header: title + short blurb (left), Export/Import CSV + Add (right) --}}
+    <div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Kelola Produk</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola inventaris, harga, dan ketersediaan produk toko Anda.</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            {{-- Export / Import CSV --}}
+            <div x-data="{ open: false }" class="relative">
+                <button type="button" @click="open = !open"
+                        class="inline-flex items-center gap-2 h-10 px-4 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25"/></svg>
+                    Export / Import
+                    <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                </button>
+                <div x-show="open" x-cloak @click.outside="open = false" x-transition.opacity.duration.100ms
+                     class="absolute right-0 mt-2 w-44 z-50 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl py-1">
+                    <a href="{{ route('admin.products.export') }}"
+                       class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                        Export CSV
+                    </a>
+                    <button type="button" @click="open = false; $dispatch('open-import')"
+                            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V3m0 0L7.5 7.5M12 3l4.5 4.5M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5"/></svg>
+                        Import CSV
+                    </button>
+                </div>
+            </div>
+            {{-- Add --}}
+            <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',reserved_quantity:0,is_featured:false,image:''};"
+                    class="inline-flex items-center gap-2 h-10 px-5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                Tambah Produk
+            </button>
+        </div>
+    </div>
+
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 hover:shadow-md transition-all duration-300">
@@ -127,384 +165,118 @@
         </div>
     </div>
 
-    <div class="flex justify-end mb-6">
-        <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',reserved_quantity:0,is_featured:false,image:''};"
-                class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">+ Tambah Produk</button>
-    </div>
+    @php
+        $pageIds = $products->pluck('id')->values();
+        $stockTab = request('stock_status', '');
+        $stockTabs = ['' => 'Semua', 'in_stock' => 'Tersedia', 'low_stock' => 'Menipis', 'out_of_stock' => 'Habis'];
+    @endphp
+    <div x-data="adminListView('products')" :class="grid ? 'admin-grid-view' : ''" class="admin-list-card transition-all duration-300">
+        <div class="flex flex-col-reverse gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
+            {{-- Left: search + compact Filter popover + view toggle --}}
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <form method="GET" action="{{ route('admin.products.index') }}" class="relative flex flex-1 items-center gap-2 sm:flex-none" x-data="{ filterOpen: false, loading: false }">
+                    {{-- keep the active status tab + current sort when searching/filtering --}}
+                    <input type="hidden" name="stock_status" value="{{ request('stock_status') }}">
+                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    <input type="hidden" name="direction" value="{{ request('direction') }}">
 
-    {{-- Filters --}}
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-4 mb-6 transition-all duration-300">
-        <form method="GET" action="{{ route('admin.products.index') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-            <div class="lg:col-span-1">
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Cari Produk</label>
-                <div class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama produk..." 
-                           class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
-                    <div class="absolute left-3 top-2.5 text-slate-400 dark:text-slate-600">
-                        <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    {{-- Search (live AJAX filter) --}}
+                    <div class="relative flex-1 min-w-0 sm:flex-none">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
+                            <svg x-show="!loading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                            <svg x-show="loading" x-cloak class="w-4 h-4 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </span>
+                        <input type="text" name="search" data-live-search data-target="#productsTable" value="{{ request('search') }}" placeholder="Cari produk..."
+                               autocomplete="off"
+                               class="w-full sm:w-80 lg:w-96 h-10 pl-10 pr-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
                     </div>
-                </div>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Kategori</label>
-                <div x-data="{ 
-                        open: false, 
-                        selectedValue: '{{ request('category') }}', 
-                        selectedLabel: '{{ request('category') ? $categories->firstWhere('id', request('category'))->name ?? 'Semua Kategori' : 'Semua Kategori' }}'
-                     }" 
-                     class="relative w-full">
-                    <input type="hidden" name="category" :value="selectedValue">
-                    <button @click="open = !open" type="button" 
-                            class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                        <span x-text="selectedLabel"></span>
-                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
+
+                    {{-- Filter button + popover, wrapped so the popover anchors under the button --}}
+                    <div class="relative shrink-0">
+                    <button type="button" @click="filterOpen = !filterOpen"
+                            class="inline-flex items-center gap-1.5 h-10 px-3.5 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
+                        <span>Filter</span>
+                        @if(request()->anyFilled(['category','is_featured']))
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                        @endif
                     </button>
-                    <div x-show="open" 
-                         @click.outside="open = false" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 max-h-60 overflow-y-auto"
-                         style="display: none;">
-                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Kategori'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Semua Kategori
-                        </button>
-                        @foreach($categories as $cat)
-                            <button type="button" @click="selectedValue = '{{ $cat->id }}'; selectedLabel = '{{ $cat->name }}'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                    class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                    :class="selectedValue === '{{ $cat->id }}' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                                {{ $cat->name }}
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Stok</label>
-                <div x-data="{ 
-                        open: false, 
-                        selectedValue: '{{ request('stock_status') }}', 
-                        selectedLabel: '{{ request('stock_status') == 'out_of_stock' ? 'Stok Habis (0)' : (request('stock_status') == 'low_stock' ? 'Stok Menipis (1-4)' : (request('stock_status') == 'in_stock' ? 'Tersedia (5+)' : 'Semua Stok')) }}'
-                     }" 
-                     class="relative w-full">
-                    <input type="hidden" name="stock_status" :value="selectedValue">
-                    <button @click="open = !open" type="button" 
-                            class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                        <span x-text="selectedLabel"></span>
-                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <div x-show="open" 
-                         @click.outside="open = false" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                         style="display: none;">
-                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Stok'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Semua Stok
-                        </button>
-                        <button type="button" @click="selectedValue = 'out_of_stock'; selectedLabel = 'Stok Habis (0)'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'out_of_stock' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Stok Habis (0)
-                        </button>
-                        <button type="button" @click="selectedValue = 'low_stock'; selectedLabel = 'Stok Menipis (1-4)'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'low_stock' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Stok Menipis (1-4)
-                        </button>
-                        <button type="button" @click="selectedValue = 'in_stock'; selectedLabel = 'Tersedia (5+)'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'in_stock' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Tersedia (5+)
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Status</label>
-                <div x-data="{ 
-                        open: false, 
-                        selectedValue: '{{ request('is_featured') }}', 
-                        selectedLabel: '{{ request('is_featured') === '1' ? 'Hanya Unggulan' : (request('is_featured') === '0' ? 'Reguler Saja' : 'Semua Status') }}'
-                     }" 
-                     class="relative w-full">
-                    <input type="hidden" name="is_featured" :value="selectedValue">
-                    <button @click="open = !open" type="button" 
-                            class="w-full flex items-center justify-between pl-4 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                        <span x-text="selectedLabel"></span>
-                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <div x-show="open" 
-                         @click.outside="open = false" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                         style="display: none;">
-                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua Status'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Semua Status
-                        </button>
-                        <button type="button" @click="selectedValue = '1'; selectedLabel = 'Hanya Unggulan'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '1' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Hanya Unggulan
-                        </button>
-                        <button type="button" @click="selectedValue = '0'; selectedLabel = 'Reguler Saja'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '0' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            Reguler Saja
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="flex gap-2">
-                <button type="submit" class="flex-1 px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold rounded-xl hover:bg-slate-900 dark:hover:bg-slate-600 shadow-sm transition-colors duration-200">Filter</button>
-                @if(request()->anyFilled(['search', 'category', 'stock_status', 'is_featured']))
-                    <a href="{{ route('admin.products.index') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center" title="Reset">
-                        <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                    </a>
-                @endif
-            </div>
-        </form>
-    </div>
 
-    <div x-data="adminListView('products')" :class="grid ? 'admin-grid-view' : ''" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
-        <div class="flex justify-end p-3 border-b border-slate-100 dark:border-slate-800">
-            @include('admin.partials.view-toggle')
-        </div>
-        <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest rounded-tl-2xl">
-                            <a href="{{ sortUrl('name', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors">
-                                Produk
-                                @if($sort === 'name')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('description', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors">
-                                Deskripsi
-                                @if($sort === 'description')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('category_id', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors">
-                                Kategori
-                                @if($sort === 'category_id')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('price', $sort, $dir) }}" class="inline-flex items-center justify-end gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors w-full">
-                                Harga
-                                @if($sort === 'price')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('stock', $sort, $dir) }}" class="inline-flex items-center justify-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors mx-auto">
-                                Stok
-                                @if($sort === 'stock')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('is_featured', $sort, $dir) }}" class="inline-flex items-center justify-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors mx-auto">
-                                Unggulan
-                                @if($sort === 'is_featured')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest rounded-tr-2xl">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
-                    @forelse($products as $product)
-                    <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
-                        <td data-label="Produk" class="px-6 py-4">
-                            <div class="flex items-center gap-3.5">
-                                <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-slate-700/60 shadow-xs">
-                                    @if($product->image)
-                                        <img src="{{ asset('storage/'.$product->image) }}" class="w-full h-full object-cover">
-                                    @else
-                                        <div class="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-800">
-                                            <svg class="w-5 h-5 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 18.75V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75Z" />
-                                            </svg>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors leading-none mb-1">{{ $product->name }}</span>
-                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 tracking-wider">/{{ $product->slug }}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Deskripsi" class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title="{{ $product->description ?: '-' }}">{{ $product->description ?: '-' }}</td>
-                        <td data-label="Kategori" class="px-6 py-4">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700">
-                                {{ $product->category->name ?? '-' }}
-                            </span>
-                        </td>
-                        <td data-label="Harga" class="px-6 py-4 text-sm text-right font-bold text-slate-900 dark:text-slate-100">{{ $product->formatted_price }}</td>
-                        <td data-label="Stok" class="px-6 py-4">
-                            {{-- Availability switch (what customers see) plus the stock
-                                 counter, which keeps running behind the scenes. --}}
-                            <div class="flex flex-col items-center gap-1.5">
-                                <form method="POST" action="{{ route('admin.products.toggle-availability', $product) }}" class="inline-flex items-center gap-2">
-                                    @csrf @method('PATCH')
-                                    <label class="relative inline-flex items-center cursor-pointer group" title="{{ $product->is_available ? 'Tandai habis' : 'Tandai tersedia' }}">
-                                        <input type="checkbox" class="sr-only peer" {{ $product->is_available ? 'checked' : '' }} onchange="this.closest('form').submit()">
-                                        <div class="w-9 h-5 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 dark:peer-checked:bg-emerald-600 group-hover:shadow-sm"></div>
-                                    </label>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $product->is_available ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400' }}">
-                                        {{ $product->is_available ? 'Tersedia' : 'Habis' }}
-                                    </span>
-                                </form>
-
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold {{ $product->isOutOfStock() ? 'bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 border border-red-200/50 dark:border-red-950/30' : ($product->isLowStock() ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-650 dark:text-amber-400 border border-amber-200/50 dark:border-amber-950/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700') }}">
-                                    Tersedia: {{ $product->stock }}
-                                </span>
-
-                                {{-- Held by live orders. Shown only when there is
-                                     something to hold, so the common case stays quiet. --}}
-                                @if($product->reserved_quantity)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-900/30"
-                                          title="Sudah dipesan pelanggan dan dipotong dari stok tersedia. Total di gudang: {{ $product->stock + $product->reserved_quantity }}.">
-                                        {{ $product->reserved_quantity }} tertahan
-                                    </span>
-                                @endif
-                            </div>
-                        </td>
-                        <td data-label="Unggulan" class="px-6 py-4">
-                            <div class="flex items-center justify-center">
-                                <form method="POST" action="{{ route('admin.products.toggle-featured', $product) }}" class="inline-flex items-center gap-2">
-                                    @csrf @method('PATCH')
-                                    <label class="relative inline-flex items-center cursor-pointer group">
-                                        <input type="checkbox" class="sr-only peer" {{ $product->is_featured ? 'checked' : '' }} onchange="this.closest('form').submit()">
-                                        <div class="w-9 h-5 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500 dark:peer-checked:bg-amber-600 group-hover:shadow-sm"></div>
-                                    </label>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $product->is_featured ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }}">
-                                        {{ $product->is_featured ? 'Unggulan' : 'Reguler' }}
-                                    </span>
-                                </form>
-                            </div>
-                        </td>
-                        <td data-label="Aksi" class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                            <div class="relative group/tooltip inline-flex">
-                                <button @click="resetGallery(); showModal=true; editMode=true; form={id:{{ $product->id }},slug:'{{ $product->slug }}',name:'{{ addslashes($product->name) }}',category_id:'{{ $product->category_id }}',description:'{{ addslashes($product->description) }}',price:'{{ $product->price }}',stock:'{{ $product->stock }}',reserved_quantity:{{ (int) $product->reserved_quantity }},is_featured:{{ $product->is_featured ? 'true' : 'false' }}, image: '{{ $product->image }}'}; existingGallery={{ $product->images->toJson() }}; variants={{ $product->variants->toJson() }};"
-                                        class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                    {{-- Opens left-aligned under the button on desktop, right-aligned on
+                         mobile, width capped to viewport → never overflows/scrolls. --}}
+                    <div x-show="filterOpen" x-cloak @click.outside="filterOpen = false"
+                         x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                         class="absolute right-0 sm:right-auto sm:left-0 top-full mt-2 z-50 w-[min(17rem,calc(100vw-2.5rem))] sm:w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-3 space-y-3">
+                        {{-- Kategori (custom dropdown) --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Kategori</label>
+                            <div x-data="{ open:false, val:'{{ request('category') }}', label:'{{ request('category') ? addslashes($categories->firstWhere('id', request('category'))->name ?? 'Semua Kategori') : 'Semua Kategori' }}' }" class="relative">
+                                <input type="hidden" name="category" :value="val">
+                                <button type="button" @click="open=!open"
+                                        class="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                                    <span x-text="label" class="truncate"></span>
+                                    <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
                                 </button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50">
-                                    Edit Produk
-                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                                <div x-show="open" x-cloak @click.outside="open=false" x-transition.opacity.duration.100ms
+                                     class="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 custom-scrollbar">
+                                    <button type="button" @click="val='';label='Semua Kategori';open=false"
+                                            class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='' && 'text-primary-600 dark:text-primary-400 font-semibold'">Semua Kategori</button>
+                                    @foreach($categories as $cat)
+                                        <button type="button" @click="val='{{ $cat->id }}';label='{{ addslashes($cat->name) }}';open=false"
+                                                class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='{{ $cat->id }}' && 'text-primary-600 dark:text-primary-400 font-semibold'">{{ $cat->name }}</button>
+                                    @endforeach
                                 </div>
                             </div>
-                            <div class="relative group/tooltip inline-flex">
-                                <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="inline" onsubmit="return confirm('Hapus produk ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/60 rounded-xl transition-all" title="Hapus">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
-                                    </button>
-                                </form>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50">
-                                    Hapus Produk
-                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                        </div>
+                        {{-- Status Unggulan (custom dropdown) --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Status Unggulan</label>
+                            <div x-data="{ open:false, val:'{{ request('is_featured') }}', label:'{{ request('is_featured')==='1' ? 'Hanya Unggulan' : (request('is_featured')==='0' ? 'Reguler Saja' : 'Semua Status') }}' }" class="relative">
+                                <input type="hidden" name="is_featured" :value="val">
+                                <button type="button" @click="open=!open"
+                                        class="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                                    <span x-text="label" class="truncate"></span>
+                                    <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                                </button>
+                                <div x-show="open" x-cloak @click.outside="open=false" x-transition.opacity.duration.100ms
+                                     class="absolute z-50 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1">
+                                    <button type="button" @click="val='';label='Semua Status';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='' && 'text-primary-600 dark:text-primary-400 font-semibold'">Semua Status</button>
+                                    <button type="button" @click="val='1';label='Hanya Unggulan';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='1' && 'text-primary-600 dark:text-primary-400 font-semibold'">Hanya Unggulan</button>
+                                    <button type="button" @click="val='0';label='Reguler Saja';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='0' && 'text-primary-600 dark:text-primary-400 font-semibold'">Reguler Saja</button>
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-20 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600 mb-4 transition-colors">
-                                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 transition-colors">Produk Tidak Ditemukan</h3>
-                                <p class="text-slate-500 dark:text-slate-500 text-sm mt-1 max-w-xs mx-auto transition-colors">Maaf, kami tidak dapat menemukan produk yang sesuai dengan filter atau kata kunci pencarian Anda.</p>
-                                <div class="mt-6">
-                                    <a href="{{ route('admin.products.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                                        Atur Ulang Semua Filter
-                                    </a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button type="submit" class="flex-1 px-3 py-2 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 transition-colors">Terapkan</button>
+                            @if(request()->anyFilled(['search','category','is_featured']))
+                                <a href="{{ route('admin.products.index') }}" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Reset</a>
+                            @endif
+                        </div>
+                    </div>
+                    </div>
+                </form>
+                <div class="shrink-0">
+                    @include('admin.partials.view-toggle')
+                </div>
+            </div>
+
+            {{-- Right: status quick-filter tabs (reuse the stock_status query filter) --}}
+            <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+                @foreach($stockTabs as $val => $label)
+                    <a href="{{ request()->fullUrlWithQuery(['stock_status' => $val, 'page' => null]) }}"
+                       class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $stockTab === $val ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
         </div>
-        <div class="px-6 py-3 border-t border-slate-50 dark:border-slate-800">{{ $products->links() }}</div>
+        {{-- Table + pagination (replaced in place by live AJAX search) --}}
+        <div id="productsTable">
+            @include('admin.products._table')
+        </div>
+
+        {{-- Floating bulk-action bar (shares selection state via adminListView) --}}
+        @include('admin.partials.bulk-bar', ['route' => route('admin.products.bulk-destroy'), 'noun' => 'produk'])
     </div>
 
     {{-- Modal --}}
@@ -826,6 +598,30 @@
             </form>
         </div>
         </div>
+    </div>
+</div>
+
+{{-- Import CSV modal (opens via $dispatch('open-import') or when validation fails) --}}
+<div x-data="{ open: {{ $errors->has('file') ? 'true' : 'false' }} }" x-show="open" x-cloak
+     @open-import.window="open = true"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+    <div class="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">Impor Produk (CSV)</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Kolom: <code class="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">name, slug, category, price, stock, is_available, is_featured, description</code>. Baris dicocokkan berdasarkan <b>slug</b> (diperbarui) atau dibuat baru; kategori harus sudah ada.</p>
+        <form method="POST" action="{{ route('admin.products.import') }}" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            <input type="file" name="file" accept=".csv,text/csv" required
+                   class="block w-full text-sm text-slate-600 dark:text-slate-300 cursor-pointer rounded-xl border border-slate-200 dark:border-slate-800 p-2 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-700 dark:file:bg-primary-950/40 dark:file:text-primary-400 hover:file:bg-primary-100">
+            @error('file') <p class="text-red-500 text-xs font-bold">{{ $message }}</p> @enderror
+            <div class="flex items-center justify-between gap-3 pt-2">
+                <a href="{{ route('admin.products.export') }}" class="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">Unduh contoh format</a>
+                <div class="flex gap-2">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">Impor</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
