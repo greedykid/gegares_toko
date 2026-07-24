@@ -9,7 +9,7 @@ skinparam ActivityDiamondBackgroundColor #FEFCBF
 skinparam SwimlaneTitleFontSize 14
 skinparam SwimlaneTitleFontStyle bold
 skinparam SwimlaneBorderColor #A0AEC0
-skinparam SwimlaneWidth 300
+skinparam SwimlaneWidth 280
 
 title **ACTIVITY DIAGRAM ADMIN - GEGARES**
 
@@ -24,39 +24,63 @@ start
 :Mengisi Email & Password Admin;
 
 |Sistem|
-:Validasi Authentikasi & Middleware is_admin;
-if (Hasil Validasi Auth?) then (Gagal / Bukan Admin)
-  :Menampilkan Pesan Access Denied / Error;
+:Validasi Hak Akses Admin;
+if (Hasil Validasi?) then (Gagal / Bukan Admin)
+  :Menampilkan Pesan Akses Ditolak;
   stop
-else (Berhasil / Valid Admin)
-  :Menampilkan Dashboard Panel Admin;
+else (Berhasil / Admin Valid)
+  :Menampilkan Halaman Dashboard Admin;
 endif
 
 |Admin|
-:Akses Panel Operasi Toko;
-note right
-  Admin dapat mengelola 7 modul utama:
-  1. Kategori Produk
-  2. Produk & Varian (Galeri Foto)
-  3. Kode Promo / Kupon
-  4. Pesanan & Biteship (Export CSV)
-  5. Moderasi Ulasan Pelanggan
-  6. Data Pengguna & Role
-  7. Pengaturan Toko (Biteship Origin, Content Editor)
-end note
+split
+  :Kelola Kategori Produk;
+  |Sistem|
+  :Menampilkan Halaman Kategori;
+  :Menyimpan Data Kategori (Tambah/Edit/Hapus);
+
+split again
+  :Kelola Produk & Varian;
+  |Sistem|
+  :Menampilkan Halaman Produk;
+  :Menyimpan Data Produk, Varian & Foto Galeri;
+
+split again
+  :Kelola Kode Promo / Kupon;
+  |Sistem|
+  :Menampilkan Halaman Kode Promo;
+  :Menyimpan Data Kupon Diskon;
+
+split again
+  :Kelola Pesanan & Pengiriman;
+  |Sistem|
+  :Menampilkan Daftar Pesanan Toko;
+  :Memperbarui Status Pesanan & Cetak Laporan;
+
+split again
+  :Moderasi Ulasan Pelanggan;
+  |Sistem|
+  :Menampilkan Daftar Ulasan Masuk;
+  :Setujui / Tolak Ulasan & Perbarui Rating Produk;
+
+split again
+  :Kelola Data Pengguna;
+  |Sistem|
+  :Menampilkan Daftar Pengguna;
+  :Menyimpan Data Pengguna & Hak Akses;
+
+split again
+  :Pengaturan Toko & Konten;
+  |Sistem|
+  :Menampilkan Halaman Pengaturan Toko;
+  :Menyimpan Informasi Toko, Banner & Tampilan;
+end split
 
 |Admin|
-:Melakukan Pengelolaan Toko (CRUD / Update Data);
+:Mengklik Tombol Keluar (Logout);
 
 |Sistem|
-:Memproses Perubahan & Update Database MySQL;
-:Menampilkan Notifikasi Berhasil & Data Terbaru;
-
-|Admin|
-:Mengklik Tombol Logout Admin;
-
-|Sistem|
-:Invalidate Admin Session & Redirect ke Form Login Admin;
+:Keluar dari Akun Admin & Kembali ke Form Login;
 
 |Admin|
 stop

@@ -22,84 +22,84 @@ start
 
 |Pelanggan|
 if (Status Akun?) then (Belum Punya Akun)
-  :Mengisi Form Registrasi;
+  :Mengisi Form Pendaftaran;
   |Sistem|
-  :Menyimpan Akun Baru;
+  :Menyimpan Data Akun Baru;
 else if (Lupa Password?) then (Lupa Password)
   :Mengisi Email Lupa Password;
   |Sistem|
-  :Kirim Link Reset via Email & Update Password;
-else (Sudah Akun)
-  :Mengisi Form Login / Google Auth;
+  :Kirim Link Reset Email & Simpan Password Baru;
+else (Sudah Punya Akun)
+  :Mengisi Form Login / Login Google;
   |Sistem|
-  :Validasi Credentials & Session;
+  :Validasi Data Login & Akun;
   if (Hasil Validasi?) then (Gagal)
-    :Menampilkan Pesan Error Login;
+    :Menampilkan Pesan Kesalahan Login;
     stop
   else (Berhasil)
-    :Menampilkan Halaman (Logged In);
+    :Menampilkan Halaman Depan (Sudah Login);
   endif
 endif
 
 |Pelanggan|
 split
-  :Mencari Produk (Search Typo-Tolerant / Filter Kategori);
+  :Mencari Produk (Pencarian / Filter Kategori);
 split again
-  :Interaksi Chatbot AI Gemini (Tanya Produk / Snap & Buy Foto);
+  :Menggunakan Asisten AI (Tanya Produk / Upload Foto Jajanan);
 end split
 
 |Sistem|
-:Menampilkan Detail Produk / Respon AI Chatbot;
+:Menampilkan Detail Produk / Jawaban Asisten AI;
 
 |Pelanggan|
 :Menambah Produk ke Keranjang / Wishlist;
 
 |Sistem|
-:Update State Keranjang & Wishlist (Livewire);
+:Memperbarui Keranjang & Wishlist;
 
 |Pelanggan|
 :Melakukan Checkout Pesanan;
 
 |Sistem|
-:Validasi Telepon & Tampilkan Form Checkout;
+:Menampilkan Form Checkout & Alamat;
 
 |Pelanggan|
-:Pilih Alamat Pengiriman & Pilih Kurir;
+:Memilih Alamat Pengiriman & Kurir Pengiriman;
 
 |Sistem|
-:Kalkulasi Ongkir Real-time via Biteship API;
+:Menghitung Biaya Pengiriman Otomatis;
 
 |Pelanggan|
-:Input Kupon Promo (Opsional) & Scan QRIS Pakasir;
+:Masukkan Kode Promo (Opsional) & Lakukan Pembayaran Pakasir;
 
 |Sistem|
-:Webhook Pakasir + Verifikasi Otoritatif API;
-if (Status Pembayaran?) then (Gagal / Expired)
-  :Status Order Pending / Cancelled;
+:Verifikasi Pembayaran Pakasir;
+if (Status Pembayaran?) then (Gagal / Belum Bayar)
+  :Status Pesanan Dibatal / Menunggu;
   stop
-else (Lunas / Paid)
-  :Update Order Status = Paid;
-  :Pengurangan Stok Atomik (DB Transaction);
-  :Auto Booking Kurir via Biteship API;
+else (Berhasil / Lunas)
+  :Update Status Pesanan Menjadi Lunas;
+  :Memperbarui Stok Produk;
+  :Memproses Pengiriman Kurir;
 endif
 
 |Pelanggan|
-:Lacak Pengiriman (Biteship Tracking) & Terima Pesanan;
+:Memantau Pelacakan Pengiriman & Menerima Pesanan;
 
 |Sistem|
-:Update Status Order = Completed;
+:Update Status Pesanan Selesai;
 
 |Pelanggan|
 :Menulis Ulasan Produk (Rating, Teks & Foto);
 
 |Sistem|
-:Menyimpan Ulasan (Menunggu Moderasi Admin);
+:Menyimpan Ulasan Pelanggan;
 
 |Pelanggan|
-:Mengklik Logout;
+:Mengklik Keluar (Logout);
 
 |Sistem|
-:Destroy Session & Redirect Guest;
+:Keluar dari Akun & Kembali ke Halaman Utama;
 
 |Pelanggan|
 stop
