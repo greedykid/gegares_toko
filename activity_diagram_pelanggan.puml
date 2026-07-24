@@ -45,6 +45,10 @@ else (Sudah Punya Akun)
 endif
 
 |Sistem|
+fork
+  :Menyiapkan Akses Pengguna;
+end fork
+
 :Menampilkan Katalog Jajanan & Fitur AI;
 
 |Pelanggan|
