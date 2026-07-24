@@ -63,11 +63,23 @@ Route::middleware('guest')->group(function () {
 Route::get('/admin', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin', [AdminLoginController::class, 'login'])->middleware('throttle:5,1')->name('admin.login.submit');
 
+// ─── Checkout (guests welcome up to the point of paying) ───
+// A guest can browse the checkout, fill the address + shipping steps (held in
+// the session), and only has to log in / register at the final step. The order
+// itself is placed by store() (logged-in) or resume() (right after a guest logs
+// in), both of which stay behind auth.
+Route::get('/pemesanan', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/pemesanan/tamu', [CheckoutController::class, 'guestSubmit'])->name('checkout.guestSubmit');
+// resume() runs right after a guest logs in. It is deliberately NOT behind
+// check_phone: it guards the phone itself so it can re-arm the intended URL and
+// come back here after the profile is completed (Google accounts have no phone).
+Route::get('/pemesanan/lanjutkan', [CheckoutController::class, 'resume'])
+    ->middleware('auth')->name('checkout.resume');
+
 // ─── Authenticated User Routes ───
 Route::middleware(['auth', 'check_phone'])->group(function () {
     Route::post('/keluar', [LoginController::class, 'logout'])->name('logout');
 
-    Route::get('/pemesanan', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/pemesanan', [CheckoutController::class, 'store'])->name('checkout.store');
 
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
@@ -93,10 +105,12 @@ Route::middleware(['auth', 'check_phone'])->group(function () {
 // Resource URIs are Indonesian; ->names() keeps the English route names and
 // ->parameters() keeps the {product}/{order}/... bindings the controllers expect.
 Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(function () {
+    Route::get('/cari', [\App\Http\Controllers\Admin\SearchController::class, 'index'])->name('search');
     Route::post('/keluar', [AdminLoginController::class, 'logout'])->name('logout');
     Route::get('/dasbor', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::patch('/kategori/{category}/ubah-status', [AdminCategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+    Route::delete('/kategori-massal/hapus', [AdminCategoryController::class, 'bulkDestroy'])->name('categories.bulk-destroy');
     Route::resource('/kategori', AdminCategoryController::class)
         ->except(['create', 'edit'])
         ->names('categories')
@@ -104,6 +118,9 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
 
     Route::patch('/produk/{product}/ubah-unggulan', [AdminProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
     Route::patch('/produk/{product}/ubah-ketersediaan', [AdminProductController::class, 'toggleAvailability'])->name('products.toggle-availability');
+    Route::delete('/produk-massal/hapus', [AdminProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
+    Route::get('/produk-massal/export', [AdminProductController::class, 'export'])->name('products.export');
+    Route::post('/produk-massal/import', [AdminProductController::class, 'import'])->name('products.import');
     Route::resource('/produk', AdminProductController::class)
         ->except(['create', 'edit'])
         ->names('products')
@@ -127,13 +144,16 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->name('admin.')->group(
     Route::get('/ulasan', [AdminReviewController::class, 'index'])->name('reviews.index');
     Route::patch('/ulasan/{review}', [AdminReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/ulasan/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::delete('/ulasan-massal/hapus', [AdminReviewController::class, 'bulkDestroy'])->name('reviews.bulk-destroy');
 
+    Route::delete('/pengguna-massal/hapus', [AdminUserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
     Route::resource('/pengguna', AdminUserController::class)
         ->except(['create', 'edit'])
         ->names('users')
         ->parameters(['pengguna' => 'user']);
 
     // ─── Promo ───
+    Route::delete('/kupon-massal/hapus', [CouponController::class, 'bulkDestroy'])->name('coupons.bulk-destroy');
     Route::resource('/kupon', CouponController::class)
         ->except(['create', 'edit', 'show'])
         ->names('coupons')

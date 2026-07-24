@@ -30,13 +30,91 @@
         .admin-grid-view table { border-collapse: separate; border-spacing: 0; }
         .admin-grid-view thead { display: none; }
         .admin-grid-view tbody { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.9rem; padding: 0.9rem; }
-        .admin-grid-view tbody tr { display: flex; flex-direction: column; gap: 0.55rem; border: 1px solid rgb(226 232 240); border-radius: 1rem; padding: 0.85rem 1rem; }
-        .dark .admin-grid-view tbody tr { border-color: rgb(30 41 59); }
+        .admin-grid-view tbody tr { display: flex; flex-direction: column; gap: 0.55rem; border: 1px solid var(--color-slate-200); border-radius: 1rem; padding: 0.85rem 1rem; }
+        .dark .admin-grid-view tbody tr { border-color: var(--color-slate-800); }
         .admin-grid-view tbody td { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 0 !important; text-align: left !important; border: none !important; white-space: normal !important; }
-        .admin-grid-view tbody td[data-label]::before { content: attr(data-label); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: rgb(148 163 184); flex-shrink: 0; }
-        .admin-grid-view tbody td[data-label="Aksi"] { justify-content: flex-end; border-top: 1px solid rgb(241 245 249) !important; padding-top: 0.6rem !important; margin-top: 0.15rem; }
-        .dark .admin-grid-view tbody td[data-label="Aksi"] { border-top-color: rgb(30 41 59) !important; }
+        .admin-grid-view tbody td[data-label]::before { content: attr(data-label); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-slate-400); flex-shrink: 0; }
+        .admin-grid-view tbody td[data-label="Aksi"] { justify-content: flex-end; border-top: 1px solid var(--color-slate-100) !important; padding-top: 0.6rem !important; margin-top: 0.15rem; }
+        .dark .admin-grid-view tbody td[data-label="Aksi"] { border-top-color: var(--color-slate-800) !important; }
         .admin-grid-view tbody td[data-label="Aksi"]::before { display: none; }
+        /* The checkbox column only makes sense in the table view. */
+        .admin-grid-view .admin-select-cell { display: none; }
+
+        /* ---- Admin list tables --------------------------------------------
+           Colours come from the project palette tokens (--color-slate-* are
+           remapped to the warm "soft-linen" scale), so the table matches the
+           rest of the admin instead of rendering as blue slate.
+           The list sits on its own surface; the toggle bar (FIRST child) stays
+           transparent so it reads as sitting on the page, "outside" the panel.
+           Everything after it (table + pagination) is one bordered surface. */
+        /* .admin-bulk-bar is a fixed, out-of-flow child — exclude it from the
+           panel surface so it keeps its own styling and the pagination still
+           gets the rounded bottom. */
+        .admin-list-card > :not(:first-child):not(.admin-bulk-bar) {
+            background-color: #ffffff;
+            border-left: 1px solid var(--color-slate-100);
+            border-right: 1px solid var(--color-slate-100);
+        }
+        .admin-list-card > :nth-child(2) {
+            border-top: 1px solid var(--color-slate-100);
+            border-top-left-radius: 1rem; border-top-right-radius: 1rem;
+        }
+        .admin-list-card > :last-child:not(.admin-bulk-bar),
+        .admin-list-card:has(> .admin-bulk-bar:last-child) > :nth-last-child(2) {
+            border-bottom: 1px solid var(--color-slate-100);
+            border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem;
+        }
+        .dark .admin-list-card > :not(:first-child):not(.admin-bulk-bar) { background-color: var(--color-slate-900); border-left-color: var(--color-slate-800); border-right-color: var(--color-slate-800); }
+        .dark .admin-list-card > :nth-child(2) { border-top-color: var(--color-slate-800); }
+        .dark .admin-list-card > :last-child:not(.admin-bulk-bar),
+        .dark .admin-list-card:has(> .admin-bulk-bar:last-child) > :nth-last-child(2) { border-bottom-color: var(--color-slate-800); }
+
+        /* separate model: lets row hover cast a shadow. */
+        .admin-table { border-collapse: separate; border-spacing: 0; }
+
+        /* Header is a distinct band — one step darker than the row surface
+           (slate-100 on the white surface / slate-800 on the slate-900 surface)
+           so it no longer blends into the page background. Warm palette tokens. */
+        .admin-table thead th {
+            background-color: var(--color-slate-100);
+            box-shadow: inset 0 -1px 0 var(--color-slate-200);
+            font-size: 0.8125rem;      /* bump the tiny 10px header labels */
+            letter-spacing: 0.04em;    /* ease the widest tracking at the larger size */
+        }
+        .dark .admin-table thead th {
+            background-color: var(--color-slate-800);
+            box-shadow: inset 0 -1px 0 var(--color-slate-700);
+        }
+
+        /* Row dividers as cell borders (tr borders are ignored in separate mode). */
+        .admin-table tbody td { border-bottom: 1px solid var(--color-slate-100); }
+        .dark .admin-table tbody td { border-bottom: 1px solid var(--color-slate-800); }
+        .admin-table tbody tr:last-child td { border-bottom: 0; }
+
+        /* Hover: rows sit on the white/slate-900 surface, so a subtle tint + lift. */
+        .admin-table tbody tr { transition: background-color .15s ease, box-shadow .2s ease; }
+        .admin-table tbody tr:hover { position: relative; z-index: 1; background-color: var(--color-slate-50); box-shadow: 0 8px 20px -12px rgb(0 0 0 / 0.18); }
+        .dark .admin-table tbody tr:hover { background-color: var(--color-slate-800); box-shadow: 0 8px 22px -12px rgb(0 0 0 / 0.6); }
+
+        /* Some Aksi cells set `flex` on the <td> itself, which drops table-cell
+           behaviour and top-aligns the icons in tall rows. In table view, put the
+           cell back so the buttons stay vertically centred (grid view keeps its
+           flex via the :not(.admin-grid-view) guard). The margin restores the gap
+           that the flex parent used to provide; single-wrapper cells are untouched. */
+        .admin-list-card:not(.admin-grid-view) .admin-table tbody td[data-label="Aksi"] {
+            display: table-cell; vertical-align: middle; white-space: nowrap;
+        }
+        .admin-list-card:not(.admin-grid-view) .admin-table tbody td[data-label="Aksi"] > * { vertical-align: middle; }
+        .admin-list-card:not(.admin-grid-view) .admin-table tbody td[data-label="Aksi"] > * + * { margin-left: 0.5rem; }
+
+        /* Mobile: the toggle still switches between grid (cards, via
+           .admin-grid-view above) and table. In TABLE view we keep it a real
+           table but let it scroll horizontally so columns keep their width
+           instead of crushing. Grid view is untouched — the :not(.admin-grid-view)
+           guard leaves the card layout alone. */
+        @media (max-width: 1023px) {
+            .admin-list-card:not(.admin-grid-view) .admin-table { min-width: 44rem; }
+        }
     </style>
     @stack('styles')
     @livewireStyles
@@ -233,7 +311,37 @@
                             d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
-                <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">@yield('page_title', 'Dashboard')</h2>
+                {{-- Global search with live preview across all admin data --}}
+                <div x-data="globalSearch()" @click.outside="open = false" @keydown.escape="open = false" class="relative w-full max-w-md">
+                    <form method="GET" action="{{ route('admin.products.index') }}" class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                        </span>
+                        <input type="text" name="search" x-model="q" @input.debounce.300ms="run()" @focus="if (results.length || q.trim().length >= 2) open = true" autocomplete="off"
+                               placeholder="Cari produk, pesanan, pengguna..."
+                               class="w-full h-10 pl-10 pr-9 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+                        <button type="button" x-show="q.length > 0" x-cloak @click="q=''; results=[]; open=false" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </button>
+                    </form>
+                    {{-- Preview dropdown --}}
+                    <div x-show="open" x-cloak x-transition.opacity.duration.100ms
+                         class="absolute left-0 mt-2 w-full z-50 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden max-h-96 overflow-y-auto custom-scrollbar">
+                        <div x-show="loading" class="px-4 py-3 text-sm text-slate-400">Mencari…</div>
+                        <template x-if="!loading && results.length === 0 && q.trim().length >= 2">
+                            <div class="px-4 py-3 text-sm text-slate-400">Tidak ada hasil untuk "<span x-text="q"></span>"</div>
+                        </template>
+                        <template x-for="r in results" :key="r.type + '|' + r.url + '|' + r.label">
+                            <a :href="r.url" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors border-b border-slate-100/70 dark:border-slate-800/50 last:border-0">
+                                <span class="shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400" x-text="r.type"></span>
+                                <span class="flex-1 min-w-0">
+                                    <span class="block text-sm font-semibold text-slate-800 dark:text-slate-100 truncate" x-text="r.label"></span>
+                                    <span class="block text-xs text-slate-400 truncate" x-text="r.sub"></span>
+                                </span>
+                            </a>
+                        </template>
+                    </div>
+                </div>
                 <div class="ml-auto flex items-center gap-3">
                     {{-- Theme Toggle --}}
                     <button @click="toggleTheme()"
@@ -358,11 +466,69 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('adminListView', (key) => ({
                 grid: false,
+                selected: [],
                 init() {
                     this.grid = localStorage.getItem('adminView:' + key) === 'grid';
                     this.$watch('grid', (v) => localStorage.setItem('adminView:' + key, v ? 'grid' : 'table'));
                 },
+                // ---- Multi-select (checkbox column + floating bulk bar) ----
+                get count() { return this.selected.length; },
+                isSelected(id) { return this.selected.includes(id); },
+                toggle(id) {
+                    this.selected.includes(id)
+                        ? (this.selected = this.selected.filter(i => i !== id))
+                        : this.selected.push(id);
+                },
+                allSelected(ids) { return ids.length > 0 && ids.every(id => this.selected.includes(id)); },
+                toggleAll(ids) {
+                    this.allSelected(ids)
+                        ? (this.selected = this.selected.filter(id => !ids.includes(id)))
+                        : (this.selected = [...new Set([...this.selected, ...ids])]);
+                },
+                clearSelection() { this.selected = []; },
             }));
+
+            // Navbar global search — live preview across products/orders/users/categories.
+            Alpine.data('globalSearch', () => ({
+                q: '', open: false, loading: false, results: [],
+                run() {
+                    const term = this.q.trim();
+                    if (term.length < 2) { this.results = []; this.open = false; return; }
+                    this.loading = true; this.open = true;
+                    fetch('{{ route('admin.search') }}?q=' + encodeURIComponent(term), { headers: { 'Accept': 'application/json' } })
+                        .then(r => r.json())
+                        .then(d => { this.results = d.results || []; this.loading = false; })
+                        .catch(() => { this.loading = false; });
+                },
+            }));
+        });
+    </script>
+
+    {{-- Generic live AJAX search for admin list tables. Any
+         `<input data-live-search data-target="#tableId">` inside a GET form will,
+         on typing, fetch the filtered table partial (?partial=1) and swap it in. --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('input[data-live-search]').forEach((input) => {
+                const form = input.closest('form');
+                const box = document.querySelector(input.dataset.target);
+                if (!form || !box) return;
+                let timer;
+                const setLoading = (s) => { try { if (window.Alpine) window.Alpine.$data(form).loading = s; } catch (e) {} };
+                input.addEventListener('input', () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        const params = new URLSearchParams(new FormData(form));
+                        const url = form.action + '?' + params.toString();
+                        setLoading(true);
+                        fetch(url + '&partial=1', { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                            .then((r) => r.text())
+                            .then((html) => { box.innerHTML = html; if (window.Alpine) window.Alpine.initTree(box); history.replaceState(null, '', url); })
+                            .catch(() => {})
+                            .finally(() => setLoading(false));
+                    }, 400);
+                });
+            });
         });
     </script>
     @stack('scripts')

@@ -41,7 +41,11 @@ class OrderController extends Controller
         $completedOrders = $stats->completed ?? 0;
         $totalRevenue = $stats->revenue ?? 0;
 
-        $orders = $query->paginate(15)->withQueryString();
+        $orders = $query->paginate(15)->appends($request->except('partial'));
+
+        if ($request->boolean('partial')) {
+            return view('admin.orders._table', compact('orders'));
+        }
 
         return view('admin.orders.index', compact('orders', 'totalOrders', 'activeOrders', 'completedOrders', 'totalRevenue'));
     }
@@ -157,9 +161,9 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['items.product', 'user', 'address']);
-
-        return view('admin.orders.show', compact('order'));
+        // Admin order details live in a modal on the index (there is no dedicated
+        // show view), so deep-link to the list filtered to this order.
+        return redirect()->route('admin.orders.index', ['search' => $order->order_number]);
     }
 
     public function update(Request $request, Order $order, BiteshipService $biteship, OrderService $orders)

@@ -91,7 +91,11 @@ class ReviewController extends Controller
         $avgRating = $stats['avg'];
         $photoReviews = $stats['photo'];
 
-        $reviews = $query->paginate(15)->withQueryString();
+        $reviews = $query->paginate(15)->appends($request->except('partial'));
+
+        if ($request->boolean('partial')) {
+            return view('admin.reviews._table', compact('reviews'));
+        }
 
         return view('admin.reviews.index', compact(
             'reviews',
@@ -124,5 +128,26 @@ class ReviewController extends Controller
         $review->product->updateRating();
 
         return back()->with('success', 'Ulasan dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:reviews,id',
+        ])['ids'];
+
+        $reviews = Review::whereIn('id', $ids)->get();
+        foreach ($reviews as $review) {
+            if ($review->image) {
+                Storage::disk('public')->delete($review->image);
+                $review->image = null;
+                $review->save();
+            }
+            $review->delete();
+            $review->product?->updateRating();
+        }
+
+        return back()->with('success', $reviews->count().' ulasan dihapus.');
     }
 }

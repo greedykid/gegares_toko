@@ -97,6 +97,12 @@ class ManageStoreContent extends Component
 
         $this->contact_whatsapp = $setting->contact_whatsapp ?? '6281234567890';
         $this->contact_hours = $setting->contact_hours ?? "Setiap Hari: 06:00 - 17:00 WIB\nPemesanan WhatsApp: 24 Jam";
+        // Pickup hours drive the `required|date_format:H:i` validation on save.
+        // Without seeding them here, saving from any tab (e.g. FAQ) fails silently
+        // and no toast ever fires. Normalise stored TIME values to H:i for the
+        // <input type="time"> fields.
+        $this->opens_at = $setting->opens_at ? \Illuminate\Support\Carbon::parse($setting->opens_at)->format('H:i') : '06:00';
+        $this->closes_at = $setting->closes_at ? \Illuminate\Support\Carbon::parse($setting->closes_at)->format('H:i') : '17:00';
         $this->contact_phone = $setting->contact_phone ?? '+62 812-3456-7890';
         $this->contact_email = $setting->contact_email ?? 'hello@gegares.com';
 
@@ -118,6 +124,7 @@ class ManageStoreContent extends Component
     {
         unset($this->faq_items[$index]);
         $this->faq_items = array_values($this->faq_items);
+        $this->dispatch('toast', message: 'FAQ dihapus. Klik "Simpan Pengaturan" untuk menyimpan perubahan.', type: 'info');
     }
 
     // Mission dynamic list operations
