@@ -9,119 +9,60 @@ skinparam ActivityDiamondBackgroundColor #FEFCBF
 skinparam SwimlaneTitleFontSize 14
 skinparam SwimlaneTitleFontStyle bold
 skinparam SwimlaneBorderColor #A0AEC0
-skinparam SwimlaneWidth 280
+skinparam SwimlaneWidth 260
 
-title **ACTIVITY DIAGRAM PELANGGAN - GEGARES**
+title **ACTIVITY DIAGRAM PELANGGAN (SEDERHANA) - GEGARES**
 
 |Pelanggan|
 start
-:Membuka Halaman Website;
+:Membuka Website Gegares;
 
 |Sistem|
-:Menampilkan Halaman Depan (Homepage);
+:Menampilkan Halaman Depan & Katalog;
 
 |Pelanggan|
-if (Status Akun / Autentikasi?) then (Belum Punya Akun)
-  :Mengklik Menu Daftar;
+if (Sudah Login?) then (Belum)
+  :Login / Registrasi Akun;
   |Sistem|
-  :Menampilkan Form Pendaftaran;
-  |Pelanggan|
-  :Mengisi Form Registrasi;
-  |Sistem|
-  :Menyimpan Data Akun Baru & Logged In;
-else if (Lupa Password?) then (Lupa Password)
-  :Mengklik Lupa Password;
-  |Sistem|
-  :Menampilkan Form Lupa Password;
-  |Pelanggan|
-  :Mengisi Email Akun;
-  |Sistem|
-  :Mengirim Link Reset via Email;
-  |Pelanggan|
-  :Membuka Link Reset & Form Password Baru;
-  |Sistem|
-  :Memperbarui Password Database & Redirect Login;
-else (Sudah Punya Akun)
-  :Mengisi Form Login / Google Sign-In;
-  |Sistem|
-  :Validasi Credential / Token OAuth;
-  if (Hasil Validasi?) then (Gagal / Salah)
-    :Menampilkan Pesan Error Login;
-    stop
-  else (Berhasil)
-    :Menampilkan Halaman Depan (Logged In);
-  endif
+  :Validasi Akun & Set Session;
+else (Ya)
 endif
 
 |Pelanggan|
-:Mengeksplorasi Produk & Interaksi;
-note right
-  - Pencarian Typo-Tolerant
-  - Filter Kategori
-  - Chatbot AI (Gemini Grounding)
-  - Snap & Buy (Foto Jajanan)
-end note
-
-:Menambah Produk ke Keranjang / Wishlist;
+:Cari / Pilih Jajanan Pasar (Katalog / AI Chatbot);
 
 |Sistem|
-:Update State Keranjang & Wishlist (Livewire);
+:Menampilkan Detail Produk;
 
 |Pelanggan|
-:Menekan Tombol Checkout;
+:Tambah ke Keranjang & Checkout;
 
 |Sistem|
-:Validasi Telepon & Menampilkan Form Checkout;
+:Hitung Ongkir (Biteship) & Tampilkan QRIS Pakasir;
 
 |Pelanggan|
-:Memilih Alamat Pengiriman & Pilih Kurir;
+:Bayar Pesanan via QRIS Pakasir;
 
 |Sistem|
-:Kalkulasi Ongkir Real-time via Biteship API;
-
-|Pelanggan|
-:Input Kode Promo (Opsional) & Buat Pesanan;
-
-|Sistem|
-:Generate Hosted Payment Link / QRIS Pakasir;
-
-|Pelanggan|
-:Scan & Bayar via QRIS Pakasir;
-
-|Sistem|
-:Webhook Pakasir + Verifikasi Otoritatif API;
-if (Status Pembayaran?) then (Belum Bayar / Expired)
-  :Status Order Pending / Cancelled;
+:Verifikasi Webhook Pakasir & Update Status Paid;
+if (Status Pembayaran?) then (Gagal / Expired)
+  :Pesanan Dibatalkan;
   stop
-else (Lunas / Paid)
-  :Update Order Status = Paid;
-  :Pengurangan Stok Atomik (DB Transaction);
-  :Auto Booking Kurir via Biteship API;
+else (Berhasil / Paid)
+  :Kurangi Stok & Auto-Booking Kurir (Biteship);
 endif
 
 |Pelanggan|
-:Memantau Pelacakan Pengiriman;
+:Lacak Pengiriman & Terima Pesanan;
 
 |Sistem|
-:Menampilkan Status Resi & Biteship Tracking Real-time;
+:Update Status Completed;
 
 |Pelanggan|
-:Menerima Pesanan & Konfirmasi Diterima;
+:Beri Ulasan Produk (Opsional);
 
 |Sistem|
-:Update Status Order = Completed;
-
-|Pelanggan|
-:Menulis Ulasan Produk (Rating, Teks & Foto);
-
-|Sistem|
-:Menyimpan Ulasan (Menunggu Moderasi Admin);
-
-|Pelanggan|
-:Mengklik Logout;
-
-|Sistem|
-:Destroy Session & Redirect Guest;
+:Simpan Ulasan Pelanggan;
 
 |Pelanggan|
 stop
