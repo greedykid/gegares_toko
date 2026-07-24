@@ -1,15 +1,23 @@
 @startuml
-skinparam dpi 180
+skinparam dpi 200
 skinparam defaultFontName "SansSerif"
-skinparam ActivityFontSize 12
-skinparam ActivityBorderColor #742A2A
-skinparam ActivityBackgroundColor #FFF5F5
-skinparam ActivityDiamondBorderColor #9B2C2C
-skinparam ActivityDiamondBackgroundColor #FEFCBF
-skinparam SwimlaneTitleFontSize 14
+skinparam defaultFontSize 13
+skinparam ActivityFontSize 13
+skinparam ActivityBorderColor #E11D48
+skinparam ActivityBorderThickness 1.5
+skinparam ActivityBackgroundColor #FEF2F2
+skinparam ActivityDiamondBorderColor #CA8A04
+skinparam ActivityDiamondBackgroundColor #FEF9C3
+skinparam ActivityDiamondFontSize 12
+skinparam ArrowColor #0F172A
+skinparam ArrowThickness 1.5
+skinparam SwimlaneTitleFontSize 16
 skinparam SwimlaneTitleFontStyle bold
-skinparam SwimlaneBorderColor #A0AEC0
-skinparam SwimlaneWidth 280
+skinparam SwimlaneBorderColor #94A3B8
+skinparam SwimlaneBorderThickness 1.5
+skinparam SwimlaneWidth 320
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #F59E0B
 
 title **ACTIVITY DIAGRAM ADMIN - GEGARES**
 
@@ -25,7 +33,7 @@ start
 
 |Sistem|
 :Validasi Hak Akses Admin;
-if (Hasil Validasi?) then (Gagal / Bukan Admin)
+if (Hasil Validasi Auth?) then (Gagal / Bukan Admin)
   :Menampilkan Pesan Akses Ditolak;
   stop
 else (Berhasil / Admin Valid)
@@ -38,42 +46,36 @@ fork
   |Sistem|
   :Menampilkan Halaman Kategori;
   :Menyimpan Data Kategori;
-
 fork again
   |Admin|
   :Kelola Produk & Varian;
   |Sistem|
   :Menampilkan Halaman Produk;
-  :Menyimpan Data Produk & Foto;
-
+  :Menyimpan Data Produk & Foto Galeri;
 fork again
   |Admin|
   :Kelola Kode Promo / Kupon;
   |Sistem|
   :Menampilkan Halaman Kode Promo;
   :Menyimpan Data Kupon Diskon;
-
 fork again
   |Admin|
   :Kelola Pesanan & Pengiriman;
   |Sistem|
   :Menampilkan Daftar Pesanan Toko;
   :Memperbarui Status & Cetak Laporan;
-
 fork again
   |Admin|
   :Moderasi Ulasan Pelanggan;
   |Sistem|
   :Menampilkan Daftar Ulasan Masuk;
   :Perbarui Approval & Rating Produk;
-
 fork again
   |Admin|
   :Kelola Data Pengguna;
   |Sistem|
   :Menampilkan Daftar Pengguna;
-  :Menyimpan Data Pengguna & Role;
-
+  :Menyimpan Data Pengguna & Hak Akses;
 fork again
   |Admin|
   :Pengaturan Toko & Konten;
