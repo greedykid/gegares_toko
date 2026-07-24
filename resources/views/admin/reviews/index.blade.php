@@ -14,6 +14,12 @@
 @endphp
 <div x-data="{ reviewImage: null }">
 
+{{-- Page header --}}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Kelola Ulasan</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Moderasi ulasan pelanggan dan setujui yang layak tampil.</p>
+</div>
+
 {{-- Stats Cards --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 hover:shadow-md transition-all duration-300">
@@ -62,179 +68,102 @@
     </div>
 </div>
 
-{{-- Page header --}}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Kelola Ulasan</h1>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Moderasi ulasan pelanggan dan setujui yang layak tampil.</p>
-</div>
+@php
+    $approvedTab = request('is_approved', '');
+    $approvedTabs = ['' => 'Semua', '1' => 'Disetujui', '0' => 'Menunggu'];
+@endphp
 
-{{-- Filters --}}
-<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-4 mb-6 transition-all duration-300">
-    <form method="GET" action="{{ route('admin.reviews.index') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
-        <div class="lg:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Cari Ulasan</label>
-            <div class="relative">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Produk atau pengguna..."
-                       data-live-search data-target="#reviewsTable" autocomplete="off"
-                       class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
-                <div class="absolute left-3 top-2.5 text-slate-400 dark:text-slate-600 transition-colors">
-                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-                </div>
-            </div>
-        </div>
-        <div class="lg:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Periode</label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-600">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-                    </svg>
-                </div>
-                <input type="text" id="date_range_picker"
-                       placeholder="Pilih rentang tanggal..."
-                       readonly
-                       class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer">
-                <input type="hidden" name="from_date" id="from_date" value="{{ request('from_date') }}">
-                <input type="hidden" name="to_date" id="to_date" value="{{ request('to_date') }}">
-            </div>
-        </div>
-        <div>
-            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Rating</label>
-            <div x-data="{ 
-                    open: false, 
-                    selectedValue: '{{ request('rating') }}', 
-                    selectedLabel: '{{ request('rating') ? request('rating') . ' Bintang' : 'Semua' }}'
-                 }" 
-                 class="relative w-full">
-                <input type="hidden" name="rating" :value="selectedValue">
-                <button @click="open = !open" type="button" 
-                        class="w-full flex items-center justify-between pl-3 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                    <span x-text="selectedLabel"></span>
-                    <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-                </button>
-                <div x-show="open" 
-                     @click.outside="open = false" 
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="opacity-100 scale-100"
-                     x-transition:leave-end="opacity-0 scale-95"
-                     class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                     style="display: none;">
-                    <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                            :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                        Semua
-                    </button>
-                    @for($i=5; $i>=1; $i--)
-                        <button type="button" @click="selectedValue = '{{ $i }}'; selectedLabel = '{{ $i }} Bintang'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '{{ $i }}' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                            {{ $i }} Bintang
-                        </button>
-                    @endfor
-                </div>
-            </div>
-        </div>
-        <div>
-            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1 transition-colors">Status</label>
-            <div x-data="{ 
-                    open: false, 
-                    selectedValue: '{{ request('is_approved') }}', 
-                    selectedLabel: '{{ request('is_approved') === '1' ? 'Disetujui' : (request('is_approved') === '0' ? 'Pending' : 'Semua') }}'
-                 }" 
-                 class="relative w-full">
-                <input type="hidden" name="is_approved" :value="selectedValue">
-                <button @click="open = !open" type="button" 
-                        class="w-full flex items-center justify-between pl-3 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 cursor-pointer transition-all">
-                    <span x-text="selectedLabel"></span>
-                    <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-                </button>
-                <div x-show="open" 
-                     @click.outside="open = false" 
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="opacity-100 scale-100"
-                     x-transition:leave-end="opacity-0 scale-95"
-                     class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                     style="display: none;">
-                    <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                            :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                        Semua
-                    </button>
-                    <button type="button" @click="selectedValue = '1'; selectedLabel = 'Disetujui'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                            :class="selectedValue === '1' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                        Disetujui
-                    </button>
-                    <button type="button" @click="selectedValue = '0'; selectedLabel = 'Pending'; open = false; $nextTick(() => { $el.closest('form').submit() })"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                            :class="selectedValue === '0' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">
-                        Pending
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="flex-1 px-4 py-2 bg-slate-800 dark:bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-slate-900 dark:hover:bg-primary-700 shadow-sm transition-all">Filter</button>
-            <a href="{{ route('admin.reviews.index') }}" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center" title="Reset">
-                <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-            </a>
-        </div>
-    </form>
-</div>
-
-{{-- Filter Info & Active Badges --}}
-@if(request()->anyFilled(['search', 'rating', 'is_approved']) || (request('from_date') && request('from_date') != now()->subMonth()->format('Y-m-d')) || (request('to_date') && request('to_date') != now()->format('Y-m-d')))
-<div class="flex flex-wrap items-center gap-2 mb-6 ml-1">
-    <span class="text-xs font-bold text-slate-400 dark:text-slate-500 mr-2 transition-colors uppercase tracking-wider">Menampilkan {{ $reviews->total() }} ulasan untuk:</span>
-    
-    @if(request('search'))
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-400 text-[10px] font-bold rounded-lg border border-primary-100 dark:border-primary-900 uppercase transition-all">
-            Cari: "{{ request('search') }}"
-        </span>
-    @endif
-
-    @if(request('rating'))
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[10px] font-bold rounded-lg border border-amber-100 dark:border-amber-900 uppercase transition-all">
-            {{ request('rating') }} Bintang
-        </span>
-    @endif
-
-    @if(request('is_approved') !== null && request('is_approved') !== '')
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold rounded-lg border border-indigo-100 dark:border-indigo-900 uppercase transition-all">
-            Status: {{ request('is_approved') == '1' ? 'Disetujui' : 'Pending' }}
-        </span>
-    @endif
-
-    @if(request('from_date') || request('to_date'))
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 text-[10px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 uppercase transition-all">
-            Periode: {{ \Carbon\Carbon::parse(request('from_date'))->format('d M') }} - {{ \Carbon\Carbon::parse(request('to_date'))->format('d M Y') }}
-        </span>
-    @endif
-
-    <a href="{{ route('admin.reviews.index') }}" class="text-[10px] font-bold text-red-500 dark:text-red-400 hover:text-red-700 underline ml-2 transition-colors">Bersihkan Semua</a>
-</div>
-@endif
-
-@php $approvedTab = request('is_approved', ''); $approvedTabs = ['' => 'Semua', '1' => 'Disetujui', '0' => 'Menunggu']; @endphp
 <div x-data="adminListView('reviews')" :class="grid ? 'admin-grid-view' : ''" class="admin-list-card transition-all duration-300">
+    {{-- Controls: search + compact Filter popover + view toggle (left), status quick-filter tabs (right) --}}
     <div class="flex flex-col-reverse gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="shrink-0">
-            @include('admin.partials.view-toggle')
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            <form method="GET" action="{{ route('admin.reviews.index') }}" class="relative flex flex-1 items-center gap-2 sm:flex-none" x-data="{ filterOpen: false, loading: false }">
+                <input type="hidden" name="is_approved" value="{{ request('is_approved') }}">
+                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                <input type="hidden" name="direction" value="{{ request('direction') }}">
+
+                {{-- Search (live AJAX filter) --}}
+                <div class="relative flex-1 min-w-0 sm:flex-none">
+                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
+                        <svg x-show="!loading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                        <svg x-show="loading" x-cloak class="w-4 h-4 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    </span>
+                    <input type="text" name="search" data-live-search data-target="#reviewsTable" value="{{ request('search') }}" placeholder="Cari ulasan..."
+                           autocomplete="off"
+                           class="w-full sm:w-80 lg:w-96 h-10 pl-10 pr-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+                </div>
+
+                {{-- Filter button + popover --}}
+                <div class="relative shrink-0">
+                    <button type="button" @click="filterOpen = !filterOpen"
+                            class="inline-flex items-center gap-1.5 h-10 px-3.5 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
+                        <span>Filter</span>
+                        @if(request()->anyFilled(['rating', 'from_date', 'to_date']))
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                        @endif
+                    </button>
+
+                    <div x-show="filterOpen" x-cloak @click.outside="(e) => { if (!e.target || !e.target.closest || !e.target.closest('.flatpickr-calendar')) filterOpen = false; }"
+                         x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                         class="absolute right-0 sm:right-auto sm:left-0 top-full mt-2 z-50 w-[min(18rem,calc(100vw-2.5rem))] sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-3.5 space-y-3">
+                        
+                        {{-- Periode Tanggal --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Periode Tanggal</label>
+                            <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 z-10">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                                    </svg>
+                                </div>
+                                <input type="text" id="date_range_picker" 
+                                       placeholder="Pilih rentang tanggal..." 
+                                       readonly
+                                       class="w-full pl-10 pr-3.5 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-colors cursor-pointer">
+                                <input type="hidden" name="from_date" id="from_date" value="{{ request('from_date') }}">
+                                <input type="hidden" name="to_date" id="to_date" value="{{ request('to_date') }}">
+                            </div>
+                        </div>
+
+                        {{-- Rating --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Rating Bintang</label>
+                            <div x-data="{ open:false, val:'{{ request('rating') }}', label:'{{ request('rating') ? request('rating') . ' Bintang' : 'Semua Rating' }}' }" class="relative">
+                                <input type="hidden" name="rating" :value="val">
+                                <button type="button" @click="open=!open"
+                                        class="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                                    <span x-text="label" class="truncate"></span>
+                                    <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                                </button>
+                                <div x-show="open" x-cloak @click.outside="open=false" x-transition.opacity.duration.100ms
+                                     class="absolute z-50 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1">
+                                    <button type="button" @click="val='';label='Semua Rating';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='' && 'text-primary-600 dark:text-primary-400 font-semibold'">Semua Rating</button>
+                                    @for($i=5; $i>=1; $i--)
+                                        <button type="button" @click="val='{{ $i }}';label='{{ $i }} Bintang';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='{{ $i }}' && 'text-primary-600 dark:text-primary-400 font-semibold'">{{ $i }} Bintang</button>
+                                    @endfor
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-1">
+                            <button type="submit" class="flex-1 px-3 py-2 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 transition-colors">Terapkan</button>
+                            @if(request()->anyFilled(['search', 'rating', 'from_date', 'to_date']))
+                                <a href="{{ route('admin.reviews.index') }}" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Reset</a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="shrink-0">
+                @include('admin.partials.view-toggle')
+            </div>
         </div>
+
         <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
             @foreach($approvedTabs as $val => $label)
                 <a href="{{ request()->fullUrlWithQuery(['is_approved' => $val, 'page' => null]) }}"
-                   class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $approvedTab === $val ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
+                   class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $approvedTab === $val ? 'bg-primary-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
             @endforeach
         </div>
     </div>

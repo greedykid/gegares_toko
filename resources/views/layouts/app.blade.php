@@ -123,12 +123,10 @@
 
                 {{-- Right: Auth / User Actions --}}
                 <div class="flex items-center gap-1 sm:gap-2">
-                    @auth
-                        {{-- Search --}}
-                        <button @click="$dispatch('open-search')" aria-label="Cari" class="hidden md:flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 active:scale-90" title="Cari">
-                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
-                        </button>
-                    @endauth
+                    {{-- Search --}}
+                    <button @click="$dispatch('open-search')" aria-label="Cari" class="hidden md:flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 active:scale-90" title="Cari">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+                    </button>
 
                     {{-- Theme Toggle --}}
                     <button @click="toggleTheme()" aria-label="Ganti Tema" class="hidden md:flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 active:scale-90" title="Ganti Tema">
@@ -282,15 +280,13 @@
 
                     {{-- Drawer Content --}}
                     <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 space-y-6">
-                        {{-- 1. Search Bar (if auth) --}}
-                        @auth
-                            <div class="relative">
-                                <button @click="mobileMenu = false; $dispatch('open-search')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-400 dark:text-slate-500 hover:border-primary-400 dark:hover:border-primary-800 hover:bg-slate-100/50 dark:hover:bg-slate-900/60 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-200">
-                                    <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
-                                    <span class="text-xs font-bold text-left">Cari jajanan pasar...</span>
-                                </button>
-                            </div>
-                        @endauth
+                        {{-- 1. Search Bar --}}
+                        <div class="relative">
+                            <button @click="mobileMenu = false; $dispatch('open-search')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-400 dark:text-slate-500 hover:border-primary-400 dark:hover:border-primary-800 hover:bg-slate-100/50 dark:hover:bg-slate-900/60 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-200">
+                                <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+                                <span class="text-xs font-bold text-left">Cari jajanan pasar...</span>
+                            </button>
+                        </div>
 
                         {{-- 2. User Profile Card or Auth Buttons --}}
                         <div class="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">

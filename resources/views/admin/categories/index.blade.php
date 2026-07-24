@@ -25,6 +25,19 @@
         }
     }
 }">
+    {{-- Page header --}}
+    <div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Kelola Kategori</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Atur kategori produk beserta visibilitasnya di toko.</p>
+        </div>
+        <button @click="showModal = true; editMode = false; form = { id: null, slug: '', name: '', description: '', is_active: true, image: '' }; imagePreview = null;"
+                class="inline-flex items-center gap-2 h-10 px-5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Tambah Kategori
+        </button>
+    </div>
+
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 hover:shadow-md transition-all duration-300">
@@ -78,19 +91,6 @@
         $statusTabs = ['' => 'Semua', '1' => 'Aktif', '0' => 'Nonaktif'];
     @endphp
 
-    {{-- Page header --}}
-    <div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Kelola Kategori</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Atur kategori produk beserta visibilitasnya di toko.</p>
-        </div>
-        <button @click="showModal = true; editMode = false; form = { id: null, slug: '', name: '', description: '', is_active: true, image: '' }; imagePreview = null;"
-                class="inline-flex items-center gap-2 h-10 px-5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all shrink-0">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-            Tambah Kategori
-        </button>
-    </div>
-
     <div x-data="adminListView('categories')" :class="grid ? 'admin-grid-view' : ''" class="admin-list-card transition-all duration-300">
         {{-- Controls: search (left) + status tabs (right) --}}
         <div class="flex flex-col-reverse gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
@@ -115,7 +115,7 @@
             <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
                 @foreach($statusTabs as $val => $label)
                     <a href="{{ request()->fullUrlWithQuery(['is_active' => $val, 'page' => null]) }}"
-                       class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $statusTab === $val ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
+                       class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $statusTab === $val ? 'bg-primary-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
                 @endforeach
             </div>
         </div>
@@ -159,7 +159,7 @@
                             <input type="file" name="image" class="hidden" accept="image/*" @change="previewImage">
                         </label>
                         <button type="button" x-show="imagePreview" @click="imagePreview = null"
-                                class="absolute top-2 right-2 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-lg text-red-500 shadow-sm hover:bg-white dark:hover:bg-slate-800 transition-all">
+                                class="absolute top-2 right-2 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-lg text-red-500 hover:bg-white dark:hover:bg-slate-800 transition-all">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
@@ -186,7 +186,7 @@
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="showModal = false" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all shadow-sm">Simpan</button>
+                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all">Simpan</button>
                 </div>
             </form>
         </div>

@@ -72,7 +72,7 @@
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.orders.report', request()->all()) }}"
                target="_blank"
-               class="px-4 py-2.5 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 hover:shadow-md hover:shadow-primary-600/10 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 duration-200">
+               class="px-4 py-2.5 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 transition-all flex items-center gap-2 duration-200">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.617 0-1.11-.461-1.12-1.078L6.34 18m11.32 0a1.152 1.152 0 0 0 1.059-1.086L19.5 8.25m-14 8.75a1.152 1.152 0 0 1-1.059-1.086L3.5 8.25m16 0a2.25 2.25 0 0 0-2.247-2.118H6.247A2.25 2.25 0 0 0 4 8.25m16 0V6a2.25 2.25 0 0 0-2.25-2.25h-7.5A2.25 2.25 0 0 0 8 6v2.25m4-3.037.01-.011m-.01.011-.01-.011m0 .011.011-.011" />
                 </svg>
@@ -129,180 +129,106 @@
         </div>
     </div>
 
-    {{-- Filter Bar --}}
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-4 mb-6 transition-all duration-300">
-        <form action="{{ route('admin.orders.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
-            <div class="lg:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Cari Pesanan</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-                    </div>
-                    <input type="text" name="search" value="{{ request('search') }}"
-                           data-live-search data-target="#ordersTable" autocomplete="off"
-                           placeholder="No. Pesanan / Nama..."
-                           class="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100">
-                </div>
-            </div>
-            
-            <div class="lg:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Periode</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-600">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-                        </svg>
-                    </div>
-                    <input type="text" id="date_range_picker" 
-                           placeholder="Pilih rentang tanggal..." 
-                           readonly
-                           class="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer">
-                    <input type="hidden" name="from_date" id="from_date" value="{{ request('from_date') }}">
-                    <input type="hidden" name="to_date" id="to_date" value="{{ request('to_date') }}">
-                </div>
-            </div>
+    @php
+        $statusTab = request('status', '');
+        $statusTabs = ['' => 'Semua', 'pending' => 'Menunggu', 'processing' => 'Diproses', 'shipped' => 'Dikirim', 'completed' => 'Selesai', 'cancelled' => 'Batal'];
+    @endphp
 
-            <div class="lg:col-span-1">
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Status</label>
-                <div x-data="{ 
-                        open: false, 
-                        selectedValue: '{{ request('status') }}', 
-                        selectedLabel: '{{ request('status') == 'pending' ? 'Menunggu' : (request('status') == 'processing' ? 'Diproses' : (request('status') == 'shipped' ? 'Dikirim' : (request('status') == 'completed' ? 'Selesai' : (request('status') == 'cancelled' ? 'Batal' : 'Semua')))) }}'
-                     }" 
-                     class="relative w-full">
-                    <input type="hidden" name="status" :value="selectedValue">
-                    <button @click="open = !open" type="button" 
-                            class="w-full flex items-center justify-between pl-3 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer">
-                        <span x-text="selectedLabel"></span>
-                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <div x-show="open" 
-                         @click.outside="open = false" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                         style="display: none;">
-                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Semua</button>
-                        <button type="button" @click="selectedValue = 'pending'; selectedLabel = 'Menunggu'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'pending' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Menunggu</button>
-                        <button type="button" @click="selectedValue = 'processing'; selectedLabel = 'Diproses'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'processing' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Diproses</button>
-                        <button type="button" @click="selectedValue = 'shipped'; selectedLabel = 'Dikirim'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'shipped' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Dikirim</button>
-                        <button type="button" @click="selectedValue = 'completed'; selectedLabel = 'Selesai'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'completed' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Selesai</button>
-                        <button type="button" @click="selectedValue = 'cancelled'; selectedLabel = 'Batal'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'cancelled' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Batal</button>
-                    </div>
-                </div>
-            </div>
+    <div x-data="adminListView('orders')" :class="grid ? 'admin-grid-view' : ''" class="admin-list-card transition-all duration-300">
+        {{-- Controls: search + compact Filter popover + view toggle (left), status quick-filter tabs (right) --}}
+        <div class="flex flex-col-reverse gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <form method="GET" action="{{ route('admin.orders.index') }}" class="relative flex flex-1 items-center gap-2 sm:flex-none" x-data="{ filterOpen: false, loading: false }">
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    <input type="hidden" name="direction" value="{{ request('direction') }}">
 
-            <div class="lg:col-span-1">
-                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Bayar</label>
-                <div x-data="{ 
-                        open: false, 
-                        selectedValue: '{{ request('payment_status') }}', 
-                        selectedLabel: '{{ request('payment_status') == 'pending' ? 'Pending' : (request('payment_status') == 'paid' ? 'Dibayar' : (request('payment_status') == 'failed' ? 'Gagal' : (request('payment_status') == 'expired' ? 'Expired' : 'Semua'))) }}'
-                     }" 
-                     class="relative w-full">
-                    <input type="hidden" name="payment_status" :value="selectedValue">
-                    <button @click="open = !open" type="button" 
-                            class="w-full flex items-center justify-between pl-3 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all outline-none bg-slate-50/30 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 cursor-pointer">
-                        <span x-text="selectedLabel"></span>
-                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <div x-show="open" 
-                         @click.outside="open = false" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 overflow-hidden"
-                         style="display: none;">
-                        <button type="button" @click="selectedValue = ''; selectedLabel = 'Semua'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === '' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Semua</button>
-                        <button type="button" @click="selectedValue = 'pending'; selectedLabel = 'Pending'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'pending' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Pending</button>
-                        <button type="button" @click="selectedValue = 'paid'; selectedLabel = 'Dibayar'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'paid' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Dibayar</button>
-                        <button type="button" @click="selectedValue = 'failed'; selectedLabel = 'Gagal'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'failed' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Gagal</button>
-                        <button type="button" @click="selectedValue = 'expired'; selectedLabel = 'Expired'; open = false"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                :class="selectedValue === 'expired' ? 'bg-slate-50 dark:bg-slate-800/50 font-medium text-primary-600 dark:text-primary-400' : ''">Expired</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-1 flex items-center gap-2">
-                <button type="submit" class="flex-1 px-5 py-2 bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold rounded-xl hover:bg-slate-900 dark:hover:bg-slate-600 shadow-sm transition-all whitespace-nowrap duration-200">Filter</button>
-                @if(request()->anyFilled(['search', 'status', 'payment_status', 'from_date', 'to_date']))
-                <a href="{{ route('admin.orders.index') }}" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center duration-200" title="Reset">
-                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                </a>
-                @endif
-            </div>
-        </form>
-    </div>
-    <div class="flex items-center justify-between mb-4 px-1">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-slate-500">Menampilkan {{ $orders->total() }} pesanan</span>
-            @if(request()->anyFilled(['search', 'status', 'payment_status', 'from_date', 'to_date']))
-                <span class="text-slate-300">|</span>
-                <div class="flex flex-wrap items-center gap-1.5">
-                    @if(request('search'))
-                        <span class="px-2 py-0.5 bg-primary-50 text-primary-600 text-[10px] font-bold rounded-lg border border-primary-100 italic">"{{ request('search') }}"</span>
-                    @endif
-                    @if(request('status'))
-                        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-200">Status: {{ ucfirst(request('status')) }}</span>
-                    @endif
-                    @if(request('payment_status'))
-                        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-200">Bayar: {{ ucfirst(request('payment_status')) }}</span>
-                    @endif
-                    @if(request('from_date') || request('to_date'))
-                        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-200">
-                            {{ request('from_date') ? \Carbon\Carbon::parse(request('from_date'))->format('d/m/Y') : '...' }} - 
-                            {{ request('to_date') ? \Carbon\Carbon::parse(request('to_date'))->format('d/m/Y') : '...' }}
+                    {{-- Search (live AJAX filter) --}}
+                    <div class="relative flex-1 min-w-0 sm:flex-none">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
+                            <svg x-show="!loading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                            <svg x-show="loading" x-cloak class="w-4 h-4 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                         </span>
-                    @endif
+                        <input type="text" name="search" data-live-search data-target="#ordersTable" value="{{ request('search') }}" placeholder="Cari pesanan..."
+                               autocomplete="off"
+                               class="w-full sm:w-80 lg:w-96 h-10 pl-10 pr-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+                    </div>
+
+                    {{-- Filter button + popover --}}
+                    <div class="relative shrink-0">
+                        <button type="button" @click="filterOpen = !filterOpen"
+                                class="inline-flex items-center gap-1.5 h-10 px-3.5 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
+                            <span>Filter</span>
+                            @if(request()->anyFilled(['payment_status', 'from_date', 'to_date']))
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                            @endif
+                        </button>
+
+                        <div x-show="filterOpen" x-cloak @click.outside="(e) => { if (!e.target || !e.target.closest || !e.target.closest('.flatpickr-calendar')) filterOpen = false; }"
+                             x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                             class="absolute right-0 sm:right-auto sm:left-0 top-full mt-2 z-50 w-[min(18rem,calc(100vw-2.5rem))] sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-3.5 space-y-3">
+                            
+                            {{-- Periode Tanggal --}}
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Periode Tanggal</label>
+                                <div class="relative">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 z-10">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="date_range_picker" 
+                                           placeholder="Pilih rentang tanggal..." 
+                                           readonly
+                                           class="w-full pl-10 pr-3.5 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-colors cursor-pointer">
+                                    <input type="hidden" name="from_date" id="from_date" value="{{ request('from_date') }}">
+                                    <input type="hidden" name="to_date" id="to_date" value="{{ request('to_date') }}">
+                                </div>
+                            </div>
+
+                            {{-- Status Pembayaran --}}
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Status Pembayaran</label>
+                                <div x-data="{ open:false, val:'{{ request('payment_status') }}', label:'{{ request('payment_status') == 'pending' ? 'Pending' : (request('payment_status') == 'paid' ? 'Dibayar' : (request('payment_status') == 'failed' ? 'Gagal' : (request('payment_status') == 'expired' ? 'Expired' : 'Semua Status Pembayaran'))) }}' }" class="relative">
+                                    <input type="hidden" name="payment_status" :value="val">
+                                    <button type="button" @click="open=!open"
+                                            class="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                                        <span x-text="label" class="truncate"></span>
+                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                                    </button>
+                                    <div x-show="open" x-cloak @click.outside="open=false" x-transition.opacity.duration.100ms
+                                         class="absolute z-50 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1">
+                                        <button type="button" @click="val='';label='Semua Status Pembayaran';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='' && 'text-primary-600 dark:text-primary-400 font-semibold'">Semua Status Pembayaran</button>
+                                        <button type="button" @click="val='pending';label='Pending';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='pending' && 'text-primary-600 dark:text-primary-400 font-semibold'">Pending</button>
+                                        <button type="button" @click="val='paid';label='Dibayar';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='paid' && 'text-primary-600 dark:text-primary-400 font-semibold'">Dibayar</button>
+                                        <button type="button" @click="val='failed';label='Gagal';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='failed' && 'text-primary-600 dark:text-primary-400 font-semibold'">Gagal</button>
+                                        <button type="button" @click="val='expired';label='Expired';open=false" class="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors" :class="val==='expired' && 'text-primary-600 dark:text-primary-400 font-semibold'">Expired</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" class="flex-1 px-3 py-2 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 transition-colors">Terapkan</button>
+                                @if(request()->anyFilled(['search', 'payment_status', 'from_date', 'to_date']))
+                                    <a href="{{ route('admin.orders.index') }}" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Reset</a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="shrink-0">
+                    @include('admin.partials.view-toggle')
                 </div>
-            @endif
+            </div>
+
+            <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+                @foreach($statusTabs as $val => $label)
+                    <a href="{{ request()->fullUrlWithQuery(['status' => $val, 'page' => null]) }}"
+                       class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $statusTab === $val ? 'bg-primary-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
+                @endforeach
+            </div>
         </div>
-    </div>
-@php $statusTab = request('status', ''); $statusTabs = ['' => 'Semua', 'pending' => 'Menunggu', 'processing' => 'Diproses', 'shipped' => 'Dikirim', 'completed' => 'Selesai', 'cancelled' => 'Batal']; @endphp
-<div x-data="adminListView('orders')" :class="grid ? 'admin-grid-view' : ''" class="admin-list-card transition-all duration-300">
-    <div class="flex flex-col-reverse gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="shrink-0">
-            @include('admin.partials.view-toggle')
-        </div>
-        <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
-            @foreach($statusTabs as $val => $label)
-                <a href="{{ request()->fullUrlWithQuery(['status' => $val, 'page' => null]) }}"
-                   class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $statusTab === $val ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
-            @endforeach
-        </div>
-    </div>
     <div id="ordersTable">
         @include('admin.orders._table')
     </div>

@@ -139,7 +139,7 @@
                         </div>
 
                         {{-- Modal Edit --}}
-                        <div x-data="{ show: false }" x-show="show" 
+                        <div x-data="{ show: false }" x-init="$watch('show', value => { if (value) $nextTick(() => initCouponDatePickers($el)) })" x-show="show" 
                              @open-modal.window="if ($event.detail === 'edit-coupon-{{ $coupon->id }}') { show = true; } else if ($event.detail === 'close-all-modals') { show = false; }" 
                              @close-modal.window="show = false" 
                              @keydown.escape.window="show = false" 
@@ -221,41 +221,53 @@
                                                 </div>
                                             </div>
 
-                                            <div class="grid grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mulai Berlaku</label>
-                                                    <input type="datetime-local" name="start_date" value="{{ $coupon->start_date?->format('Y-m-d\TH:i') }}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+                                                    <div class="relative">
+                                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 z-10">
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                                                            </svg>
+                                                        </div>
+                                                        <input type="text" name="start_date" value="{{ $coupon->start_date?->format('Y-m-d H:i') }}" readonly class="coupon-datetime-picker w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer" placeholder="Pilih tanggal & jam mulai...">
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Batas Berlaku</label>
-                                                    <input type="datetime-local" name="end_date" value="{{ $coupon->end_date?->format('Y-m-d\TH:i') }}" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
+                                                    <div class="relative">
+                                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 z-10">
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                            </svg>
+                                                        </div>
+                                                        <input type="text" name="end_date" value="{{ $coupon->end_date?->format('Y-m-d H:i') }}" readonly class="coupon-datetime-picker w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all cursor-pointer" placeholder="Pilih tanggal & jam selesai...">
+                                                    </div>
                                                 </div>
                                             </div>
 
                                             <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex items-center justify-between gap-3">
                                                     <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm text-primary-600 dark:text-primary-400">
+                                                        <div class="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm text-primary-600 dark:text-primary-400 shrink-0">
                                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                             </svg>
                                                         </div>
-                                                        <div>
-                                                            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Status Kupon</p>
-                                                            <p class="text-xs text-slate-500 dark:text-slate-500">Tentukan apakah kupon ini aktif digunakan</p>
-                                                        </div>
+                                                        <span class="text-sm font-bold text-slate-900 dark:text-slate-100">Status Kupon</span>
                                                     </div>
-                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                    <label class="relative inline-flex items-center cursor-pointer shrink-0 select-none">
                                                         <input type="checkbox" name="is_active" value="1" class="sr-only peer" {{ $coupon->is_active ? 'checked' : '' }}>
-                                                        <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:inset-s-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                                                        <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-primary-600"></div>
                                                     </label>
                                                 </div>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2.5 pl-12 leading-relaxed">Tentukan apakah kupon ini aktif digunakan</p>
                                             </div>
                                         </div>
 
                                         <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-900">
                                             <button type="button" @click="show = false" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Batal</button>
-                                            <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all duration-200">Simpan</button>
+                                            <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200">Simpan</button>
                                         </div>
                                     </form>
                                 </div>

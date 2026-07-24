@@ -18,14 +18,6 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Set Defaults for Dates if not provided
-        if (! $request->has('from_date')) {
-            $request->merge(['from_date' => now()->subMonth()->format('Y-m-d')]);
-        }
-        if (! $request->has('to_date')) {
-            $request->merge(['to_date' => now()->format('Y-m-d')]);
-        }
-
         $query = $this->getOrderQuery($request);
 
         // 3. Statistics Calculation (Global Stats)
