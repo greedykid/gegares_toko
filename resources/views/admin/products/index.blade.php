@@ -110,7 +110,7 @@
             </div>
             {{-- Add --}}
             <button @click="resetGallery(); showModal=true; editMode=false; form={id:null,slug:'',name:'',category_id:'',description:'',price:'',stock:'',reserved_quantity:0,is_featured:false,image:''};"
-                    class="inline-flex items-center gap-2 h-10 px-5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">
+                    class="inline-flex items-center gap-2 h-10 px-5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 Tambah Produk
             </button>
@@ -264,7 +264,7 @@
             <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
                 @foreach($stockTabs as $val => $label)
                     <a href="{{ request()->fullUrlWithQuery(['stock_status' => $val, 'page' => null]) }}"
-                       class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $stockTab === $val ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                       class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ $stockTab === $val ? 'bg-primary-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         {{ $label }}
                     </a>
                 @endforeach
@@ -396,7 +396,7 @@
                                 <input type="hidden" name="remove_image" :value="removeImageField ? '1' : '0'">
                                 <button type="button" x-show="imagePreview || (editMode && form.image)" 
                                         @click="imagePreview = null; form.image = ''; document.getElementById('mainImageInput').value = ''; removeImageField = true"
-                                        class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all z-10">
+                                        class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all z-10">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
@@ -554,7 +554,7 @@
                                         <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Stok</label>
                                         <input type="number" :name="'variants['+index+'][stock]'" x-model="variant.stock" required min="0" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500">
                                     </div>
-                                    <button type="button" @click="removeVariant(index)" class="p-2 mb-0.5 text-red-400 hover:text-red-600 transition-colors bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" title="Hapus">
+                                    <button type="button" @click="removeVariant(index)" class="p-2 mb-0.5 text-red-400 hover:text-red-600 transition-colors bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700" title="Hapus">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
                                 </div>
@@ -590,10 +590,9 @@
                     </div>
                 </div>
 
-                <!-- Modal Footer (Fixed) -->
                 <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-900">
                     <button type="button" @click="showModal=false" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all duration-200">Simpan</button>
+                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200">Simpan</button>
                 </div>
             </form>
         </div>
@@ -618,7 +617,7 @@
                 <a href="{{ route('admin.products.export') }}" class="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">Unduh contoh format</a>
                 <div class="flex gap-2">
                     <button type="button" @click="open = false" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition-all">Impor</button>
+                    <button type="submit" class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-all">Impor</button>
                 </div>
             </div>
         </form>

@@ -37,7 +37,7 @@
                 <p class="text-xs text-slate-500 mt-0.5 font-medium">{{ now()->translatedFormat('d F Y, H:i') }}</p>
                 
                 <div class="mt-6 no-print">
-                    <button onclick="window.print()" class="px-5 py-3 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 hover:shadow-md hover:shadow-primary-600/10 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 duration-200">
+                    <button onclick="window.print()" class="px-5 py-3 bg-primary-600 text-white text-xs font-bold rounded-xl hover:bg-primary-700 transition-all flex items-center gap-2 duration-200">
                         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.617 0-1.11-.461-1.12-1.078L6.34 18m11.32 0a1.152 1.152 0 0 0 1.059-1.086L19.5 8.25m-14 8.75a1.152 1.152 0 0 1-1.059-1.086L3.5 8.25m16 0a2.25 2.25 0 0 0-2.247-2.118H6.247A2.25 2.25 0 0 0 4 8.25m16 0V6a2.25 2.25 0 0 0-2.25-2.25h-7.5A2.25 2.25 0 0 0 8 6v2.25m4-3.037.01-.011m-.01.011-.01-.011m0 .011.011-.011" />
                         </svg>

@@ -318,7 +318,7 @@
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
                         </span>
                         <input type="text" name="search" x-model="q" @input.debounce.300ms="run()" @focus="if (results.length || q.trim().length >= 2) open = true" autocomplete="off"
-                               placeholder="Cari produk, pesanan, pengguna..."
+                               placeholder="Cari produk, pesanan, ulasan, pengguna..."
                                class="w-full h-10 pl-10 pr-9 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all">
                         <button type="button" x-show="q.length > 0" x-cloak @click="q=''; results=[]; open=false" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
