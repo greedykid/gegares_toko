@@ -15,9 +15,7 @@ skinparam SwimlaneTitleFontSize 16
 skinparam SwimlaneTitleFontStyle bold
 skinparam SwimlaneBorderColor #94A3B8
 skinparam SwimlaneBorderThickness 1.5
-skinparam SwimlaneWidth 320
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #F59E0B
+skinparam SwimlaneWidth 280
 
 title **ACTIVITY DIAGRAM ADMIN - GEGARES**
 

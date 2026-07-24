@@ -15,9 +15,7 @@ skinparam SwimlaneTitleFontSize 16
 skinparam SwimlaneTitleFontStyle bold
 skinparam SwimlaneBorderColor #94A3B8
 skinparam SwimlaneBorderThickness 1.5
-skinparam SwimlaneWidth 320
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #F59E0B
+skinparam SwimlaneWidth 280
 
 title **ACTIVITY DIAGRAM PELANGGAN - GEGARES**
 
@@ -29,7 +27,7 @@ start
 :Menampilkan Halaman Utama & Katalog Jajanan;
 
 |Pelanggan|
-if (Apakah Memiliki Akun?) then (Belum Punya Akun)
+if (Status Akun?) then (Belum Punya Akun)
   |Pelanggan|
   :Mengisi Form Pendaftaran;
   |Sistem|
@@ -45,7 +43,7 @@ else (Sudah Punya Akun)
   |Sistem|
   :Validasi Data Login & Akun;
   if (Validasi Auth?) then (Gagal)
-    :Menampilkan Pesan Errors Login;
+    :Menampilkan Pesan Error Login;
     stop
   else (Berhasil)
     :Menyiapkan Session Login Pengguna;
@@ -54,20 +52,16 @@ endif
 
 |Sistem|
 fork
-  :Sinkronisasi Akses Akun & Katalog Toko;
+  :Sinkronisasi Akun & Katalog Toko;
 end fork
 
-:Menampilkan Katalog Jajanan & Fitur AI;
+:Menampilkan Halaman Katalog & Rekomendasi;
 
 |Pelanggan|
-fork
-  :Mencari Produk (Pencarian & Filter Kategori);
-fork again
-  :Menggunakan Asisten AI Gemini (Tanya / Snap Foto);
-end fork
+:Mencari & Memilih Jajanan Pasar (Pencarian / Filter Kategori);
 
 |Sistem|
-:Menampilkan Detail Produk & Rekomendasi Jajanan;
+:Menampilkan Detail Produk & Varian;
 
 |Pelanggan|
 :Menambah Produk ke Keranjang / Wishlist;
@@ -85,7 +79,7 @@ end fork
 :Memilih Alamat Pengiriman & Kurir Pengiriman;
 
 |Sistem|
-:Menhitung Biaya Pengiriman Otomatis;
+:Menghitung Biaya Pengiriman Otomatis;
 
 |Pelanggan|
 :Masukkan Kode Promo (Opsional) & Lakukan Pembayaran Pakasir;

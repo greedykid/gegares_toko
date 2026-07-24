@@ -1,0 +1,70 @@
+@startuml
+skinparam dpi 200
+skinparam defaultFontName "SansSerif"
+skinparam defaultFontSize 13
+skinparam ActivityFontSize 13
+skinparam ActivityBorderColor #6D28D9
+skinparam ActivityBorderThickness 1.5
+skinparam ActivityBackgroundColor #F5F3FF
+skinparam ActivityDiamondBorderColor #CA8A04
+skinparam ActivityDiamondBackgroundColor #FEF9C3
+skinparam ActivityDiamondFontSize 12
+skinparam ArrowColor #0F172A
+skinparam ArrowThickness 1.5
+skinparam SwimlaneTitleFontSize 16
+skinparam SwimlaneTitleFontStyle bold
+skinparam SwimlaneBorderColor #94A3B8
+skinparam SwimlaneBorderThickness 1.5
+skinparam SwimlaneWidth 280
+
+title **ACTIVITY DIAGRAM ASISTEN AI CHATBOT (GEMINI) - GEGARES**
+
+|Pelanggan|
+start
+:Membuka Widget Chatbot AI;
+
+|Sistem & Database Gegares|
+:Inisialisasi Service Chatbot & Grounding Katalog Toko;
+note right
+  Grounding data mencakup:
+  - Katalog Produk & Stok Real-time
+  - Kupon Diskon Aktif
+  - Isi Keranjang & Jam Buka Toko
+end note
+
+|Chatbot AI (Gemini)|
+:Menampilkan Widget Chatbot & Sapaan Kontekstual;
+
+|Pelanggan|
+if (Jenis Interaksi AI?) then (Pesan Teks / Tanya Produk)
+  |Pelanggan|
+  :Kirim Pesan Teks / Intent Pembelian;
+  |Chatbot AI (Gemini)|
+  :Analisis Teks via Model Gemini AI;
+else (Snap & Buy Foto Jajanan)
+  |Pelanggan|
+  :Upload / Ambil Foto Jajanan Pasar;
+  |Chatbot AI (Gemini)|
+  :Analisis Gambar via Gemini Vision (analyzeImage);
+endif
+
+|Sistem & Database Gegares|
+:Pencocokan Data Katalog & Verifikasi Stok Toko;
+
+|Chatbot AI (Gemini)|
+:Menampilkan Jawaban Bahasa Alami, Rekomendasi Produk & Tombol Beli;
+
+|Pelanggan|
+if (Lanjut Pembelian dari Chatbot?) then (Ya / Beli Langsung)
+  |Pelanggan|
+  :Mengklik Tombol Beli Langsung / Tag Pembelian;
+  |Sistem & Database Gegares|
+  :Menambah Produk ke Keranjang & Arahkan ke Checkout;
+else (Tidak / Tanya Lagi)
+  |Pelanggan|
+  :Menutup Widget Chatbot AI;
+endif
+
+|Pelanggan|
+stop
+@enduml
