@@ -48,7 +48,11 @@ endif
 :Menampilkan Katalog Jajanan & Fitur AI;
 
 |Pelanggan|
-:Pilih / Cari Jajanan Pasar (Pencarian, Filter Kategori, atau Asisten AI Gemini);
+fork
+  :Mencari Produk (Pencarian & Filter Kategori);
+fork again
+  :Menggunakan Asisten AI Gemini (Tanya / Snap Foto);
+end fork
 
 |Sistem|
 :Menampilkan Detail Produk & Rekomendasi Jajanan;
