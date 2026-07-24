@@ -42,14 +42,10 @@ else (Sudah Punya Akun)
 endif
 
 |Pelanggan|
-split
-  :Mencari Produk (Pencarian / Filter Kategori);
-split again
-  :Menggunakan Asisten AI (Tanya Produk / Upload Foto Jajanan);
-end split
+:Pilih / Cari Jajanan Pasar (Pencarian, Filter Kategori, atau Asisten AI Gemini);
 
 |Sistem|
-:Menampilkan Detail Produk / Jawaban Asisten AI;
+:Menampilkan Detail Produk & Rekomendasi Jajanan;
 
 |Pelanggan|
 :Menambah Produk ke Keranjang / Wishlist;

@@ -33,48 +33,26 @@ else (Berhasil / Admin Valid)
 endif
 
 |Admin|
-split
-  :Kelola Kategori Produk;
-  |Sistem|
-  :Menampilkan Halaman Kategori;
-  :Menyimpan Data Kategori (Tambah/Edit/Hapus);
+:Memilih Operasi Manajemen Toko;
+note right
+  Admin memilih salah satu operasi:
+  1. Kelola Kategori Produk
+  2. Kelola Produk & Varian (Galeri Foto)
+  3. Kelola Kode Promo / Kupon
+  4. Kelola Pesanan & Cetak Laporan
+  5. Moderasi Ulasan Pelanggan
+  6. Kelola Data Pengguna & Hak Akses
+  7. Pengaturan Toko & Content Editor
+end note
 
-split again
-  :Kelola Produk & Varian;
-  |Sistem|
-  :Menampilkan Halaman Produk;
-  :Menyimpan Data Produk, Varian & Foto Galeri;
+|Sistem|
+:Menampilkan Halaman Manajemen Yang Dipilih;
 
-split again
-  :Kelola Kode Promo / Kupon;
-  |Sistem|
-  :Menampilkan Halaman Kode Promo;
-  :Menyimpan Data Kupon Diskon;
+|Admin|
+:Melakukan Pengelolaan Toko (Tambah / Edit / Hapus Data);
 
-split again
-  :Kelola Pesanan & Pengiriman;
-  |Sistem|
-  :Menampilkan Daftar Pesanan Toko;
-  :Memperbarui Status Pesanan & Cetak Laporan;
-
-split again
-  :Moderasi Ulasan Pelanggan;
-  |Sistem|
-  :Menampilkan Daftar Ulasan Masuk;
-  :Setujui / Tolak Ulasan & Perbarui Rating Produk;
-
-split again
-  :Kelola Data Pengguna;
-  |Sistem|
-  :Menampilkan Daftar Pengguna;
-  :Menyimpan Data Pengguna & Hak Akses;
-
-split again
-  :Pengaturan Toko & Konten;
-  |Sistem|
-  :Menampilkan Halaman Pengaturan Toko;
-  :Menyimpan Informasi Toko, Banner & Tampilan;
-end split
+|Sistem|
+:Menyimpan Perubahan Data & Memperbarui Tampilan;
 
 |Admin|
 :Mengklik Tombol Keluar (Logout);
