@@ -325,18 +325,35 @@
                              They fade in, sweep with a shimmer, and mirror the real card
                              shape so the swap to loaded cards is barely perceptible. --}}
                         <div x-show="loading" x-cloak
-                            x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 translate-y-1"
-                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:enter="transition ease-out duration-400"
+                            x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-[0.98]"
                             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mt-3 sm:mt-4 lg:mt-6">
-                            <template x-for="i in 4" :key="i">
-                                <div class="rounded-3xl border border-slate-100 dark:border-slate-800/60 overflow-hidden">
-                                    <div class="aspect-square shimmer-block"></div>
-                                    <div class="p-3 sm:p-4 space-y-2.5">
-                                        <div class="h-3.5 w-3/4 rounded-md shimmer-block"></div>
-                                        <div class="h-3 w-1/2 rounded-md shimmer-block"></div>
-                                        <div class="h-6 w-1/3 rounded-md shimmer-block mt-3"></div>
-                                        <div class="h-9 w-full rounded-xl shimmer-block mt-1"></div>
+                            <template x-for="i in skeletonCount" :key="i">
+                                <div class="rounded-3xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900 overflow-hidden shadow-sm flex flex-col justify-between transition-all duration-300">
+                                    {{-- Image area skeleton --}}
+                                    <div class="aspect-square shimmer-block relative overflow-hidden">
+                                        <div class="absolute top-3 left-3 h-5 w-14 rounded-lg shimmer-block opacity-80"></div>
+                                        <div class="absolute top-3 right-3 h-8 w-8 rounded-full shimmer-block opacity-80"></div>
+                                        <div class="absolute bottom-3 left-3 h-4 w-16 rounded-md shimmer-block opacity-80"></div>
+                                    </div>
+                                    {{-- Content area skeleton --}}
+                                    <div class="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-3">
+                                        <div class="space-y-2">
+                                            <div class="h-4 w-5/6 rounded-lg shimmer-block"></div>
+                                            <div class="h-3.5 w-1/2 rounded-md shimmer-block"></div>
+                                        </div>
+                                        <div class="pt-1 space-y-2.5">
+                                            <div class="flex items-center gap-2">
+                                                <div class="h-3 w-12 rounded-md shimmer-block"></div>
+                                                <div class="h-3 w-16 rounded-md shimmer-block"></div>
+                                            </div>
+                                            <div class="h-5 w-2/5 rounded-lg shimmer-block"></div>
+                                            <div class="h-10 w-full rounded-xl shimmer-block mt-2"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -351,8 +368,15 @@
                             </p>
 
                             <button type="button" x-show="nextUrl" x-cloak @click="loadMore()" :disabled="loading"
-                                class="px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold transition-colors">
-                                <span x-text="loading ? 'Memuat…' : (error ? 'Coba Lagi' : 'Muat Lebih Banyak')"></span>
+                                class="group relative inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 active:scale-95 disabled:opacity-80 disabled:cursor-not-allowed text-white text-sm font-bold shadow-lg shadow-primary-600/20 hover:shadow-xl hover:shadow-primary-600/30 transition-all duration-300">
+                                <svg x-show="loading" class="animate-spin -ml-1 w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                <span x-text="loading ? 'Memuat Produk…' : (error ? 'Coba Lagi' : 'Muat Lebih Banyak')"></span>
+                                <svg x-show="!loading && !error" class="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
                             </button>
 
                             <p x-show="paginated && !nextUrl && !loading" x-cloak
@@ -407,6 +431,10 @@
                 loading: false,
                 error: false,
                 observer: null,
+
+                get skeletonCount() {
+                    return window.innerWidth >= 1024 ? 8 : (window.innerWidth >= 768 ? 6 : 4);
+                },
 
                 init() {
                     if (!this.nextUrl || !('IntersectionObserver' in window)) return;
