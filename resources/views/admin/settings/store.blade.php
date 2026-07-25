@@ -12,22 +12,6 @@
 </div>
 
 <div class="flex flex-col w-full mx-auto space-y-6">
-    {{-- Header Card --}}
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 p-6 sm:p-8 relative overflow-hidden transition-all duration-300">
-        <div class="absolute top-0 right-0 p-8 opacity-5">
-            <svg class="w-24 h-24 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.69-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.06 1.06l8.69-8.69z" />
-                <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75v4.5a.75.75 0 01-.75.75H5.719c-1.035 0-1.875-.84-1.875-1.875v-6.198c.03-.028.06-.055.091-.086L12 5.432z" />
-            </svg>
-        </div>
-        
-        <div class="relative z-10">
-            <h3 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight transition-colors">Alamat Toko & Lokasi Jemput</h3>
-            <p class="mt-2 text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-2xl transition-colors">
-                Kelola alamat fisik toko Anda di sini. Alamat ini akan digunakan sebagai titik penjemputan (<span class="italic">shipper address</span>) oleh kurir saat memproses pesanan melalui Biteship.
-            </p>
-        </div>
-    </div>
 
     {{-- Livewire Component --}}
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 overflow-hidden transition-all duration-300">
