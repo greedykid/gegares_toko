@@ -12,6 +12,7 @@ use Illuminate\Validation\Rules;
 class RegisterController extends Controller
 {
     use \App\Traits\ValidatesRecaptcha;
+    use \App\Traits\HandlesPendingWishlist;
 
     public function showRegistrationForm()
     {
@@ -43,6 +44,7 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
+        $this->handlePendingWishlist();
 
         // Honour a pending destination (e.g. a guest who filled checkout and had
         // to register at the final step) so they land back on it, not the home page.

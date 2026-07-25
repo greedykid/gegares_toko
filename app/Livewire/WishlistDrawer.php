@@ -15,6 +15,9 @@ class WishlistDrawer extends Component
 
     public function mount(): void
     {
+        if (session()->has('open_wishlist_drawer')) {
+            $this->open = (bool) session()->pull('open_wishlist_drawer');
+        }
         $this->refreshWishlist();
     }
 

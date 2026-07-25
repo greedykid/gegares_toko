@@ -12,6 +12,7 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
+    use \App\Traits\HandlesPendingWishlist;
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
@@ -61,6 +62,7 @@ class GoogleController extends Controller
             }
 
             Auth::login($user);
+            $this->handlePendingWishlist();
 
             if (! $user->phone) {
                 return redirect()->route('settings.complete-profile');

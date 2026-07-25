@@ -30,6 +30,7 @@ class ToggleWishlist extends Component
     public function toggle(): void
     {
         if (!auth()->check()) {
+            session(['pending_wishlist_product_id' => $this->productId]);
             $this->redirectRoute('login');
             return;
         }
