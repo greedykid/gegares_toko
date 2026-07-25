@@ -1,9 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Pengaturan Toko')
-@section('page_title', 'Pengaturan Toko')
+@section('title', 'Lokasi Toko')
+@section('page_title', 'Lokasi Toko')
 
 @section('content')
+<div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Lokasi Toko</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola alamat fisik toko dan titik penjemputan (*shipper address*) untuk kurir pengiriman.</p>
+    </div>
+</div>
+
 <div class="flex flex-col w-full mx-auto space-y-6">
     {{-- Header Card --}}
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800 p-6 sm:p-8 relative overflow-hidden transition-all duration-300">
