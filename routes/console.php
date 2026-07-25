@@ -9,6 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('orders:auto-cancel --hours=24')->hourly();
+Schedule::command('orders:auto-complete --hours=24')->hourly();
 
 // Reconcile payments before auto-cancel can retire an order: if the webhook job
 // was lost and the customer closed the payment page, this is the only thing that

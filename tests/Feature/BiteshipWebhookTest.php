@@ -90,7 +90,8 @@ class BiteshipWebhookTest extends TestCase
         $response->assertJson(['success' => true]);
 
         $order->refresh();
-        $this->assertEquals('completed', $order->status);
+        $this->assertEquals('shipped', $order->status);
+        $this->assertNotNull($order->delivered_at);
     }
 
     /**
@@ -381,7 +382,7 @@ class BiteshipWebhookTest extends TestCase
             'data' => ['order_id' => 'biteship-cancel-1', 'status' => 'on_the_way'],
         ])->assertStatus(200);
 
-        $this->assertEquals('completed', $order->fresh()->status, 'A delivered order must stay delivered.');
+        $this->assertEquals('completed', $order->fresh()->status, 'A completed order must stay completed.');
     }
 
     public function test_a_late_webhook_cannot_resurrect_a_cancelled_order(): void
@@ -436,6 +437,7 @@ class BiteshipWebhookTest extends TestCase
                 'data' => ['order_id' => 'biteship-cancel-1', 'status' => 'delivered'],
             ])->assertStatus(200);
 
-        $this->assertEquals('completed', $order->fresh()->status);
+        $this->assertEquals('shipped', $order->fresh()->status);
+        $this->assertNotNull($order->fresh()->delivered_at);
     }
 }
