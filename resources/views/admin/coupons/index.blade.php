@@ -56,10 +56,10 @@
                 @include('admin.partials.view-toggle')
             </div>
         </div>
-        <div class="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+        <div class="inline-flex items-center h-10 p-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 max-w-full overflow-x-auto scrollbar-none shrink-0" role="group" aria-label="Filter status">
             @foreach($statusTabs as $val => $label)
                 <a href="{{ request()->fullUrlWithQuery(['is_active' => $val, 'page' => null]) }}"
-                   class="shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors {{ (string) $statusTab === (string) $val ? 'bg-primary-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">{{ $label }}</a>
+                   class="inline-flex items-center justify-center h-full px-3.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all {{ (string) $statusTab === (string) $val ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/60' }}">{{ $label }}</a>
             @endforeach
         </div>
     </div>

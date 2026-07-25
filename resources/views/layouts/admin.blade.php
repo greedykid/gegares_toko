@@ -193,10 +193,13 @@
                 x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
                 class="relative flex flex-col w-72 max-w-[80vw] h-full bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto border-r dark:border-slate-800">
                 {{-- Logo Mobile --}}
-                <div class="flex items-center justify-between px-6 h-16 border-b border-slate-100 shrink-0">
-                    <span class="text-xl font-extrabold text-primary-700 dark:text-primary-400">gegares</span>
+                <div class="flex items-center justify-between px-6 h-16 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
+                        <img src="{{ asset('images/logo.png') }}" alt="Gegares Logo" class="w-8 h-8 object-contain shrink-0">
+                        <span class="text-lg font-extrabold text-primary-700 dark:text-primary-400">gegares <span class="text-slate-900 dark:text-slate-100 font-bold">admin</span></span>
+                    </a>
                     <button @click="sidebarMobile = false"
-                        class="p-2 -mr-2 rounded-lg text-slate-400 hover:text-slate-600">
+                        class="p-2 -mr-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -245,13 +248,12 @@
             class="hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/60 sticky top-0 h-screen transition-all duration-300 ease-in-out shrink-0"
             :class="sidebarOpen ? 'w-64' : 'w-20'">
             {{-- Logo --}}
-            <div class="flex items-center px-6 h-16 border-b border-slate-100 dark:border-slate-800"
+            <div class="flex items-center px-5 h-16 border-b border-slate-100 dark:border-slate-800"
                 :class="sidebarOpen ? 'justify-start' : 'justify-center'">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
-                    <span class="text-xl font-extrabold text-primary-700 dark:text-primary-400" x-show="sidebarOpen"
-                        x-transition>gegares</span>
-                    <span class="text-xl font-extrabold text-primary-700 dark:text-primary-400" x-show="!sidebarOpen"
-                        x-transition>G</span>
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 min-w-0">
+                    <img src="{{ asset('images/logo.png') }}" alt="Gegares Logo" class="w-8 h-8 object-contain shrink-0">
+                    <span class="text-lg font-extrabold text-primary-700 dark:text-primary-400 whitespace-nowrap" x-show="sidebarOpen"
+                        x-transition>gegares <span class="text-slate-900 dark:text-slate-100 font-bold">admin</span></span>
                 </a>
             </div>
 
