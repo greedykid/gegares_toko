@@ -1097,6 +1097,7 @@ class Chatbot extends Component
     public function toggleWishlist(int $productId)
     {
         if (! Auth::check()) {
+            session(['pending_wishlist_product_id' => $productId]);
             return $this->redirectRoute('login');
         }
 

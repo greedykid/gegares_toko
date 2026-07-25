@@ -1,4 +1,4 @@
-<div x-data="{ isOpen: false }"
+<div x-data="{ isOpen: @entangle('open') }"
     @toggle-wishlist.window="isOpen = !isOpen"
     x-effect="
         document.querySelector('main') && (isOpen ? document.querySelector('main').classList.add('cart-open-blur') : document.querySelector('main').classList.remove('cart-open-blur'));

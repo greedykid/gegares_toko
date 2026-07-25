@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 class LoginController extends Controller
 {
     use \App\Traits\ValidatesRecaptcha;
+    use \App\Traits\HandlesPendingWishlist;
 
     public function showLoginForm()
     {
@@ -43,6 +44,7 @@ class LoginController extends Controller
             }
 
             $request->session()->regenerate();
+            $this->handlePendingWishlist();
             return redirect()->intended('/');
         }
 
