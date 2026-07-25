@@ -222,10 +222,21 @@ class OrderService
      */
     public function applyCourierStatus(Order $order, ?string $courierStatus, string $source = 'Biteship'): bool
     {
+        $deliveredSet = false;
+        if ($courierStatus === 'delivered' && $order->delivered_at === null) {
+            $order->update(['delivered_at' => now()]);
+            $deliveredSet = true;
+            Log::info("{$source}: Order #{$order->order_number} marked as delivered at {$order->fresh()->delivered_at}.");
+        }
+
         $newStatus = Order::mapCourierStatus($courierStatus);
 
-        if ($newStatus === null || $newStatus === $order->status) {
-            return false;
+        if ($newStatus === null) {
+            return $deliveredSet;
+        }
+
+        if ($newStatus === $order->status) {
+            return $deliveredSet;
         }
 
         // The courier's view is not allowed to rewrite history: a delivery
@@ -234,7 +245,7 @@ class OrderService
         if (! $order->canTransitionTo($newStatus)) {
             Log::warning("{$source}: refused status '{$courierStatus}' for Order #{$order->order_number} — cannot move from '{$order->status}' to '{$newStatus}'.");
 
-            return false;
+            return $deliveredSet;
         }
 
         if ($newStatus === 'cancelled') {

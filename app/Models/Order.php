@@ -53,8 +53,8 @@ class Order extends Model
             'allocated', 'picking_up', 'pickingUp' => 'processing',
             'picked_up', 'picked', 'dropping_off', 'droppingOff', 'out_for_delivery',
             'on_the_way', 'in_transit', 'dispatched',
-            'return_in_transit', 'returnInTransit' => 'shipped',
-            'delivered' => 'completed',
+            'return_in_transit', 'returnInTransit',
+            'delivered' => 'shipped',
             'cancelled', 'canceled', 'returned' => 'cancelled',
             default => null,
         };
@@ -74,8 +74,15 @@ class Order extends Model
         'user_id', 'order_number', 'biteship_order_id', 'courier_tracking_id', 'address_id', 'coupon_id', 'discount_amount',
         'subtotal', 'shipping_cost', 'total', 'status', 'payment_status', 'payment_method', 'pakasir_link',
         'pakasir_order_id', 'shipping_courier', 'shipping_service',
-        'tracking_number', 'notes', 'admin_note', 'source', 'paid_at', 'refunded_at',
+        'tracking_number', 'notes', 'admin_note', 'source', 'paid_at', 'delivered_at', 'refunded_at',
         'stock_reserved_at',
+    ];
+
+    protected $casts = [
+        'paid_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'refunded_at' => 'datetime',
+        'stock_reserved_at' => 'datetime',
     ];
 
     /**

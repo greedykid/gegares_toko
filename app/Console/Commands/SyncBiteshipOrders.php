@@ -69,6 +69,8 @@ class SyncBiteshipOrders extends Command
             $this->info("Successfully synced Order #{$order->order_number}. Tracking ID: ".($trackingId ?? 'null').', Status: '.($status ?? 'null'));
         }
 
+        \Illuminate\Support\Facades\Artisan::call('orders:auto-complete', ['--hours' => 24]);
+
         return 0;
     }
 }
