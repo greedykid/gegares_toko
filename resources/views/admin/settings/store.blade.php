@@ -7,7 +7,7 @@
 <div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
     <div>
         <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Lokasi Toko</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola alamat fisik toko dan titik penjemputan (*shipper address*) untuk kurir pengiriman.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola alamat fisik toko dan titik penjemputan (<span class="italic">shipper address</span>) untuk kurir pengiriman.</p>
     </div>
 </div>
 
@@ -24,7 +24,7 @@
         <div class="relative z-10">
             <h3 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight transition-colors">Alamat Toko & Lokasi Jemput</h3>
             <p class="mt-2 text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-2xl transition-colors">
-                Kelola alamat fisik toko Anda di sini. Alamat ini akan digunakan sebagai titik penjemputan (*shipper address*) oleh kurir saat memproses pesanan melalui Biteship.
+                Kelola alamat fisik toko Anda di sini. Alamat ini akan digunakan sebagai titik penjemputan (<span class="italic">shipper address</span>) oleh kurir saat memproses pesanan melalui Biteship.
             </p>
         </div>
     </div>
