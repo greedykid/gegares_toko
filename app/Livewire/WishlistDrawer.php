@@ -21,11 +21,9 @@ class WishlistDrawer extends Component
         $this->refreshWishlist();
     }
 
-    #[On('toggle-wishlist')]
-    public function toggle(): void
+    public function updatedOpen($value): void
     {
-        $this->open = !$this->open;
-        if ($this->open) {
+        if ($value) {
             $this->refreshWishlist();
         }
     }
