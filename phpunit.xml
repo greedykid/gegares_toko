@@ -35,6 +35,10 @@
              from a developer's or the server's .env. Tests that exercise the
              authenticated path set the token explicitly. -->
         <env name="BITESHIP_WEBHOOK_TOKEN" value=""/>
+        <!-- Same reasoning: a demo deployment sets DEMO_COURIER=true in its .env,
+             and the suite must still assert the shipped default. Tests that want
+             the stand-in courier switch it on with config() themselves. -->
+        <env name="DEMO_COURIER" value="false"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

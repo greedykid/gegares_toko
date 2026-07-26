@@ -112,4 +112,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Courier Data
+    |--------------------------------------------------------------------------
+    |
+    | Fills the "Informasi Kurir" panel with a stand-in driver when Biteship has
+    | no tracking to give, so the feature can be shown on a demo deployment.
+    |
+    | Leave this off anywhere real customers can see it: it presents a delivery
+    | that is not happening. See App\Support\DemoCourier.
+    |
+    */
+
+    'demo_courier' => env('DEMO_COURIER', false),
+
 ];

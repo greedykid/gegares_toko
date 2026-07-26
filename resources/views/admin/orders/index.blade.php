@@ -346,8 +346,13 @@
                             <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm relative overflow-hidden transition-all duration-300">
                                 <div class="flex items-center gap-4 relative z-10">
                                     <div class="w-12 h-12 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900 shrink-0 transition-colors">
-                                        {{-- Biteship does not always send a photo; the tile stays empty rather than showing a stand-in face. --}}
+                                        {{-- Biteship does not always send a photo. Initials, never a stock
+                                             portrait: a face from an avatar service is a real person's
+                                             likeness presented as this order's driver. --}}
                                         <img x-show="trackingData.courier.photo" :src="trackingData.courier.photo" class="w-full h-full object-cover">
+                                        <div x-show="!trackingData.courier.photo"
+                                             class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary-400 to-primary-600 text-white text-base font-extrabold"
+                                             x-text="(trackingData.courier.name || '?').trim().charAt(0).toUpperCase()"></div>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
