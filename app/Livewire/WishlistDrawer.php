@@ -38,7 +38,7 @@ class WishlistDrawer extends Component
             // query per row.
             $this->items = auth()->user()->wishlists()
                 ->whereHas('product')
-                ->with(['product' => fn ($q) => $q->withCount('variants')])
+                ->with(['product' => fn ($q) => $q->withCount('variants')->with('category')])
                 ->latest()
                 ->get();
         } else {
@@ -48,14 +48,29 @@ class WishlistDrawer extends Component
 
     public function removeItem(int $wishlistId): void
     {
-        $wishlist = auth()->user()->wishlists()->find($wishlistId);
-        
-        if ($wishlist) {
-            $wishlist->delete();
+        if ($this->deleteWishlistItem($wishlistId)) {
             $this->refreshWishlist();
             $this->dispatch('wishlist-updated');
             $this->dispatch('toast', type: 'success', message: 'Produk dihapus dari wishlist.');
         }
+    }
+
+    /**
+     * Drop the row without announcing it. addToCart() reuses this so moving a
+     * product to the cart stays one action with one toast, instead of stacking
+     * "added to cart" on top of "removed from wishlist".
+     */
+    private function deleteWishlistItem(int $wishlistId): bool
+    {
+        $wishlist = auth()->user()->wishlists()->find($wishlistId);
+
+        if (! $wishlist) {
+            return false;
+        }
+
+        $wishlist->delete();
+
+        return true;
     }
 
     public function addToCart(int $productId, int $wishlistId): void
@@ -81,11 +96,15 @@ class WishlistDrawer extends Component
         $result = $cartService->add($productId);
 
         if ($result['success']) {
-            // Optional: Remove from wishlist after adding to cart
-            // $this->removeItem($wishlistId);
-            
+            // The product is in the cart now, so keeping it in the wishlist would
+            // just pile up already-bought items. Only on success — a rejected add
+            // (out of stock, unavailable) must leave the wishlist untouched.
+            $this->deleteWishlistItem($wishlistId);
+            $this->refreshWishlist();
+
             $this->dispatch('cart-updated');
-            $this->dispatch('toast', type: 'success', message: $result['message']);
+            $this->dispatch('wishlist-updated');
+            $this->dispatch('toast', type: 'success', message: "{$product->name} dipindahkan ke keranjang.");
         } else {
             $this->dispatch('toast', type: 'error', message: $result['message']);
         }
