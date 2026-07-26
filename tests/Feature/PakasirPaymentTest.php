@@ -363,4 +363,60 @@ class PakasirPaymentTest extends TestCase
         $this->assertEquals('ttce-track-123', $order->courier_tracking_id);
         $this->assertEquals('WYB-track-123', $order->tracking_number);
     }
+
+    /**
+     * Pakasir treats `amount` as part of the lookup key, not as a validation it
+     * can be waived out of: asking for a transaction with amount=0 answers 404
+     * "Transaksi tidak ditemukan". Sending 0 therefore broke every path that
+     * confirms a payment — the payment page's polling, the "Saya Sudah Bayar"
+     * button, the reconcile command, and the webhook's own re-confirmation —
+     * while the existing wildcard Http::fake happily matched anyway.
+     */
+    public function test_the_transaction_lookup_asks_for_the_order_total_not_zero(): void
+    {
+        config(['pakasir.api_key' => 'test-api-key', 'pakasir.project_slug' => 'gegares']);
+
+        $user = User::factory()->create(['role' => 'user', 'phone' => '081234567890']);
+        $address = Address::create([
+            'user_id' => $user->id,
+            'label' => 'Rumah',
+            'recipient_name' => 'Test User',
+            'phone' => '081234567890',
+            'address_line' => 'Jl. Tebet Raya No. 1',
+            'city' => 'Jakarta Selatan',
+            'province' => 'DKI Jakarta',
+            'postal_code' => '12810',
+            'is_primary' => true,
+        ]);
+        $order = Order::create([
+            'user_id' => $user->id,
+            'address_id' => $address->id,
+            'order_number' => 'GGR-AMOUNT-0001',
+            'pakasir_order_id' => 'GGR-AMOUNT-0001',
+            'subtotal' => 55000.00,
+            'shipping_cost' => 9000.00,
+            'total' => 64000.00,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+        ]);
+
+        Http::fake([
+            'app.pakasir.com/api/transactiondetail*' => Http::response([
+                'transaction' => [
+                    'status' => 'completed',
+                    'amount' => 64000,
+                    'payment_method' => 'qris',
+                ],
+            ], 200),
+        ]);
+
+        app(\App\Services\PakasirService::class)->syncOrderWithPakasir($order);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), 'transactiondetail')
+                && (int) $request['amount'] === 64000;
+        });
+
+        $this->assertEquals('paid', $order->fresh()->payment_status);
+    }
 }

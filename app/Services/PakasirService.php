@@ -186,8 +186,10 @@ class PakasirService
         // seconds; because PHP holds an exclusive session lock for the whole
         // request, the next poll queued behind it and the page kept showing
         // "menunggu pembayaran" long after the payment had actually settled.
+        $amount = (int) $order->total;
+
         if (! $withRetry) {
-            return $this->queryTransaction($slug, $canonicalOrderId, $apiKey);
+            return $this->queryTransaction($slug, $canonicalOrderId, $apiKey, $amount);
         }
 
         // ── Webhook path: authoritative and runs without a user waiting on it ──
@@ -217,7 +219,7 @@ class PakasirService
         for ($attempt = 1; $attempt <= 2; $attempt++) {
             foreach ($projectSlugStrategies as $projectSlug) {
                 foreach ($casingStrategies as $orderIdToCheck) {
-                    $transaction = $this->queryTransaction($projectSlug, $orderIdToCheck, $apiKey);
+                    $transaction = $this->queryTransaction($projectSlug, $orderIdToCheck, $apiKey, $amount);
 
                     if ($transaction) {
                         return $transaction;
@@ -240,14 +242,28 @@ class PakasirService
      * The timeout is deliberate: without one, a slow Pakasir response would hang
      * the request for the client's default (30s) while holding the session lock.
      */
-    protected function queryTransaction(string $projectSlug, string $orderId, string $apiKey): ?array
+    protected function queryTransaction(string $projectSlug, string $orderId, string $apiKey, int $amount): ?array
     {
-        $response = Http::timeout(8)->get('https://app.pakasir.com/api/transactiondetail', [
-            'project' => $projectSlug,
-            'amount' => 0, // Pass 0 to bypass Pakasir's amount validation; we verify amount ourselves.
-            'order_id' => $orderId,
-            'api_key' => $apiKey,
-        ]);
+        // `amount` is part of the lookup, not a validation Pakasir can be talked
+        // out of. This used to send 0 on the theory that it bypassed an amount
+        // check we performed ourselves; Pakasir answers 404 "Transaksi tidak
+        // ditemukan" to that, so every lookup failed — the payment page polled
+        // forever, "Saya Sudah Bayar" did nothing, and the webhook's own
+        // re-confirmation never matched either. The order total is what settles.
+        try {
+            $response = Http::timeout(8)->get('https://app.pakasir.com/api/transactiondetail', [
+                'project' => $projectSlug,
+                'amount' => $amount,
+                'order_id' => $orderId,
+                'api_key' => $apiKey,
+            ]);
+        } catch (\Throwable $e) {
+            // The key travels in the query string, so it is in this exception's
+            // message and would otherwise be written to the log verbatim.
+            Log::warning('Pakasir transactiondetail unreachable: '.self::redact($e->getMessage()));
+
+            return null;
+        }
 
         if (! $response->successful()) {
             return null;
@@ -256,6 +272,12 @@ class PakasirService
         $transaction = $response->json('transaction');
 
         return $transaction && ($transaction['status'] ?? null) === 'completed' ? $transaction : null;
+    }
+
+    /** Strip the api_key out of anything headed for a log. */
+    private static function redact(string $message): string
+    {
+        return preg_replace('/api_key=[^&\s]+/i', 'api_key=***', $message) ?? $message;
     }
 
     /**
