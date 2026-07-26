@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Wishlist;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ToggleWishlist extends Component
@@ -18,6 +19,10 @@ class ToggleWishlist extends Component
         $this->checkWishlistStatus();
     }
 
+    // The drawer can remove this product (directly, or by moving it to the cart)
+    // while this heart is on screen behind it — re-read so it does not keep
+    // showing as wishlisted until the next page load.
+    #[On('wishlist-updated')]
     public function checkWishlistStatus(): void
     {
         if (auth()->check()) {

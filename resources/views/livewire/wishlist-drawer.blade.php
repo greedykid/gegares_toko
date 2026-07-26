@@ -1,4 +1,4 @@
-<div x-data="{ isOpen: @entangle('open') }"
+<div x-data="{ isOpen: @entangle('open').live }"
     @toggle-wishlist.window="isOpen = !isOpen"
     x-effect="
         document.querySelector('main') && (isOpen ? document.querySelector('main').classList.add('cart-open-blur') : document.querySelector('main').classList.remove('cart-open-blur'));
@@ -73,8 +73,8 @@
                             {{-- Product Info (Clickable) --}}
                             <a href="{{ route('products.show', $product->slug) }}" @click="isOpen = false"
                                class="flex gap-3 p-3 cursor-pointer">
-                                {{-- Image --}}
-                                <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800 shrink-0 ring-1 ring-slate-100 dark:ring-slate-700/50">
+                                {{-- Image (dimmed when the product can't be bought) --}}
+                                <div class="w-[72px] h-[72px] rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800 shrink-0 ring-1 ring-slate-100 dark:ring-slate-700/50 @if($product->stock <= 0) opacity-60 grayscale @endif">
                                     @if($product->image)
                                         <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                     @else
@@ -85,7 +85,16 @@
                                 </div>
                                 {{-- Details --}}
                                 <div class="flex-1 min-w-0">
+                                    @if($product->category)
+                                        <p class="text-[9px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-300 truncate">{{ $product->category->name }}</p>
+                                    @endif
                                     <h4 class="text-[13px] font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{{ $product->name }}</h4>
+                                    @if(($product->rating_count ?? 0) > 0)
+                                        <div class="flex items-center gap-1 mt-0.5">
+                                            <svg class="w-3 h-3 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z"/></svg>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">{{ number_format($product->rating_avg ?? 0, 1) }} ({{ $product->rating_count }})</span>
+                                        </div>
+                                    @endif
                                     <p class="text-[13px] font-extrabold text-primary-600 dark:text-primary-400 mt-0.5">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
                                     @if($product->stock <= 0)
                                         <span class="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-[9px] font-bold uppercase">Stok Habis</span>
@@ -104,21 +113,29 @@
                                     {{-- Needs a portion/variant chosen first — the wishlist doesn't
                                          remember which, so hand off to the product page. --}}
                                     <a href="{{ route('products.show', $product) }}" wire:navigate
-                                       class="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-lg hover:bg-primary-700 transition-all active:scale-95">
+                                       class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-600 text-white text-[11px] font-bold rounded-lg hover:bg-primary-700 transition-all active:scale-95">
                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/></svg>
                                         Pilih Varian
                                     </a>
                                 @elseif($product->stock > 0)
+                                    {{-- wire:loading.attr keeps a double-click from adding the item twice --}}
                                     <button wire:click="addToCart({{ $product->id }}, {{ $item->id }})"
-                                            class="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-lg hover:bg-primary-700 transition-all active:scale-95">
-                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                                        + Keranjang
+                                            wire:target="addToCart({{ $product->id }}, {{ $item->id }})"
+                                            wire:loading.attr="disabled"
+                                            class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-600 text-white text-[11px] font-bold rounded-lg hover:bg-primary-700 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed">
+                                        <svg wire:loading.remove wire:target="addToCart({{ $product->id }}, {{ $item->id }})" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                                        <svg wire:loading wire:target="addToCart({{ $product->id }}, {{ $item->id }})" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24" style="display:none;">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        </svg>
+                                        <span wire:loading.remove wire:target="addToCart({{ $product->id }}, {{ $item->id }})">+ Keranjang</span>
+                                        <span wire:loading wire:target="addToCart({{ $product->id }}, {{ $item->id }})">Memindahkan...</span>
                                     </button>
                                 @else
-                                    <button disabled class="flex-1 flex items-center justify-center py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 text-[10px] font-bold rounded-lg cursor-not-allowed">Stok Habis</button>
+                                    <button disabled class="flex-1 flex items-center justify-center py-2 bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 text-[11px] font-bold rounded-lg cursor-not-allowed">Stok Habis</button>
                                 @endif
-                                <button wire:click="removeItem({{ $item->id }})" 
-                                        class="ml-1.5 p-1.5 rounded-lg text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all active:scale-90" 
+                                <button wire:click="removeItem({{ $item->id }})"
+                                        class="ml-1.5 w-8 h-8 shrink-0 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/60 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all active:scale-90"
                                         title="Hapus dari wishlist">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                                 </button>
