@@ -17,7 +17,7 @@
     @if($errors->any())
         <div class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
             @foreach($errors->all() as $error)
-                <p class="text-sm font-semibold text-red-750 dark:text-red-400">{{ $error }}</p>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-400">{{ $error }}</p>
             @endforeach
         </div>
     @endif
@@ -30,19 +30,19 @@
             {{-- Kolom Kiri: Informasi Profil --}}
             <div class="space-y-4">
                 <div>
-                    <label for="name" class="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5 ml-0.5">Nama Lengkap</label>
+                    <label for="name" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-0.5">Nama Lengkap</label>
                     <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus
                            class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="Nama lengkap Anda">
                 </div>
                 
                 <div>
-                    <label for="email" class="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5 ml-0.5">Email</label>
+                    <label for="email" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-0.5">Email</label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}" required
                            class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="nama@email.com">
                 </div>
                 
                 <div>
-                    <label for="phone" class="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5 ml-0.5">Nomor WhatsApp</label>
+                    <label for="phone" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-0.5">Nomor WhatsApp</label>
                     <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" required
                            inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                            class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="62812...">
@@ -52,11 +52,11 @@
             {{-- Kolom Kanan: Keamanan Akun --}}
             <div class="space-y-4">
                 <div x-data="{ show: false }">
-                    <label for="password" class="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5 ml-0.5">Password</label>
+                    <label for="password" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-0.5">Password</label>
                     <div class="relative">
                         <input :type="show ? 'text' : 'password'" id="password" name="password" required
                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="Minimal 8 karakter">
-                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none p-1 transition-colors">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none p-1 transition-colors">
                             <template x-if="!show">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -73,11 +73,11 @@
                 </div>
                 
                 <div x-data="{ show: false }">
-                    <label for="password_confirmation" class="block text-sm font-semibold text-slate-700 dark:text-slate-350 mb-1.5 ml-0.5">Konfirmasi Password</label>
+                    <label for="password_confirmation" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-0.5">Konfirmasi Password</label>
                     <div class="relative">
                         <input :type="show ? 'text' : 'password'" id="password_confirmation" name="password_confirmation" required
                                class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium" placeholder="Ulangi password">
-                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none p-1 transition-colors">
+                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none p-1 transition-colors">
                             <template x-if="!show">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />

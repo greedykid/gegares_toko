@@ -5,12 +5,6 @@
     $sort = request('sort', 'created_at');
     $dir = request('direction', 'desc');
     
-    if (!function_exists('sortUrl')) {
-        function sortUrl($column, $currentSort, $currentDir) {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $nextDir]);
-        }
-    }
 @endphp
 
 <div x-data="{ showModal: false, editMode: false, form: { id:null, name:'', email:'', role:'user', password:'' } }">

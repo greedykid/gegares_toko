@@ -101,8 +101,12 @@ class ManageStoreContent extends Component
         // Without seeding them here, saving from any tab (e.g. FAQ) fails silently
         // and no toast ever fires. Normalise stored TIME values to H:i for the
         // <input type="time"> fields.
-        $this->opens_at = $setting->opens_at ? \Illuminate\Support\Carbon::parse($setting->opens_at)->format('H:i') : '06:00';
-        $this->closes_at = $setting->closes_at ? \Illuminate\Support\Carbon::parse($setting->closes_at)->format('H:i') : '17:00';
+        // ?-> because StoreSetting::first() is null until the row exists. Every
+        // other read here goes through ?? (which tolerates a null subject); a
+        // ternary does not, so these two were the only lines that fataled and
+        // took the whole settings page down on a fresh install.
+        $this->opens_at = $setting?->opens_at ? \Illuminate\Support\Carbon::parse($setting->opens_at)->format('H:i') : '06:00';
+        $this->closes_at = $setting?->closes_at ? \Illuminate\Support\Carbon::parse($setting->closes_at)->format('H:i') : '17:00';
         $this->contact_phone = $setting->contact_phone ?? '+62 812-3456-7890';
         $this->contact_email = $setting->contact_email ?? 'hello@gegares.com';
 

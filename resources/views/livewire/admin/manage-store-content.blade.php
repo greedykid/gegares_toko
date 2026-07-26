@@ -336,7 +336,7 @@
                     <div class="bg-slate-50/40 dark:bg-slate-950/20 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 sm:p-6 space-y-4 font-sans">
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60 mb-2">
                             <div class="flex items-center gap-2">
-                                <span class="p-1.5 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-605 dark:text-teal-400 border border-teal-100/40 dark:border-teal-900/30">
+                                <span class="p-1.5 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 border border-teal-100/40 dark:border-teal-900/30">
                                     <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                     </svg>
@@ -353,7 +353,7 @@
                             @foreach ($about_mission as $index => $mission)
                                 <div class="flex items-center gap-2">
                                     <span
-                                        class="text-xs font-bold text-slate-400 dark:text-slate-655 w-5 shrink-0">{{ $index + 1 }}.</span>
+                                        class="text-xs font-bold text-slate-400 dark:text-slate-600 w-5 shrink-0">{{ $index + 1 }}.</span>
                                     <input type="text" wire:model.defer="about_mission.{{ $index }}"
                                         placeholder="Contoh: Menjaga kebersihan dan rasa produk"
                                         class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-bold text-sm">
@@ -443,7 +443,7 @@
                             class="relative w-full border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 bg-slate-50/20 dark:bg-slate-900/10 flex flex-col items-center justify-center text-center transition-colors">
                             <input type="file" wire:model="new_gallery_images" multiple accept="image/*"
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <svg class="w-8 h-8 text-slate-400 dark:text-slate-655 mb-2.5" fill="none" viewBox="0 0 24 24"
+                            <svg class="w-8 h-8 text-slate-400 dark:text-slate-600 mb-2.5" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -484,7 +484,7 @@
                     {{-- Contact Cards Wrapper --}}
                     <div class="bg-slate-50/40 dark:bg-slate-950/20 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 sm:p-6 space-y-5">
                         <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800/60">
-                            <span class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-605 dark:text-indigo-400 border border-indigo-100/40 dark:border-indigo-900/30">
+                            <span class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-100/40 dark:border-indigo-900/30">
                                 <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                                 </svg>

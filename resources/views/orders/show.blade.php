@@ -149,7 +149,7 @@
                              <p class="text-[11px] uppercase mt-0.5 tracking-wider"
                                 :class="['processing', 'shipped', 'completed'].includes(liveStatus) 
                                     ? 'text-slate-400 dark:text-slate-500 font-bold' 
-                                    : 'text-primary-600 dark:text-primary-455 font-black'"
+                                    : 'text-primary-600 dark:text-primary-400 font-black'"
                                 x-text="['processing', 'shipped', 'completed'].includes(liveStatus) ? 'Selesai' : 'Belum Bayar'">Selesai</p>
                          </div>
                      </div>
@@ -175,8 +175,8 @@
                                 :class="['shipped', 'completed'].includes(liveStatus) 
                                     ? 'text-slate-400 dark:text-slate-500 font-bold' 
                                     : (liveStatus === 'processing'
-                                        ? 'text-primary-600 dark:text-primary-455 font-black'
-                                        : 'text-slate-400 dark:text-slate-655')"
+                                        ? 'text-primary-600 dark:text-primary-400 font-black'
+                                        : 'text-slate-400 dark:text-slate-600')"
                                 x-text="['shipped', 'completed'].includes(liveStatus) ? 'Selesai' : (liveStatus === 'processing' ? 'Diproses' : 'Belum')">Belum</p>
                          </div>
                      </div>
@@ -202,8 +202,8 @@
                                 :class="liveStatus === 'completed' 
                                     ? 'text-slate-400 dark:text-slate-500 font-bold' 
                                     : (liveStatus === 'shipped'
-                                        ? 'text-primary-600 dark:text-primary-455 font-black'
-                                        : 'text-slate-400 dark:text-slate-655')"
+                                        ? 'text-primary-600 dark:text-primary-400 font-black'
+                                        : 'text-slate-400 dark:text-slate-600')"
                                 x-text="liveStatus === 'completed' ? 'Selesai' : (liveStatus === 'shipped' ? 'DikirimKurir' : 'Belum')">Belum</p>
                          </div>
                      </div>
@@ -226,7 +226,7 @@
                              <p class="text-[11px] uppercase mt-0.5 tracking-wider"
                                 :class="liveStatus === 'completed' 
                                     ? 'text-emerald-600 dark:text-emerald-400 font-black' 
-                                    : 'text-slate-400 dark:text-slate-655'"
+                                    : 'text-slate-400 dark:text-slate-600'"
                                 x-text="liveStatus === 'completed' ? 'Selesai' : 'Belum'">Belum</p>
                          </div>
                      </div>
@@ -406,14 +406,14 @@
                      
                      <div class="space-y-4">
                          @foreach($order->items as $item)
-                             <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20 transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-900/40 hover:shadow-md hover:shadow-slate-150/10 dark:hover:shadow-none hover:-translate-y-0.5 group">
+                             <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20 transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-900/40 hover:shadow-md hover:shadow-slate-100/10 dark:hover:shadow-none hover:-translate-y-0.5 group">
                                  <div class="flex items-start gap-4 sm:gap-5">
                                      {{-- Product Image Container --}}
                                      <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 shadow-xs relative border border-slate-200/60 dark:border-slate-800/60 group-hover:border-primary-500/30 transition-colors">
                                          @if($item->product && $item->product->image)
                                              <img src="{{ asset('storage/' . $item->product->image) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $item->product_name }}">
                                          @else
-                                             <div class="w-full h-full flex items-center justify-center text-slate-355 bg-slate-100 dark:bg-slate-900">
+                                             <div class="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100 dark:bg-slate-900">
                                                  <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
                                              </div>
                                          @endif
@@ -436,7 +436,7 @@
                                              <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1 sm:mt-1.5 tracking-wide flex items-center gap-1.5">
                                                  <span>Rp {{ number_format($item->product_price, 0, ',', '.') }}</span>
                                                  <span class="text-slate-300 dark:text-slate-700 select-none">|</span>
-                                                 <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-450">Qty: {{ $item->quantity }}</span>
+                                                 <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400">Qty: {{ $item->quantity }}</span>
                                              </p>
                                          </div>
                                          
@@ -468,6 +468,26 @@
                             </div>
                         </div>
                     @endif
+
+                    {{-- The customer's half of the admin modal's "Catatan Sistem": the same
+                         events, restated so they carry no courier codes or internal to-dos. --}}
+                    @php($systemNotes = \App\Support\CustomerOrderNote::for($order))
+                    @if(! empty($systemNotes))
+                        <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                            <h3 class="text-xs font-black text-amber-500 dark:text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                                Informasi Pesanan
+                            </h3>
+                            <div class="p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 space-y-2.5">
+                                @foreach($systemNotes as $note)
+                                    <div class="flex items-start gap-2.5">
+                                        <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 dark:bg-amber-500 shrink-0"></span>
+                                        <p class="text-sm font-medium text-amber-800 dark:text-amber-300 leading-relaxed">{{ $note }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -478,7 +498,7 @@
             {{-- Address Summary --}}
             @if($order->address)
             <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80">
-                <h3 class="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+                <h3 class="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
                     <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
                     Alamat Pengiriman
                 </h3>
@@ -492,12 +512,12 @@
                     
                     <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between"
                          x-data="{ copied: false, phone: '{{ $order->user->phone ?? $order->address->phone }}' }">
-                        <a :href="'tel:' + phone" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-xs font-bold text-slate-700 dark:text-slate-355 border border-slate-200/60 dark:border-slate-800 transition-colors shadow-2xs">
-                            <svg class="w-3.5 h-3.5 text-primary-555" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.443-5.15-3.768-6.593-6.593l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
+                        <a :href="'tel:' + phone" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 transition-colors shadow-2xs">
+                            <svg class="w-3.5 h-3.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.443-5.15-3.768-6.593-6.593l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
                             <span x-text="copied ? 'Tersalin!' : phone" :class="copied ? 'text-emerald-600 dark:text-emerald-400' : ''"></span>
                         </a>
                         <button @click="navigator.clipboard.writeText(phone); copied = true; setTimeout(() => copied = false, 2000)" 
-                                class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-355 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95" 
+                                class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95" 
                                 title="Salin nomor">
                             <svg x-show="!copied" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
@@ -516,7 +536,7 @@
                  arrives (the resi bar above only appears after pickup). --}}
             @if($order->shipping_courier)
             <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80">
-                <h3 class="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+                <h3 class="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
                     <svg class="w-4 h-4 text-primary-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4.48L19 10.35zM7 17c-.55 0-1-.45-1-1h2c0 .55-.45 1-1 1"/><path d="M5 6h5v2H5z"/><path d="M19 13c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3m0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1"/></svg>
                     Metode Pengiriman
                 </h3>
@@ -535,7 +555,7 @@
 
             {{-- Ringkasan Biaya --}}
             <div class="bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-6 sm:p-8 ring-1 ring-slate-200/50 dark:ring-slate-800/80 sticky top-28 xl:top-32">
-                <h3 class="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+                <h3 class="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
                     <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>
                     Ringkasan Biaya
                 </h3>
@@ -555,7 +575,7 @@
                         </div>
                     @endif
                     <div class="flex justify-between items-center border-t border-dashed border-slate-200 dark:border-slate-800 pt-5 mt-2">
-                        <span class="text-sm font-extrabold text-slate-850 dark:text-slate-200">Total Belanja</span>
+                        <span class="text-sm font-extrabold text-slate-900 dark:text-slate-200">Total Belanja</span>
                         <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $order->formatted_total }}</span>
                     </div>
                 </div>

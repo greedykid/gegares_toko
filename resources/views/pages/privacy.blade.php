@@ -31,7 +31,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">01.</span> Informasi yang Kami Kumpulkan
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Data profil:</strong> nama, alamat email, nomor telepon, dan alamat pengiriman yang Anda masukkan untuk keperluan pembuatan akun dan pengiriman pesanan.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Data transaksi:</strong> riwayat pesanan, produk yang dibeli, serta status pembayaran dan pengiriman.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Data akun Google:</strong> jika Anda memilih masuk dengan Google, kami hanya menerima nama, email, dan foto profil publik Anda.</span></li>
@@ -43,7 +43,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">02.</span> Bagaimana Data Digunakan
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Memproses dan mengirimkan pesanan Anda hingga sampai tujuan.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Menghubungi Anda terkait status pesanan, pembayaran, atau kendala pengiriman.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Meningkatkan kualitas layanan, produk, dan pengalaman berbelanja di situs kami.</span></li>
@@ -55,7 +55,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">03.</span> Keamanan Data
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Kata sandi Anda disimpan dalam bentuk <em>hash</em> terenkripsi, tidak pernah disimpan sebagai teks biasa, dan tidak dapat kami lihat.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Informasi sensitif ditampilkan dengan <em>masking</em> otomatis untuk mencegah kebocoran data di layar.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Transaksi pembayaran diproses langsung melalui payment gateway resmi, sehingga detail pembayaran Anda tidak disimpan di server kami.</span></li>
@@ -67,11 +67,11 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">04.</span> Berbagi dengan Pihak Ketiga
             </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 Kami <strong class="text-slate-900 dark:text-white">tidak pernah menjual</strong> data pribadi Anda. Data hanya dibagikan
                 seperlunya kepada mitra tepercaya berikut demi kelancaran layanan:
             </p>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Biteship</strong>, mitra logistik untuk penjemputan dan pengiriman paket.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Pakasir</strong>, penyedia payment gateway untuk memproses pembayaran secara aman.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Google</strong>, hanya jika Anda memilih untuk masuk menggunakan akun Google.</span></li>
@@ -83,7 +83,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">05.</span> Hak Anda atas Data
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Anda dapat mengakses dan memperbarui data profil Anda kapan saja melalui halaman <em>Pengaturan</em>.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Anda berhak meminta penghapusan akun beserta data pribadi Anda dengan menghubungi kami.</span></li>
             </ul>

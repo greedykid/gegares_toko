@@ -5,12 +5,6 @@
     $sort = request('sort', 'created_at');
     $dir = request('direction', 'desc');
     
-    if (!function_exists('sortUrl')) {
-        function sortUrl($column, $currentSort, $currentDir) {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $nextDir]);
-        }
-    }
 @endphp
 
 @php
@@ -91,7 +85,7 @@
             {{-- Modal Header --}}
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white leading-none">Tambah Kupon</h3>
-                <button @click="show = false" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-250 transition-colors">
+                <button @click="show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
             </div>

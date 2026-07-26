@@ -2,12 +2,6 @@
     $sort = $sort ?? request('sort', 'created_at');
     $dir = $dir ?? request('direction', 'desc');
     $pageIds = $pageIds ?? $products->pluck('id')->values();
-    if (!function_exists('sortUrl')) {
-        function sortUrl($column, $currentSort, $currentDir) {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $nextDir]);
-        }
-    }
 @endphp
         <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
             <table class="w-full admin-table">
@@ -17,90 +11,12 @@
                             <input type="checkbox" @change="toggleAll(@json($pageIds))" :checked="allSelected(@json($pageIds))"
                                    class="w-4 h-4 align-middle rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500/30 cursor-pointer">
                         </th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('name', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors">
-                                Produk
-                                @if($sort === 'name')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('description', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors">
-                                Deskripsi
-                                @if($sort === 'description')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('category_id', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors">
-                                Kategori
-                                @if($sort === 'category_id')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('price', $sort, $dir) }}" class="inline-flex items-center justify-end gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors w-full">
-                                Harga
-                                @if($sort === 'price')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('stock', $sort, $dir) }}" class="inline-flex items-center justify-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors mx-auto">
-                                Stok
-                                @if($sort === 'stock')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            <a href="{{ sortUrl('is_featured', $sort, $dir) }}" class="inline-flex items-center justify-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors mx-auto">
-                                Unggulan
-                                @if($sort === 'is_featured')
-                                    @if($dir === 'asc')
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    @else
-                                        <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    @endif
-                                @else
-                                    <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                                @endif
-                            </a>
-                        </th>
+                        <x-admin.sort-header column="name" :sort="$sort" :dir="$dir">Produk</x-admin.sort-header>
+                        <x-admin.sort-header column="description" :sort="$sort" :dir="$dir">Deskripsi</x-admin.sort-header>
+                        <x-admin.sort-header column="category_id" :sort="$sort" :dir="$dir">Kategori</x-admin.sort-header>
+                        <x-admin.sort-header column="price" :sort="$sort" :dir="$dir" align="right">Harga</x-admin.sort-header>
+                        <x-admin.sort-header column="stock" :sort="$sort" :dir="$dir" align="center">Stok</x-admin.sort-header>
+                        <x-admin.sort-header column="is_featured" :sort="$sort" :dir="$dir" align="center">Unggulan</x-admin.sort-header>
                         <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest rounded-tr-2xl">Aksi</th>
                     </tr>
                 </thead>
@@ -153,7 +69,7 @@
                                     </span>
                                 </form>
 
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold {{ $product->isOutOfStock() ? 'bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 border border-red-200/50 dark:border-red-950/30' : ($product->isLowStock() ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-650 dark:text-amber-400 border border-amber-200/50 dark:border-amber-950/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700') }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold {{ $product->isOutOfStock() ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-950/30' : ($product->isLowStock() ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-950/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700') }}">
                                     Tersedia: {{ $product->stock }}
                                 </span>
 
@@ -184,7 +100,7 @@
                         <td data-label="Aksi" class="px-6 py-4 text-right flex items-center justify-end gap-2">
                             <div class="relative group/tooltip inline-flex">
                                 <button @click="resetGallery(); showModal=true; editMode=true; form={id:{{ $product->id }},slug:'{{ $product->slug }}',name:'{{ addslashes($product->name) }}',category_id:'{{ $product->category_id }}',description:'{{ addslashes($product->description) }}',price:'{{ $product->price }}',stock:'{{ $product->stock }}',reserved_quantity:{{ (int) $product->reserved_quantity }},is_featured:{{ $product->is_featured ? 'true' : 'false' }}, image: '{{ $product->image }}'}; existingGallery={{ $product->images->toJson() }}; variants={{ $product->variants->toJson() }};"
-                                        class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
+                                        class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                                 </button>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50">
