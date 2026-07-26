@@ -9,6 +9,7 @@ use App\Notifications\OrderRefundedNotification;
 use App\Services\BiteshipService;
 use App\Services\OrderService;
 use App\Support\CourierSchedule;
+use App\Support\DemoCourier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -353,6 +354,15 @@ class OrderController extends Controller
         // Nothing is invented when Biteship has no data. The admin needs to see
         // that a booking has not produced a waybill yet — a simulated courier
         // here hid exactly the failures this panel exists to catch.
+        //
+        // DEMO_COURIER overrides that trade-off knowingly: with it on, this
+        // panel can no longer be used to tell a stalled booking from a healthy
+        // one. The response carries `demo: true` so the difference is at least
+        // visible to anyone reading the payload.
+        if ($demo = DemoCourier::payload($order)) {
+            return response()->json($demo);
+        }
+
         return response()->json([
             'success' => false,
             'status' => $order->status,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Services\BiteshipService;
 use App\Services\PakasirService;
+use App\Support\DemoCourier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -175,6 +176,13 @@ class OrderController extends Controller
         // ("Budi Santoso", plate B 3546 UIL) whenever Biteship had nothing yet,
         // which showed the customer a delivery that was not happening. What the
         // order itself knows is real; anything else waits for the courier.
+        //
+        // The one exception is an explicitly enabled demo deployment, where the
+        // panel needs something to show — off unless DEMO_COURIER says otherwise.
+        if ($demo = DemoCourier::payload($order)) {
+            return response()->json($demo);
+        }
+
         return response()->json([
             'success' => false,
             'status' => $order->status,

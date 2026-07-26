@@ -31,7 +31,10 @@
              liveStatus: '{{ $order->status }}',
              liveStatusLabel: '{{ $order->status_label }}',
              fetchTracking() {
-                 if (!'{{ $order->tracking_number }}') return;
+                 // Normally there is nothing to ask for without a waybill. On a
+                 // demo deployment the endpoint answers with a stand-in courier,
+                 // so the call is still worth making.
+                 if (!'{{ $order->tracking_number }}' && !{{ \App\Support\DemoCourier::appliesTo($order) ? 'true' : 'false' }}) return;
                  this.loadingTracking = true;
                  fetch('{{ route('orders.tracking', $order) }}')
                      .then(res => res.json())
@@ -338,8 +341,13 @@
                               {{-- Left: Driver Identity --}}
                               <div class="flex items-center gap-4 flex-1 min-w-0">
                                   <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-slate-50 dark:border-slate-800 shadow-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 relative">
-                                      {{-- Biteship does not always send a photo; the circle stays empty rather than showing a stand-in face. --}}
+                                      {{-- Biteship does not always send a photo. Initials, never a stock
+                                           portrait: a face from an avatar service is a real person's
+                                           likeness presented as this order's driver. --}}
                                       <img x-show="trackingData.courier.photo" :src="trackingData.courier.photo" class="w-full h-full object-cover" alt="Foto Kurir">
+                                      <div x-show="!trackingData.courier.photo"
+                                           class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary-400 to-primary-600 text-white text-lg sm:text-xl font-extrabold"
+                                           x-text="(trackingData.courier.name || '?').trim().charAt(0).toUpperCase()"></div>
                                       <div class="absolute inset-0 rounded-full ring-1 ring-inset ring-slate-900/10"></div>
                                   </div>
                                   <div class="flex-1 min-w-0">
