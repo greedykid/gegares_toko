@@ -18,6 +18,12 @@
         </include>
     </source>
     <php>
+        <!-- Point the config cache at a path that never exists. On the VPS,
+             bootstrap/cache/config.php is generated with APP_ENV=production, and
+             a cached config wins over these <env> entries — leaving the app in
+             "production" during tests, which switches CSRF verification back on
+             and answers every POST/PUT/DELETE with 419. -->
+        <env name="APP_CONFIG_CACHE" value="bootstrap/cache/config.testing-never-cached.php"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
