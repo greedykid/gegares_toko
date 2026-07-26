@@ -66,7 +66,7 @@
 
         {{-- Gallery Section for Process Images --}}
         @if(!empty($aboutGallery))
-            <div class="space-y-10 max-w-5xl mx-auto pt-10 border-t border-slate-100 dark:border-slate-850">
+            <div class="space-y-10 max-w-5xl mx-auto pt-10 border-t border-slate-100 dark:border-slate-800">
                 <div class="text-center max-w-xl mx-auto space-y-2">
                     <span class="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-accent-50 dark:bg-accent-950/40 text-[10px] font-black uppercase tracking-[0.2em] text-accent-600 dark:text-accent-400 border border-accent-100/40 dark:border-accent-900/30">
                         {{ $aboutGalleryBadge }}

@@ -121,7 +121,7 @@
                     </div>
                     <div class="text-right">
                         <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ $order->formatted_total }}</p>
-                        <span class="inline-flex px-1.5 py-0.5 text-[10px] font-bold rounded mt-1 {{ match($order->status_color) { 'green', 'emerald' => 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400', 'red' => 'bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-400', 'orange' => 'bg-orange-50 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400', 'yellow' => 'bg-yellow-50 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400', default => 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' } }} uppercase">{{ $order->status_label }}</span>
+                        <x-order-status-badge :order="$order" size="sm" class="mt-1" />
                     </div>
                 </div>
             @empty

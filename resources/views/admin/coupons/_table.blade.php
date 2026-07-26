@@ -2,12 +2,6 @@
     $sort = $sort ?? request('sort', 'created_at');
     $dir = $dir ?? request('direction', 'desc');
     $pageIds = $pageIds ?? $coupons->pluck('id')->values();
-    if (!function_exists('sortUrl')) {
-        function sortUrl($column, $currentSort, $currentDir) {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $nextDir]);
-        }
-    }
 @endphp
     <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         <table class="w-full admin-table">
@@ -17,62 +11,10 @@
                         <input type="checkbox" @change="toggleAll(@json($pageIds))" :checked="allSelected(@json($pageIds))"
                                class="w-4 h-4 align-middle rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500/30 cursor-pointer">
                     </th>
-                    <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <a href="{{ sortUrl('code', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                            Kode Kupon
-                            @if($sort === 'code')
-                                @if($dir === 'asc')
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                @else
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                @endif
-                            @else
-                                <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                            @endif
-                        </a>
-                    </th>
-                    <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <a href="{{ sortUrl('value', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                            Tipe & Nilai
-                            @if($sort === 'value')
-                                @if($dir === 'asc')
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                @else
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                @endif
-                            @else
-                                <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                            @endif
-                        </a>
-                    </th>
-                    <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <a href="{{ sortUrl('usage_limit', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                            Sisa Kuota
-                            @if($sort === 'usage_limit')
-                                @if($dir === 'asc')
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                @else
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                @endif
-                            @else
-                                <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                            @endif
-                        </a>
-                    </th>
-                    <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <a href="{{ sortUrl('is_active', $sort, $dir) }}" class="inline-flex items-center gap-1 group hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                            Status & Waktu
-                            @if($sort === 'is_active')
-                                @if($dir === 'asc')
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                @else
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                @endif
-                            @else
-                                <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                            @endif
-                        </a>
-                    </th>
+                    <x-admin.sort-header column="code" :sort="$sort" :dir="$dir">Kode Kupon</x-admin.sort-header>
+                    <x-admin.sort-header column="value" :sort="$sort" :dir="$dir">Tipe & Nilai</x-admin.sort-header>
+                    <x-admin.sort-header column="usage_limit" :sort="$sort" :dir="$dir">Sisa Kuota</x-admin.sort-header>
+                    <x-admin.sort-header column="is_active" :sort="$sort" :dir="$dir">Status & Waktu</x-admin.sort-header>
                     <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest rounded-tr-2xl">Aksi</th>
                 </tr>
             </thead>
@@ -92,11 +34,11 @@
                     </td>
                     <td data-label="Tipe & Nilai" class="px-6 py-4">
                         @if($coupon->type == 'percent')
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30">
                                 {{ rtrim(rtrim($coupon->value, '0'), '.') }}%
                             </span>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30">
                                 Rp {{ number_format($coupon->value, 0, ',', '.') }}
                             </span>
                         @endif
@@ -113,9 +55,9 @@
                     <td data-label="Status" class="px-6 py-4">
                         <div class="flex flex-col gap-1.5 items-start">
                             @if($coupon->is_active && (!$coupon->end_date || $coupon->end_date > now()))
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30">Aktif</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30">Aktif</span>
                             @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-50 dark:bg-red-950/40 text-red-650 dark:text-red-400 border border-red-250/30 dark:border-red-900/30">Nonaktif</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/30 dark:border-red-900/30">Nonaktif</span>
                             @endif
                             @if($coupon->end_date)
                                 <span class="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-semibold">s.d {{ $coupon->end_date->format('d M y') }}</span>
@@ -127,7 +69,7 @@
                     <td data-label="Aksi" class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <button x-data="" @click="$dispatch('open-modal', 'edit-coupon-{{ $coupon->id }}')" 
-                                    class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-750 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
+                                    class="p-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all" title="Edit">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/></svg>
                             </button>
                             <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus kupon ini?');">
@@ -160,7 +102,7 @@
                                     {{-- Modal Header --}}
                                     <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                                         <h3 class="text-lg font-bold text-slate-900 dark:text-white leading-none">Edit Kupon</h3>
-                                        <button @click="show = false" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-250 transition-colors">
+                                        <button @click="show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg>
                                         </button>
                                     </div>

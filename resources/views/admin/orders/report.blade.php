@@ -55,7 +55,7 @@
             </div>
             <div class="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 shadow-xs">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pesanan Selesai</p>
-                <p class="text-xl font-black text-emerald-650 mt-1.5">{{ number_format($orders->where('status', 'completed')->count()) }}</p>
+                <p class="text-xl font-black text-emerald-700 mt-1.5">{{ number_format($orders->where('status', 'completed')->count()) }}</p>
             </div>
             <div class="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 shadow-xs">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Penjualan Kotor</p>
@@ -72,11 +72,11 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100 text-left">
-                        <th class="px-5 py-3.5 font-bold text-slate-550 uppercase text-[10px] tracking-wide">Tanggal</th>
-                        <th class="px-5 py-3.5 font-bold text-slate-550 uppercase text-[10px] tracking-wide">No. Pesanan</th>
-                        <th class="px-5 py-3.5 font-bold text-slate-550 uppercase text-[10px] tracking-wide">Pelanggan</th>
-                        <th class="px-5 py-3.5 font-bold text-slate-550 uppercase text-[10px] tracking-wide">Status</th>
-                        <th class="px-5 py-3.5 font-bold text-slate-550 uppercase text-[10px] tracking-wide text-right">Total</th>
+                        <th class="px-5 py-3.5 font-bold text-slate-600 uppercase text-[10px] tracking-wide">Tanggal</th>
+                        <th class="px-5 py-3.5 font-bold text-slate-600 uppercase text-[10px] tracking-wide">No. Pesanan</th>
+                        <th class="px-5 py-3.5 font-bold text-slate-600 uppercase text-[10px] tracking-wide">Pelanggan</th>
+                        <th class="px-5 py-3.5 font-bold text-slate-600 uppercase text-[10px] tracking-wide">Status</th>
+                        <th class="px-5 py-3.5 font-bold text-slate-600 uppercase text-[10px] tracking-wide text-right">Total</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50 font-medium text-slate-700">
@@ -93,7 +93,7 @@
                             </div>
                         </td>
                         <td class="px-5 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide border {{ match($order->status) { 'completed' => 'bg-emerald-50 text-emerald-650 border-emerald-100', 'cancelled' => 'bg-red-50 text-red-655 border-red-100', default => 'bg-amber-50 text-amber-650 border-amber-100' } }}">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wide border {{ match($order->status) { 'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-100', 'cancelled' => 'bg-red-50 text-red-700 border-red-100', default => 'bg-amber-50 text-amber-700 border-amber-100' } }}">
                                 {{ $order->status_label }}
                             </span>
                         </td>
@@ -121,7 +121,7 @@
                 </p>
             </div>
             
-            <div class="w-full md:w-64 space-y-3 pt-6 border-t border-slate-100 md:border-t-0 text-slate-650 font-medium">
+            <div class="w-full md:w-64 space-y-3 pt-6 border-t border-slate-100 md:border-t-0 text-slate-700 font-medium">
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-slate-500">Subtotal Penjualan</span>
                     <span class="font-bold text-slate-900">Rp {{ number_format($orders->sum('subtotal'), 0, ',', '.') }}</span>

@@ -2,12 +2,6 @@
     $sort = $sort ?? request('sort', 'created_at');
     $dir = $dir ?? request('direction', 'desc');
     $pageIds = $pageIds ?? $reviews->pluck('id')->values();
-    if (!function_exists('sortUrl')) {
-        function sortUrl($column, $currentSort, $currentDir) {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $nextDir]);
-        }
-    }
 @endphp
     <div class="overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         <table class="w-full admin-table">
@@ -26,37 +20,11 @@
                     <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                         Gambar
                     </th>
-                    <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <a href="{{ sortUrl('rating', $sort, $dir) }}" class="inline-flex items-center justify-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors mx-auto">
-                            Rating
-                            @if($sort === 'rating')
-                                @if($dir === 'asc')
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                @else
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                @endif
-                            @else
-                                <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                            @endif
-                        </a>
-                    </th>
+                    <x-admin.sort-header column="rating" :sort="$sort" :dir="$dir" align="center">Rating</x-admin.sort-header>
                     <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                         Komentar
                     </th>
-                    <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <a href="{{ sortUrl('is_approved', $sort, $dir) }}" class="inline-flex items-center justify-center gap-1 group hover:text-slate-600 dark:hover:text-slate-350 transition-colors mx-auto">
-                            Status
-                            @if($sort === 'is_approved')
-                                @if($dir === 'asc')
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                @else
-                                    <svg class="w-3 h-3 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                @endif
-                            @else
-                                <svg class="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>
-                            @endif
-                        </a>
-                    </th>
+                    <x-admin.sort-header column="is_approved" :sort="$sort" :dir="$dir" align="center">Status</x-admin.sort-header>
                     <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest rounded-tr-2xl">Aksi</th>
                 </tr>
             </thead>
@@ -113,7 +81,7 @@
                     </td>
                     <td data-label="Status" class="px-6 py-4">
                         <div class="flex justify-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $review->is_approved ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30 dark:border-emerald-900/30' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-250/30 dark:border-amber-900/30' }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $review->is_approved ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30' }}">
                                 {{ $review->is_approved ? 'Disetujui' : 'Pending' }}
                             </span>
                         </div>

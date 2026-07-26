@@ -26,7 +26,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">01.</span> Akun Pengguna
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Anda bertanggung jawab menjaga kerahasiaan kata sandi serta seluruh aktivitas yang terjadi pada akun Anda.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Data yang Anda berikan (termasuk nama, nomor telepon, dan alamat pengiriman) wajib benar dan akurat agar pesanan dapat dikirim dengan tepat.</span></li>
             </ul>
@@ -37,7 +37,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">02.</span> Pemesanan &amp; Pembayaran
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Semua pembayaran diproses secara aman melalui payment gateway resmi <strong class="text-slate-900 dark:text-white">Pakasir</strong>. Pesanan baru diproses setelah pembayaran terkonfirmasi.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Pesanan yang <strong class="text-slate-900 dark:text-white">belum dibayar dalam 24 jam</strong> akan otomatis dibatalkan, dan stok yang dipesan akan dilepas kembali.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Harga produk dan ongkos kirim yang berlaku adalah yang tertera pada saat Anda menyelesaikan pembayaran.</span></li>
@@ -49,7 +49,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">03.</span> Kesegaran Produk
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Jajanan kami dibuat fresh secara terjadwal dan <strong class="text-slate-900 dark:text-white">bebas pengawet</strong>. Kami menyarankan konsumsi di hari yang sama.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Tips penyimpanan untuk tiap produk dapat Anda tanyakan langsung melalui chatbot kami.</span></li>
             </ul>
@@ -60,7 +60,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">04.</span> Pembatalan &amp; Pengembalian Dana
             </h2>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Karena jajanan dibuat fresh, pesanan yang <strong class="text-slate-900 dark:text-white">sudah diproses oleh dapur</strong> tidak dapat dibatalkan atau diubah.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Apabila sebuah pesanan yang sudah dibayar dibatalkan (mis. stok habis atau kendala operasional), dana Anda akan dikembalikan sepenuhnya, dan kami akan menghubungi Anda mengenai prosesnya.</span></li>
             </ul>
@@ -71,7 +71,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">05.</span> Pengiriman
             </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 Pengiriman dilakukan melalui kurir rekanan (Biteship) dan tunduk pada jam operasional toko serta
                 batas jam penjemputan kurir. Detail lengkapnya dapat Anda baca pada halaman
                 <a href="{{ route('shipping') }}" class="font-black text-primary-600 dark:text-primary-400 underline">Info Pengiriman</a>.
@@ -84,7 +84,7 @@
             <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 <span class="text-primary-500">06.</span> Ulasan &amp; Konten Pengguna
             </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 Ulasan yang Anda kirimkan harus jujur dan sopan. Kami berhak menyunting atau menghapus ulasan yang
                 mengandung kata-kata kasar, SARA, spam, atau konten yang melanggar hukum.
             </p>

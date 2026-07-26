@@ -38,7 +38,7 @@
                 </div>
                 <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Metode Pengiriman</h2>
             </div>
-            <p class="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 Saat checkout, Anda dapat memilih layanan kurir yang tersedia untuk alamat Anda. Ongkos kirim
                 dihitung otomatis berdasarkan jarak dan berat pesanan.
             </p>
@@ -64,7 +64,7 @@
                 </div>
                 <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Waktu Proses &amp; Penjemputan</h2>
             </div>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Toko beroperasi setiap hari pukul <strong class="text-slate-900 dark:text-white">06:00 – 17:00 WIB</strong>. Semua jajanan dibuat fresh di pagi hari.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Kurir hanya bisa menjemput pesanan saat toko buka dan ada staf yang menyerahkan paket. Pesanan yang dibayar di luar jam buka akan disiapkan dan <strong class="text-slate-900 dark:text-white">dijemput pada saat toko buka kembali</strong>.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Layanan <strong class="text-slate-900 dark:text-white">Same Day</strong> memiliki batas jam penjemputan kurir. Jika pembayaran melewati batas tersebut, penjemputan otomatis dijadwalkan ke jam operasional berikutnya.</span></li>
@@ -80,7 +80,7 @@
                 </div>
                 <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Ongkos Kirim &amp; Pelacakan</h2>
             </div>
-            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Ongkos kirim</strong> dihitung real-time saat Anda memasukkan alamat pengiriman di halaman pemesanan. Biaya final akan terlihat sebelum Anda membayar.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span><strong class="text-slate-900 dark:text-white">Nomor resi</strong> otomatis muncul setelah pesanan dijemput kurir. Anda dapat memantau posisi paket kapan saja melalui halaman <em>Detail Pesanan</em>.</span></li>
                 <li class="flex gap-3"><span class="text-primary-500 font-black">•</span><span>Setiap paket dikemas rapi dengan wadah <em>food grade</em> untuk menjaga kebersihan dan bentuk jajanan selama perjalanan.</span></li>

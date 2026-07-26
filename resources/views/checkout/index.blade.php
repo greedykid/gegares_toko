@@ -158,7 +158,7 @@
                                        :class="paymentMethod === 'pakasir' ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950/50'">
                                     <input type="radio" name="payment_method_select" value="pakasir" class="hidden" @change="paymentMethod = 'pakasir'" :checked="paymentMethod === 'pakasir'">
                                     <div class="flex items-center gap-5 w-full">
-                                        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+                                        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-2 flex items-center justify-center shrink-0 shadow-2xs">
                                             <img src="{{ asset('images/pakasir.png') }}" alt="Pakasir" class="w-full h-full object-contain">
                                         </div>
                                         <div class="flex-1">

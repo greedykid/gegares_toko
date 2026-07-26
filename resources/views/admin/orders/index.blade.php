@@ -5,12 +5,6 @@
     $sort = request('sort', 'created_at');
     $dir = request('direction', 'desc');
     
-    if (!function_exists('sortUrl')) {
-        function sortUrl($column, $currentSort, $currentDir) {
-            $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
-            return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $nextDir]);
-        }
-    }
 @endphp
 <div x-data="{ 
     showDetail: false, 
@@ -264,7 +258,7 @@
                 <template x-if="selectedOrder?.tracking_number">
                     <div class="p-4 rounded-2xl bg-slate-950 dark:bg-black flex items-center justify-between overflow-hidden shadow-sm border border-slate-800 transition-colors">
                         <div>
-                            <p class="text-[10px] font-black text-slate-450 dark:text-slate-550 uppercase tracking-[0.2em] mb-1 transition-colors">Nomor Resi Pelacakan</p>
+                            <p class="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em] mb-1 transition-colors">Nomor Resi Pelacakan</p>
                             <h2 class="text-xl font-mono font-black text-white tracking-wider select-all transition-colors" x-text="selectedOrder.tracking_number"></h2>
                         </div>
                         <div class="flex flex-col items-end gap-1">
@@ -302,7 +296,7 @@
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed transition-colors" 
                                x-text="`${selectedOrder?.address?.address_line}, ${selectedOrder?.address?.city}, ${selectedOrder?.address?.province} - ${selectedOrder?.address?.postal_code}`">
                             </p>
-                            <div class="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 text-[10px] font-extrabold uppercase tracking-tight transition-colors">
+                            <div class="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 text-[10px] font-extrabold uppercase tracking-tight transition-colors">
                                 <span x-text="selectedOrder?.shipping_courier?.toUpperCase() ?? 'KURIER'"></span>
                                 <span class="w-1.5 h-1.5 rounded-full bg-indigo-300 dark:bg-indigo-700"></span>
                                 <span x-text="selectedOrder?.shipping_service?.toUpperCase() ?? 'REGULAR'"></span>
@@ -316,9 +310,9 @@
                             <span class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider transition-colors" x-text="selectedOrder?.payment_method?.toUpperCase() || 'PAKASIR'"></span>
                             <div class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter transition-colors border"
                                  :class="{
-                                     'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-650 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30': selectedOrder?.payment_status === 'paid',
+                                     'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30': selectedOrder?.payment_status === 'paid',
                                      'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30': selectedOrder?.payment_status === 'pending',
-                                     'bg-red-50 dark:bg-red-950/50 text-red-655 dark:text-red-400 border-red-100 dark:border-red-900/30': selectedOrder?.payment_status === 'failed' || selectedOrder?.payment_status === 'expired',
+                                     'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30': selectedOrder?.payment_status === 'failed' || selectedOrder?.payment_status === 'expired',
                                      'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700': !selectedOrder?.payment_status
                                  }"
                                  x-text="selectedOrder?.payment_status === 'unpaid' ? 'BELUM BAYAR' : (selectedOrder?.payment_status?.toUpperCase() || 'BELUM BAYAR')"></div>
@@ -330,7 +324,7 @@
                         <div class="space-y-2">
                             <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors">Catatan Pelanggan</h4>
                             <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800/80 shadow-sm transition-colors">
-                                <p class="text-[11px] text-slate-650 dark:text-slate-350 leading-relaxed italic" x-text="`'${selectedOrder.notes}'`"></p>
+                                <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed italic" x-text="`'${selectedOrder.notes}'`"></p>
                             </div>
                         </div>
                     </template>
@@ -358,7 +352,7 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
                                             <p class="text-sm font-extrabold text-slate-900 dark:text-slate-100 truncate transition-colors" x-text="trackingData.courier.name"></p>
-                                            <span class="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-650 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[9px] font-black uppercase tracking-tighter transition-colors" x-text="trackingData.courier.plate_number"></span>
+                                            <span class="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[9px] font-black uppercase tracking-tighter transition-colors" x-text="trackingData.courier.plate_number"></span>
                                         </div>
                                         <div class="flex items-center gap-2 mt-1">
                                             <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 transition-colors">

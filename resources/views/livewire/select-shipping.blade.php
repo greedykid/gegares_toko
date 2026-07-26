@@ -15,7 +15,7 @@
     
     @if(!$hasAddress)
         <div class="p-8 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
-            <svg class="w-10 h-10 text-slate-350 dark:text-slate-650 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <svg class="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
             </svg>
@@ -25,7 +25,7 @@
         <div class="space-y-3 relative">
             {{-- Loading State Overlay --}}
             <div wire:loading wire:target="handleAddressSelected, handleGuestAddressUpdated, fetchRates" class="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
-                <div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl shadow-lg border border-slate-150 dark:border-slate-800">
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800">
                     <svg class="animate-spin h-5 w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -45,7 +45,7 @@
                     </div>
                 </div>
             @elseif(count($rates) === 0)
-                <div wire:loading.remove wire:target="handleAddressSelected, handleGuestAddressUpdated, fetchRates" class="p-6 text-center border border-slate-150 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950/20">
+                <div wire:loading.remove wire:target="handleAddressSelected, handleGuestAddressUpdated, fetchRates" class="p-6 text-center border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950/20">
                     <svg class="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0 1 18 0Z"/></svg>
                     <p class="text-sm text-slate-600 dark:text-slate-400 font-bold">Tidak ada kurir pengiriman yang tersedia untuk lokasi ini.</p>
                 </div>
@@ -86,8 +86,8 @@
                                                 {{ $rate['courier_service_name'] }}
                                             </span>
                                         </div>
-                                        <p class="text-[11px] text-slate-450 dark:text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
-                                            <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-550 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
+                                            <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                             </svg>
                                             Estimasi: <span class="font-bold text-slate-500 dark:text-slate-400">{{ $rate['shipment_duration_range'] ?? '?' }} {{ $rate['shipment_duration_unit'] ?? 'jam' }}</span>

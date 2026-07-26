@@ -172,9 +172,9 @@
                             <div class="relative ml-1" x-data="{ open: false }">
                                 <button @click="open = !open" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/50 dark:hover:border-slate-800 transition-all duration-200 active:scale-90 group">
                                     @if(auth()->user()->avatar_url)
-                                        <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-lg object-cover shadow-xs ring-2 ring-transparent group-hover:ring-primary-450 dark:group-hover:ring-primary-500 transition-all">
+                                        <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-lg object-cover shadow-xs ring-2 ring-transparent group-hover:ring-primary-500 dark:group-hover:ring-primary-500 transition-all">
                                     @else
-                                        <div class="w-8 h-8 rounded-lg bg-linear-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-extrabold shadow-xs ring-2 ring-transparent group-hover:ring-primary-450 dark:group-hover:ring-primary-500 transition-all duration-300">
+                                        <div class="w-8 h-8 rounded-lg bg-linear-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-extrabold shadow-xs ring-2 ring-transparent group-hover:ring-primary-500 dark:group-hover:ring-primary-500 transition-all duration-300">
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                         </div>
                                     @endif
@@ -416,7 +416,7 @@
                             @endif
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="flex items-center justify-center gap-2.5 w-full px-4 py-3 rounded-xl text-xs font-bold text-red-655 dark:text-red-400 bg-red-500/10 dark:bg-red-500/5 hover:bg-red-500/15 active:scale-97 transition-all">
+                                <button type="submit" class="flex items-center justify-center gap-2.5 w-full px-4 py-3 rounded-xl text-xs font-bold text-red-700 dark:text-red-400 bg-red-500/10 dark:bg-red-500/5 hover:bg-red-500/15 active:scale-97 transition-all">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/></svg>
                                     <span>Keluar</span>
                                 </button>
