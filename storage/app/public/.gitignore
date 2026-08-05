@@ -3,3 +3,5 @@
 !.htaccess
 !products/
 !products/**
+!categories/
+!categories/**
