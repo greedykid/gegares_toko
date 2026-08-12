@@ -131,4 +131,39 @@ class WishlistTest extends TestCase
         $this->assertCount(1, $items);
         $this->assertEquals($live->id, $items->first()->product_id);
     }
+
+    /**
+     * Halaman /produk memasang satu ToggleWishlist di tiap kartu, dan "Muat
+     * Lebih Banyak" menambah dua belas lagi setiap kali ditekan. Ketika
+     * `wishlist-updated` disiarkan tanpa tujuan, Livewire mengirim SEMUA
+     * komponen yang mendengarkannya dalam satu permintaan — belasan sampai
+     * puluhan sekaligus — sampai menembus `payload.max_components` dan
+     * menjatuhkan halaman dengan 500 TooManyComponentsException.
+     *
+     * Yang benar-benar perlu tahu cuma penghitung di header dan isi drawer.
+     */
+    public function test_toggling_a_heart_notifies_only_the_badge_and_the_drawer(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct();
+
+        $this->actingAs($user);
+
+        $komponen = Livewire::test(ToggleWishlist::class, ['productId' => $product->id])
+            ->call('toggle');
+
+        $komponen->assertDispatchedTo(WishlistIcon::class, 'wishlist-updated');
+        $komponen->assertDispatchedTo(WishlistDrawer::class, 'wishlist-updated');
+
+        // Siaran tanpa tujuan adalah bentuk yang menyeret setiap kartu lain ikut
+        // terkirim. Kalau bentuk itu muncul lagi, bug-nya kembali.
+        $tanpaTujuan = collect(data_get($komponen->effects, 'dispatches', []))
+            ->filter(fn ($d) => ($d['name'] ?? null) === 'wishlist-updated')
+            ->filter(fn ($d) => blank($d['component'] ?? null));
+
+        $this->assertTrue(
+            $tanpaTujuan->isEmpty(),
+            'wishlist-updated masih disiarkan ke semua komponen, bukan ke tujuan tertentu.',
+        );
+    }
 }
