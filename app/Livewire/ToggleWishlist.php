@@ -64,7 +64,19 @@ class ToggleWishlist extends Component
             $this->dispatch('toast', type: 'success', message: "{$productName} ditambahkan ke wishlist");
         }
 
-        $this->dispatch('wishlist-updated');
+        // Bertarget, bukan siaran.
+        //
+        // Kartu produk lain tidak perlu tahu: yang berubah cuma produk ini, dan
+        // hatinya sudah diperbarui di baris atas. Menyiarkan `wishlist-updated`
+        // membuat SETIAP ToggleWishlist di halaman ikut terkirim dalam satu
+        // permintaan — di /produk itu belasan sampai puluhan komponen sekaligus,
+        // masing-masing menjalankan kueri `exists()` sendiri, dan melewati batas
+        // `payload.max_components` begitu "Muat Lebih Banyak" ditekan dua kali.
+        //
+        // Yang benar-benar perlu diberi tahu hanya penghitung di header dan isi
+        // drawer.
+        $this->dispatch('wishlist-updated')->to(WishlistIcon::class);
+        $this->dispatch('wishlist-updated')->to(WishlistDrawer::class);
     }
 
     public function render()

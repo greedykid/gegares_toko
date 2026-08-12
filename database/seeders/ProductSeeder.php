@@ -57,7 +57,15 @@ class ProductSeeder extends Seeder
         Product::query()->each(fn (Product $p) => $p->updateRating());
     }
 
-    /** Simpan satu produk tanpa menyentuh penilaiannya kalau sudah ada. */
+    /**
+     * Simpan satu produk tanpa menyentuh penilaian maupun fotonya kalau sudah
+     * ada.
+     *
+     * Foto bawaan hanya dipasang saat produk pertama kali dibuat. Pemilik toko
+     * mengganti foto lewat halaman admin, dan menimpanya di tiap seed berarti
+     * hasil jepretannya sendiri kembali ke foto contoh — kerugian yang baru
+     * disadari setelah katalognya terlihat asing.
+     */
     private function simpanProduk(array $p): Product
     {
         $slug = $p['slug'] ?? Str::slug($p['name']);
@@ -77,6 +85,13 @@ class ProductSeeder extends Seeder
         $product = Product::withTrashed()->where('slug', $slug)->first();
 
         if ($product) {
+            // Foto yang sudah terpasang dipertahankan apa adanya — termasuk
+            // unggahan admin yang namanya acak dan tidak akan pernah cocok
+            // dengan nama berkas di daftar ini.
+            if (filled($product->image)) {
+                unset($atribut['image']);
+            }
+
             $product->fill($atribut)->save();
 
             return $product;
