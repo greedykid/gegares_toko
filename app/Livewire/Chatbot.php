@@ -14,7 +14,9 @@ use App\Services\GeminiService;
 use App\Services\SecurityService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -309,14 +311,27 @@ class Chatbot extends Component
         }
         RateLimiter::hit($this->getRateLimitKey(), 60);
 
-        $this->validate([
-            'image' => 'image|max:2048', // 2MB Max
-        ]);
+        // The browser downscales captures before upload, so anything still over
+        // the cap is an unsupported file — say so instead of failing silently,
+        // since the chat panel renders no validation errors.
+        try {
+            $this->validate([
+                'image' => 'image|mimes:jpeg,jpg,png,webp|max:4096',
+            ]);
+        } catch (ValidationException $e) {
+            $this->image = null;
+            $this->addBotMessage('Maaf, fotonya belum bisa saya baca (ukurannya terlalu besar atau formatnya tidak didukung). Coba kirim ulang dalam format JPG/PNG ya, Kak!');
+
+            return;
+        }
 
         $this->isTyping = true;
 
         $path = $this->image->getRealPath();
         $base64 = base64_encode(file_get_contents($path));
+        // Send the real mime type: a PNG/WebP announced as JPEG decodes badly on
+        // the vision side and comes back as a confident but wrong answer.
+        $mime = $this->image->getMimeType() ?: 'image/jpeg';
         $tempUrl = $this->image->temporaryUrl();
 
         $this->chatHistory[] = [
@@ -328,22 +343,38 @@ class Chatbot extends Component
 
         $this->persist();
         $this->image = null; // Clear upload
-        $this->dispatch('process-image', base64: $base64);
+        $this->dispatch('process-image', base64: $base64, mime: $mime);
     }
 
     #[On('process-image')]
-    public function processImage(string $base64)
+    public function processImage(string $base64, string $mime = 'image/jpeg')
     {
         $this->isTyping = true;
 
         $service = app(GeminiService::class);
-        $result = $service->analyzeImage($base64, $this->context()->imageAnalysisPrompt());
+        $result = $service->analyzeImage($base64, $this->context()->imageAnalysisPrompt(), $mime);
 
         if ($result === 'MODERATION_BLOCK') {
             $this->logSecurityEvent('moderation_block', 'high', 'Image analysis content blocked');
             $this->addBotMessage('Maaf, gambar tersebut tidak dapat diproses karena melanggar kebijakan konten kami.');
         } elseif ($result) {
-            $this->processAiResult($result, 'image_analysis');
+            // Peel off the model's hidden observation block before the reply is
+            // shown, and keep it in the log so wrong identifications can be
+            // traced back to what the model thought it saw.
+            $analysis = $this->parser()->extractImageAnalysis($result);
+
+            if ($analysis['confidence'] !== '' || $analysis['candidates'] !== '') {
+                Log::info('Snap & Buy analysis', [
+                    'confidence' => $analysis['confidence'],
+                    'candidates' => $analysis['candidates'],
+                    'features' => $analysis['features'],
+                ]);
+            }
+
+            $this->processAiResult(
+                $analysis['text'] !== '' ? $analysis['text'] : $result,
+                'image_analysis'
+            );
         } else {
             $this->addBotMessage('Maaf, saya tidak bisa mengenali gambar tersebut. Coba foto yang lebih jelas ya!');
         }
@@ -527,7 +558,10 @@ class Chatbot extends Component
         $foundOrders = $parser->matchOrders($aiText);
 
         // ── 3. Post-Process: Clean redundant text if cards are found ──
-        if (! empty($foundProducts) || ! empty($foundOrders)) {
+        // Skipped for Snap & Buy: that reply is a single identification
+        // paragraph naming the snack, so the dedupe meant for recommendation
+        // lists would delete the whole answer and leave a bare product card.
+        if ($context !== 'image_analysis' && (! empty($foundProducts) || ! empty($foundOrders))) {
             $aiText = $parser->cleanRedundantText($aiText, $foundProducts, $foundOrders);
         }
 

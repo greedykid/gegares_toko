@@ -254,31 +254,143 @@ saran1|saran2|saran3";
 
     /**
      * Prompt for the Snap & Buy image identification flow.
+     *
+     * Identification is a visual task, so this prompt deliberately drops the
+     * commerce noise (price/stock/rating) the text catalog carries and feeds the
+     * model appearance cues plus an explicit look-alike guide instead — most
+     * wrong answers came from confusing snacks that only differ in one visual
+     * detail. The model must observe first and is allowed to stay unsure.
      */
     public function imageAnalysisPrompt(): string
     {
-        $catalog = $this->productCatalog();
+        $catalog = $this->visualCatalog();
+        $names = $this->productWhitelist();
+        $lookalikes = $this->lookalikeGuide();
         $tips = $this->storageTips();
 
-        return "Kamu adalah Asisten Gegares, ahli jajanan pasar Indonesia.
+        return "Kamu adalah ahli identifikasi jajanan pasar Indonesia untuk toko Gegares.
 
-TUGAS: Identifikasi makanan di gambar ini.
+TUGAS: identifikasi makanan pada gambar SEAKURAT MUNGKIN. Lebih baik mengaku ragu daripada menyebut nama yang salah.
 
-KATALOG PRODUK KAMI:
+# LANGKAH WAJIB (kerjakan berurutan, jangan langsung menebak)
+1. AMATI dulu apa yang benar-benar terlihat: bentuk & ukuran, warna tiap lapisan, tekstur permukaan (mulus/berpori/berumbai/mengkilat), isian atau topping, cara masak (kukus/goreng/panggang/rebus), dan cara sajikan (piring/cup/daun pisang/cetakan/tusuk).
+2. BANDINGKAN ciri itu dengan KATALOG dan PANDUAN PEMBEDA di bawah. Coret kandidat yang ciri kuncinya TIDAK terlihat di gambar.
+3. Pilih kandidat yang ciri kuncinya paling cocok. Kalau dua kandidat sama kuat, JANGAN pilih asal — nyatakan ragu dan tanya user.
+4. Kalau di gambar ada beberapa jenis, identifikasi yang paling dominan/paling jelas saja.
+
+# DAFTAR NAMA RESMI PRODUK KAMI (satu-satunya nama yang boleh ditulis dalam [[ ]])
+$names
+
+# KATALOG PRODUK KAMI (ciri & deskripsi)
 $catalog
 
-INSTRUKSI:
-1. Jika makanan di gambar cocok dengan salah satu produk kami, WAJIB tulis nama produk dalam format [[NamaProduk]] (sesuai katalog PERSIS).
-2. Jika tidak ada di katalog, identifikasi secara umum dengan nama jajanan Indonesia yang tepat.
-3. Berikan deskripsi singkat tentang makanan tersebut (bahan, rasa khas).
-4. Jika relevan, berikan tips penyimpanan dari data berikut:
-$tips
+# PANDUAN PEMBEDA JAJANAN MIRIP (paling sering tertukar — cek ini sebelum memutuskan)
+$lookalikes
 
-FORMAT RESPONS:
-- Mulai dengan identifikasi: 'Ini adalah **[nama makanan]**!'
-- Lalu deskripsi singkat 1-2 kalimat.
-- Jika produk kami, tambahkan: 'Kebetulan kami jual lho! Cek langsung ya:'
-- Tips penyimpanan jika ada.";
+# ATURAN KETAT
+- Cocok dengan produk kami DAN kamu yakin → tulis [[Nama Persis Dari Daftar]] TEPAT SATU KALI. Sebelum menulisnya, cek ulang ejaannya huruf per huruf ke DAFTAR NAMA RESMI.
+- DILARANG KERAS mengarang varian yang tidak ada di daftar (mis. menambah rasa/isian yang tidak tercantum). Kalau nama itu tidak ada di daftar, jangan pakai [[ ]].
+- Kalau bedanya cuma isian yang TIDAK terlihat dari luar (mis. Risol Sayur vs Risol Ayam Pedas), sebut maksimal 2 nama yang benar-benar ada di daftar lalu tanya user mana yang dimaksud — jangan mengarang varian ketiga.
+- Jajanan Indonesia tapi TIDAK ada di daftar → sebut nama umumnya TANPA [[ ]], dan jangan bilang kami menjualnya.
+- KEYAKINAN RENDAH → DILARANG memakai [[ ]]. Sebut maksimal 2 kemungkinan lalu tanya user, jangan menyatakan satu nama sebagai fakta.
+- Gambar buram/gelap/terlalu jauh/bukan makanan → katakan apa adanya dan minta foto ulang yang lebih dekat & terang. JANGAN menebak.
+- Jangan mengarang harga, stok, atau klaim rasa yang tidak ada di katalog.
+
+# FORMAT JAWABAN (WAJIB PERSIS)
+---ANALISIS---
+CIRI: <ciri yang benar-benar terlihat, singkat>
+KANDIDAT: <Nama1> (<persen>%) | <Nama2> (<persen>%)
+KEYAKINAN: TINGGI|SEDANG|RENDAH
+---/ANALISIS---
+<pesan untuk user>
+---SUGGESTIONS---
+<maks 3 saran lanjutan dipisah |>
+
+Blok ANALISIS tidak dilihat user — jujur saja di situ, jangan dibesar-besarkan.
+
+Isi <pesan untuk user> (bahasa Indonesia santai, 2-4 kalimat):
+- KEYAKINAN TINGGI/SEDANG: mulai dengan 'Ini **[nama]**!' lalu 1-2 kalimat ciri khasnya (bahan/rasa). Kalau produk kami, tambahkan 'Kebetulan kami jual lho:' diikuti [[Nama Produk]].
+- KEYAKINAN RENDAH: mulai dengan 'Hmm, saya belum yakin nih' lalu sebut 2 kemungkinan dan tanya user mana yang dimaksud, atau minta foto lebih dekat.
+- Tambahkan tips penyimpanan HANYA jika relevan dengan jajanan yang teridentifikasi:
+$tips";
+    }
+
+    /**
+     * Appearance-first catalog for the vision prompt: name, category and the
+     * descriptive copy, without the price/stock/rating columns that only add
+     * noise to an identification task.
+     */
+    public function visualCatalog(): string
+    {
+        return Cache::remember('chatbot.visual_catalog', 1800, function () {
+            $products = Product::with('category')
+                ->whereHas('category', fn ($q) => $q->where('is_active', true))
+                ->take(200)
+                ->get();
+
+            if ($products->isEmpty()) {
+                return 'Katalog sedang kosong.';
+            }
+
+            $catalog = '';
+            foreach ($products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya') as $categoryName => $categoryProducts) {
+                $catalog .= "\n## Kategori: {$categoryName}\n";
+                foreach ($categoryProducts as $p) {
+                    $desc = trim(mb_substr($p->description ?? '', 0, 260));
+                    $catalog .= "- **{$p->name}**".($desc !== '' ? ": {$desc}" : '')."\n";
+                }
+            }
+
+            return $catalog;
+        });
+    }
+
+    /**
+     * Hand-written disambiguation rules for the snacks that actually get mixed
+     * up. Keep in sync with the catalog when products are added — a missing
+     * entry only loses the hint, it never blocks identification.
+     */
+    public function lookalikeGuide(): string
+    {
+        return '## Bola/bulat ketan
+- **Klepon vs Onde-Onde**: Klepon bola hijau DIKUKUS, dibalur kelapa parut putih kering. Onde-Onde DIGORENG, seluruh permukaannya tertutup wijen, warna cokelat keemasan.
+- **Biji Salak**: bola-bola oranye ubi yang TERENDAM kuah gula merah kental, disajikan di cup/mangkuk.
+
+## Kue kukus mekar & kue cetakan
+- **Kue Mangkok vs Carabikang vs Apem Kukus**: Kue Mangkok merekah di BAGIAN ATAS seperti bunga, dicetak di mangkok/cup kecil, warna-warni. Carabikang bulat pipih, permukaan rata bergaris warna (pink/hijau/putih), mekarnya di BAGIAN BAWAH. Apem Kukus warnanya polos putih/cokelat pucat (dari tapai), tanpa cup warna-warni.
+- **Kue Pukis vs Kue Cubit vs Kue Lumpur**: Pukis setengah lingkaran (cetakan perahu), pinggir kecokelatan, sering bertopping. Kue Cubit bulat kecil ±4 cm, permukaan setengah matang, hampir selalu bermeises. Kue Lumpur bulat pipih dengan permukaan berkulit tipis mengkilat, biasanya ditaburi kismis atau kelapa muda.
+- **Putu Ayu vs Putu Bambu**: Putu Ayu dicetak bentuk bunga bergerigi, hijau pandan, kelapa parut menempel DI ATAS. Putu Bambu berbentuk silinder/tabung hijau, kelapa parutnya di sekelilingnya, gula merah di dalam.
+- **Serabi Solo**: bundar tipis, pinggirannya tipis renyah, tengahnya tebal berpori, sering disiram/berkuah santan.
+- **Bika Ambon**: kuning, berongga tegak seperti sarang lebah sampai ke dasar — teksturnya khas dan tidak mirip kue lain.
+
+## Kue potong berlapis
+- **Kue Talam Ubi vs Kue Lapis**: Talam Ubi hanya DUA lapis — ungu ubi di bawah, putih santan di atas. Kue Lapis punya BANYAK lapisan tipis warna-warni bergantian.
+- **Wajik Ketan**: potongan wajik/jajar genjang, cokelat mengkilat, butiran ketan masih terlihat.
+- **Getuk Lindri**: singkong berwarna pastel yang dicetak seperti mie/balok bergaris, ditaburi kelapa parut.
+
+## Bungkus daun & gulungan
+- **Nagasari vs Kue Bugis vs Lemper Ayam**: Nagasari berwarna PUTIH pucat/bening, teksturnya lembut seperti puding tepung beras, berisi potongan pisang, dan biasanya masih terbungkus/terlipat rapi dalam daun pisang. Kue Bugis berupa bongkahan KETAN yang basah MENGKILAT — bisa hitam keunguan maupun hijau pandan — diletakkan di atas selembar daun pisang, sering terlihat semburat unti kelapa gula merah. Lemper Ayam ketan PUTIH butirannya masih terlihat, berisi ayam suwir, dibungkus daun pisang, tanpa dadar telur.
+- **Semar Mendem vs Sosis Solo** (paling sering tertukar — keduanya gulungan dadar telur, cek ukuran & isinya): Semar Mendem GEMPAL dan tebal (kira-kira sebesar genggaman/2-3 jari), dadarnya PUCAT kekuningan karena tidak digoreng — permukaannya lembap dan kenyal, bukan kering. Isinya KETAN putih, jadi di ujung potongan sering terlihat butiran ketan; biasanya disajikan dingin di wadah/kotak, kadang dengan hiasan cabai atau daun. Sosis Solo RAMPING seukuran jari telunjuk, DIGORENG sehingga permukaannya kering keemasan dan agak berkerut, ujungnya meruncing/dilipat rapat, isinya ayam CINCANG halus berwarna cokelat — tidak ada ketan sama sekali. Kalau gulungan itu tebal, pucat, dan ada ketan → Semar Mendem, BUKAN Sosis Solo.
+- **Semar Mendem vs Lemper Ayam**: Semar Mendem dibalut DADAR TELUR kuning (tidak dibungkus daun), Lemper Ayam dibungkus daun pisang.
+- **Dadar Gulung**: gulungan crepe HIJAU pandan berisi kelapa gula merah, tidak digoreng.
+
+## Gorengan
+- **Risoles Mayo vs Risol Sayur vs Risol Ayam Pedas**: dari luar KETIGANYA identik (gulung persegi panjang, panir kasar). Jangan menebak isinya kalau potongan dalamnya tidak terlihat — sebut 2 kemungkinan lalu tanya user. Kalau terlihat isian mayones putih dan telur, itu Risoles Mayo.
+- **Risol vs Sosis Solo vs Lumpia Semarang vs Martabak Tahu Kulit Lumpia**: Risol berbalut tepung panir KASAR. Sosis Solo berkulit dadar telur MULUS tanpa panir. Lumpia Semarang berkulit tipis kering keemasan tanpa panir, bentuk gulung padat dengan ujung terlipat. Martabak Tahu berkulit lumpia tipis bergelembung, bentuk segitiga/kotak pipih.
+- **Pastel Sayur Bihun**: setengah lingkaran dengan pinggiran DIPILIN/keriting.
+- **Molen vs Pisang Goreng Crispy**: Molen dililit adonan pastri (garis spiral terlihat), permukaan halus keemasan. Pisang Goreng Crispy berbalut tepung bergerigi/berumbai dan lebih pipih lebar.
+- **Combro vs Bakwan Jagung**: Combro lonjong dari singkong parut, permukaan kasar rata. Bakwan Jagung pipih tidak beraturan dengan biji jagung terlihat menyembul.
+- **Cireng Bumbu Rujak**: pipih kenyal putih keabuan, hampir selalu ditemani sambal rujak cokelat kemerahan terpisah.
+- **Gabin**: kotak rapi, lapisan biskuit terlihat di dalam balutan tipis.
+- **Cakwe Original**: batang panjang keemasan, berongga, permukaan bergelombang.
+- **Tempe Mendoan**: tipis lebar, balutan tepung basah pucat, kepingan tempe terlihat menembus adonan.
+
+## Bubur & minuman
+- **Bubur**: Bubur Sumsum putih polos disiram kinca cokelat. Bubur Ketan Hitam butiran hitam keunguan. Bubur Kacang Hijau butiran hijau utuh. Kolek berisi potongan pisang/ubi dalam kuah santan cokelat.
+- **Minuman**: Wedang Jahe Susu cokelat susu keruh tanpa isian. Bajigur cokelat santan DENGAN kolang-kaling. Wedang Ronde kuah jahe bening dengan bola-bola ketan putih. Es Dawet Ayu dingin, ada cendol hijau memanjang dan es.
+
+## Kue kering (dalam toples)
+- **Lidah Kucing**: tipis panjang oval. **Kue Sagu Keju**: bulat kecil pucat bertabur keju parut. **Kue Kacang**: bentuk bunga/bulat cokelat mengkilat dengan olesan kuning telur. **Kue Semprit**: bentuk bunga dengan titik selai/cokelat di tengah. **Nastar Premium**: bulat kuning mengkilat berisi nanas. **Putri Salju**: bulan sabit tertutup gula halus putih tebal.';
     }
 
     // ─────────────────────────────────────────────────────────────

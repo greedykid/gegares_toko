@@ -22,7 +22,10 @@ class SecurityHeaders
         // the Content-Security-Policy below is the effective XSS defense.
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        // Snap & Buy takes a photo from the page itself, so the camera must be
+        // allowed for this origin — `camera=()` disables it document-wide and the
+        // browser then rejects getUserMedia no matter what the user permits.
+        $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
 
         // Prevent browser caching for dynamic HTML pages and JSON APIs to avoid stale states (e.g. Livewire/cart/auth)
         $contentType = $response->headers->get('Content-Type');
