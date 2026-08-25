@@ -20,8 +20,10 @@
             </thead>
             <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                 @forelse($coupons as $coupon)
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
-                    :class="isSelected({{ $coupon->id }}) && 'bg-primary-50/50 dark:bg-primary-950/20'">
+                <tr class="cursor-pointer hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
+                    :class="isSelected({{ $coupon->id }}) && 'bg-primary-50/50 dark:bg-primary-950/20'"
+                    {{-- Clicking anywhere on the row opens the editor; real controls keep their own behaviour. --}}
+                    @click="if (! $event.target.closest('a, button, input, select, textarea, label, form, [data-row-ignore]')) { $dispatch('open-modal', 'edit-coupon-{{ $coupon->id }}') }">
                     <td class="admin-select-cell px-4 py-4 w-10">
                         <input type="checkbox" @change="toggle({{ $coupon->id }})" :checked="isSelected({{ $coupon->id }})"
                                class="w-4 h-4 align-middle rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500/30 cursor-pointer">
@@ -81,7 +83,9 @@
                         </div>
 
                         {{-- Modal Edit --}}
-                        <div x-data="{ show: false }" x-init="$watch('show', value => { if (value) $nextTick(() => initCouponDatePickers($el)) })" x-show="show" 
+                        {{-- Rendered inside the row, so mark it: a click in the
+                             modal must not bubble out and re-open the row. --}}
+                        <div data-row-ignore x-data="{ show: false }" x-init="$watch('show', value => { if (value) $nextTick(() => initCouponDatePickers($el)) })" x-show="show" 
                              @open-modal.window="if ($event.detail === 'edit-coupon-{{ $coupon->id }}') { show = true; } else if ($event.detail === 'close-all-modals') { show = false; }" 
                              @close-modal.window="show = false" 
                              @keydown.escape.window="show = false" 
