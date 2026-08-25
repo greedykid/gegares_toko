@@ -30,7 +30,7 @@
          x-transition:leave="transition transform ease-in duration-200"
          x-transition:leave-start="opacity-100 translate-y-0 scale-100 origin-bottom-right"
          x-transition:leave-end="opacity-0 translate-y-10 scale-90 origin-bottom-right"
-         class="fixed inset-0 sm:static z-50 sm:z-auto sm:mb-4 w-full sm:w-[400px] h-[100dvh] sm:h-[600px] bg-white dark:bg-slate-950 rounded-none sm:rounded-2xl shadow-2xl dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-0 sm:border border-slate-200/60 dark:border-slate-800/60 flex flex-col overflow-hidden relative"
+         class="fixed inset-0 sm:static z-50 sm:z-auto sm:mb-4 w-full sm:w-[min(400px,calc(100vw-3rem))] h-[100dvh] sm:h-[min(600px,calc(100dvh-8rem))] bg-white dark:bg-slate-950 rounded-none sm:rounded-2xl shadow-2xl dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-0 sm:border border-slate-200/60 dark:border-slate-800/60 flex flex-col overflow-hidden relative"
          style="display: none;">
         
         {{-- ═══ Header ═══ --}}
