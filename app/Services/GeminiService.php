@@ -96,9 +96,17 @@ class GeminiService
 
     /**
      * Analyze an image to identify products (Snap & Buy).
+     *
+     * $mimeType must match the bytes that were encoded — mislabelling a PNG or
+     * WebP as JPEG makes some vision backends decode garbage, which shows up as
+     * a confidently wrong identification rather than an error.
      */
-    public function analyzeImage(string $base64Image, string $prompt = "Identifikasi makanan di gambar ini. Apakah ini salah satu dari jajanan tradisional Indonesia? Jika ya, sebutkan namanya saja."): ?string
+    public function analyzeImage(string $base64Image, string $prompt = "Identifikasi makanan di gambar ini. Apakah ini salah satu dari jajanan tradisional Indonesia? Jika ya, sebutkan namanya saja.", string $mimeType = 'image/jpeg'): ?string
     {
+        $mimeType = in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'], true)
+            ? $mimeType
+            : 'image/jpeg';
+
         if (empty($this->apiKey)) {
             Log::error('AI Image Analysis Error: AI_API_KEY is not configured (check .env and run config:cache).');
             return null;
@@ -117,14 +125,17 @@ class GeminiService
                                 [
                                     'type' => 'image_url',
                                     'image_url' => [
-                                        'url' => "data:image/jpeg;base64,{$base64Image}"
+                                        'url' => "data:{$mimeType};base64,{$base64Image}"
                                     ]
                                 ]
                             ]
                         ],
                     ],
-                    'temperature' => 0.4,
-                    'max_tokens' => 800,
+                    // Identification is a lookup, not a creative task: keep it
+                    // near-deterministic so the same photo does not flip between
+                    // look-alike snacks between attempts.
+                    'temperature' => 0.05,
+                    'max_tokens' => 1200,
                 ]);
 
             if ($response->failed()) {

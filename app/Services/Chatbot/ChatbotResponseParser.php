@@ -78,6 +78,56 @@ class ChatbotResponseParser
     }
 
     /**
+     * Split the hidden ---ANALISIS--- block off a Snap & Buy reply.
+     *
+     * The image prompt makes the model list what it actually sees and rate its
+     * own confidence before naming the snack; that reasoning is for us, not the
+     * customer, so it is stripped here. When the model reports RENDAH we also
+     * drop the [[Product]] tags so an unsure guess cannot render a product card
+     * that reads like a confident answer.
+     *
+     * @return array{text: string, features: string, candidates: string, confidence: string}
+     */
+    public function extractImageAnalysis(string $aiText): array
+    {
+        $features = '';
+        $candidates = '';
+        $confidence = '';
+
+        // Read the fields wherever they sit: models sometimes forget the closing
+        // marker, so the block boundaries are not something to rely on.
+        if (preg_match('/^\s*CIRI\s*:\s*(.+)$/mi', $aiText, $f)) {
+            $features = trim($f[1]);
+        }
+        if (preg_match('/^\s*KANDIDAT\s*:\s*(.+)$/mi', $aiText, $c)) {
+            $candidates = trim($c[1]);
+        }
+        if (preg_match('/^\s*KEYAKINAN\s*:\s*(TINGGI|SEDANG|RENDAH)/mi', $aiText, $k)) {
+            $confidence = mb_strtoupper($k[1]);
+        }
+
+        // Drop a well-formed block outright, then sweep up stray markers and
+        // field lines from a malformed one so nothing leaks to the customer.
+        $aiText = preg_replace('/-{2,}\s*ANALISIS\s*-{2,}.*?-{2,}\s*\/\s*ANALISIS\s*-{2,}/si', '', $aiText);
+        $aiText = preg_replace('/^\s*-{2,}\s*\/?\s*ANALISIS\s*-{2,}\s*$/mi', '', (string) $aiText);
+        $aiText = preg_replace('/^\s*(CIRI|KANDIDAT|KEYAKINAN)\s*:.*$/mi', '', (string) $aiText);
+        $aiText = trim(preg_replace('/\n{3,}/', "\n\n", (string) $aiText));
+
+        if ($confidence === 'RENDAH') {
+            $aiText = preg_replace('/\[\[(.*?)\]\]/', '$1', $aiText);
+        }
+
+        $aiText = $this->dropUnknownProductTags((string) $aiText);
+
+        return [
+            'text' => (string) $aiText,
+            'features' => $features,
+            'candidates' => $candidates,
+            'confidence' => $confidence,
+        ];
+    }
+
+    /**
      * Pull every ---BUY---Name|Qty tag off the reply (supports multiple products).
      *
      * @return array{text: string, requests: array<int, array{name: string, qty: int}>}
@@ -100,6 +150,33 @@ class ChatbotResponseParser
         }
 
         return ['text' => $aiText, 'requests' => $buyRequests];
+    }
+
+    /**
+     * Demote [[Name]] tags that match no product in the catalog to plain text.
+     *
+     * A tag is a promise that we sell the thing; an invented variant name (the
+     * model likes to pad a list of look-alikes) would otherwise reach the
+     * customer as bold, product-shaped text with no card behind it.
+     */
+    public function dropUnknownProductTags(string $aiText): string
+    {
+        if (! str_contains($aiText, '[[')) {
+            return $aiText;
+        }
+
+        $names = Cache::remember('products.tag_names', 300, fn () => Product::pluck('name')->all());
+
+        return preg_replace_callback('/\[\[(.*?)\]\]/', function ($m) use ($names) {
+            $tag = trim($m[1]);
+            foreach ($names as $name) {
+                if (mb_strtolower($name) === mb_strtolower($tag)) {
+                    return $m[0];
+                }
+            }
+
+            return $tag;
+        }, $aiText);
     }
 
     /**
@@ -237,7 +314,9 @@ class ChatbotResponseParser
         $result = trim(implode("\n", $cleanLines));
         $result = preg_replace("/\n{3,}/", "\n\n", $result);
 
-        return $result;
+        // A card with no words at all reads as a broken reply — if every line
+        // looked redundant, keep what the model actually wrote.
+        return $result !== '' ? $result : trim($text);
     }
 
     /**

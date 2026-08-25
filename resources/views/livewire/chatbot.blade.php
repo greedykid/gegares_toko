@@ -370,14 +370,266 @@
 
             <div class="flex items-center gap-2">
                 {{-- Snap & Buy --}}
-                <div class="relative">
-                    <input type="file" wire:model="image" class="hidden" id="chatbot-image-upload" accept="image/*">
-                    <label for="chatbot-image-upload" 
-                           class="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-400 dark:hover:border-primary-700 transition-all cursor-pointer active:scale-95 shadow-sm" 
-                           aria-label="Unggah foto jajanan (Snap & Buy)"
-                           title="Snap & Buy">
-                        <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"/></svg>
-                    </label>
+                {{-- Photos are downscaled to a JPEG in the browser before upload:
+                     phone captures come off at 4-12 MP, far over what the server
+                     accepts, and the same pass normalises iPhone HEIC files.
+                     Phones get the native camera through `capture`; desktops have
+                     no camera roll, so "Ambil Foto" opens a webcam preview here
+                     instead — the permission prompt then only appears once the
+                     customer has actually asked for the camera. --}}
+                <div class="relative"
+                     x-data="{
+                        sourceMenu: false,
+                        uploading: false,
+                        camOpen: false,
+                        camError: '',
+                        camBlocked: false,
+                        camDetail: '',
+                        camSystem: false,
+                        stream: null,
+                        isMobile: window.matchMedia('(pointer: coarse)').matches,
+                        pickFrom(ref) {
+                            this.sourceMenu = false;
+                            this.$refs[ref].click();
+                        },
+                        takePhoto() {
+                            // A phone's own camera app beats anything we can render.
+                            if (this.isMobile) { this.pickFrom('camera'); return; }
+                            this.openCamera();
+                        },
+                        async openCamera() {
+                            this.sourceMenu = false;
+                            this.camError = '';
+                            this.camBlocked = false;
+                            this.camDetail = '';
+                            this.camSystem = false;
+                            this.camOpen = true;
+
+                            if (! navigator.mediaDevices?.getUserMedia) {
+                                this.camError = 'Browser ini tidak mendukung kamera di halaman web. Silakan pilih foto dari file ya.';
+
+                                return;
+                            }
+
+                            try {
+                                this.stream = await navigator.mediaDevices.getUserMedia({
+                                    video: { width: { ideal: 1280 } },
+                                    audio: false,
+                                });
+                                this.$refs.video.srcObject = this.stream;
+                            } catch (e) {
+                                const name = e?.name || 'UnknownError';
+                                const state = await this.permissionState();
+                                const cameras = await this.cameraCount();
+                                this.camDetail = name + ' · izin: ' + state + ' · kamera: ' + cameras;
+
+                                if (name === 'NotAllowedError') {
+                                    // Chrome/Brave report a site-level block and an
+                                    // OS-level block the same way. When the site is
+                                    // already allowed, or no device is even visible,
+                                    // the refusal is coming from the operating system.
+                                    this.camBlocked = true;
+                                    this.camSystem = state !== 'prompt';
+                                    this.camError = this.camSystem
+                                        ? 'Izin situs sudah Allow, tapi sistem operasi masih menahan kamera dari browser. Perbaikannya ada di setelan privasi Windows, bukan di halaman ini.'
+                                        : 'Browser belum bisa memakai kamera. Izinnya masih tertahan di setelan situs atau di setelan privasi sistem.';
+                                } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+                                    this.camError = 'Tidak ada kamera yang terdeteksi di perangkat ini. Silakan pilih foto dari file ya.';
+                                } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+                                    this.camError = 'Kameranya sedang dipakai aplikasi lain (Zoom/Meet/OBS). Tutup aplikasi itu dulu, lalu coba lagi.';
+                                } else {
+                                    this.camError = 'Kamera tidak bisa dibuka di perangkat ini. Coba pilih foto dari file ya.';
+                                }
+                            }
+                        },
+                        async permissionState() {
+                            // Not available in every browser (Safari/Firefox); an
+                            // unknown state simply means we cannot be specific.
+                            try {
+                                const status = await navigator.permissions.query({ name: 'camera' });
+
+                                return status.state;
+                            } catch (e) {
+                                return 'unknown';
+                            }
+                        },
+                        async cameraCount() {
+                            // A system-level block hides the devices entirely, so a
+                            // count of zero points away from the site settings.
+                            try {
+                                const devices = await navigator.mediaDevices.enumerateDevices();
+
+                                return devices.filter(d => d.kind === 'videoinput').length;
+                            } catch (e) {
+                                return '?';
+                            }
+                        },
+                        closeCamera() {
+                            if (this.stream) {
+                                this.stream.getTracks().forEach(t => t.stop());
+                                this.stream = null;
+                            }
+                            if (this.$refs.video) this.$refs.video.srcObject = null;
+                            this.camOpen = false;
+                        },
+                        async shoot() {
+                            const video = this.$refs.video;
+                            if (! video || ! video.videoWidth) return;
+
+                            const canvas = this.canvasFor(video.videoWidth, video.videoHeight);
+                            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                            this.closeCamera();
+
+                            const file = await this.toJpeg(canvas);
+                            this.send(file);
+                        },
+                        async pick(event) {
+                            const file = event.target.files[0];
+                            event.target.value = '';
+                            if (! file) return;
+
+                            let payload = file;
+                            try {
+                                payload = await this.shrink(file);
+                            } catch (e) {
+                                // Fall through with the original file; the server
+                                // still rejects it politely if it is too large.
+                            }
+                            this.send(payload);
+                        },
+                        send(file) {
+                            this.uploading = true;
+                            this.$wire.upload('image', file,
+                                () => { this.uploading = false; },
+                                () => { this.uploading = false; }
+                            );
+                        },
+                        canvasFor(width, height) {
+                            const maxSide = 1600;
+                            const scale = Math.min(1, maxSide / Math.max(width, height));
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.round(width * scale);
+                            canvas.height = Math.round(height * scale);
+
+                            return canvas;
+                        },
+                        toJpeg(canvas) {
+                            return new Promise((resolve, reject) => {
+                                canvas.toBlob(
+                                    b => b ? resolve(new File([b], 'snap.jpg', { type: 'image/jpeg' })) : reject(new Error('encode failed')),
+                                    'image/jpeg',
+                                    0.85
+                                );
+                            });
+                        },
+                        async shrink(file) {
+                            const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+                            const canvas = this.canvasFor(bitmap.width, bitmap.height);
+                            canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                            bitmap.close?.();
+
+                            return await this.toJpeg(canvas);
+                        },
+                     }"
+                     @keydown.escape.window="sourceMenu = false; camOpen && closeCamera()">
+                    <input type="file" x-ref="camera" @change="pick($event)" class="hidden" id="chatbot-image-camera" accept="image/*" capture="environment">
+                    <input type="file" x-ref="gallery" @change="pick($event)" class="hidden" id="chatbot-image-gallery" accept="image/*">
+
+                    <button type="button" @click="sourceMenu = ! sourceMenu"
+                            :aria-expanded="sourceMenu"
+                            :disabled="uploading"
+                            class="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-400 dark:hover:border-primary-700 transition-all cursor-pointer active:scale-95 shadow-sm disabled:opacity-60 disabled:cursor-wait"
+                            aria-label="Kirim foto jajanan (Snap & Buy)"
+                            title="Snap & Buy">
+                        <span x-show="! uploading"><svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"/></svg></span>
+                        <svg x-show="uploading" x-cloak class="w-4.5 h-4.5 animate-spin text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path></svg>
+                    </button>
+
+                    <div x-show="sourceMenu" x-cloak
+                         @click.outside="sourceMenu = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-1 scale-95 origin-bottom-left"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100 origin-bottom-left"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100 origin-bottom-left"
+                         x-transition:leave-end="opacity-0 translate-y-1 scale-95 origin-bottom-left"
+                         class="absolute bottom-full left-0 mb-2 w-52 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden z-10"
+                         style="display: none;">
+                        <p class="px-3 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Kirim foto jajanan</p>
+                        <button type="button" @click="takePhoto()"
+                               class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                            <svg class="w-4.5 h-4.5 text-primary-600 dark:text-primary-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z"/></svg>
+                            <span>Ambil Foto</span>
+                        </button>
+                        <button type="button" @click="pickFrom('gallery')"
+                               class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors border-t border-slate-100 dark:border-slate-800/80">
+                            <svg class="w-4.5 h-4.5 text-primary-600 dark:text-primary-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
+                            <span x-text="isMobile ? 'Pilih dari Galeri' : 'Pilih dari File'">Pilih dari Galeri</span>
+                        </button>
+                    </div>
+
+                    {{-- Webcam preview (desktop) --}}
+                    <div x-show="camOpen" x-cloak
+                         class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4"
+                         @click.self="closeCamera()"
+                         style="display: none;">
+                        <div class="w-full max-w-md bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                                <span class="text-sm font-bold text-slate-900 dark:text-slate-100">Ambil Foto Jajanan</span>
+                                <button type="button" @click="closeCamera()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Tutup kamera">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+
+                            <div class="relative bg-slate-900 aspect-video">
+                                <video x-ref="video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                                <div x-show="camError" x-cloak class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 text-center bg-slate-900">
+                                    <p class="text-sm text-slate-200 leading-relaxed" x-text="camError"></p>
+                                    {{-- A blocked site can never be re-prompted from a page,
+                                         so spell out the one path that actually works. --}}
+                                    <ol x-show="camBlocked" class="text-xs text-slate-400 text-left space-y-1 list-decimal list-inside">
+                                        <template x-if="camSystem">
+                                            <span>
+                                                <li>Buka <span class="font-semibold text-slate-300">Windows Settings → Privacy &amp; security → Camera</span></li>
+                                                <li>Nyalakan <span class="font-semibold text-slate-300">Camera access</span> dan <span class="font-semibold text-slate-300">Let desktop apps access your camera</span></li>
+                                                <li>Tutup browser sepenuhnya, buka lagi, lalu tekan <span class="font-semibold text-slate-300">Coba Lagi</span></li>
+                                            </span>
+                                        </template>
+                                        <template x-if="! camSystem">
+                                            <span>
+                                                <li>Klik ikon gembok/kamera di address bar → <span class="font-semibold text-slate-300">Site settings</span> → <span class="font-semibold text-slate-300">Camera</span> → <span class="font-semibold text-slate-300">Allow</span></li>
+                                                <li>Windows: <span class="font-semibold text-slate-300">Settings → Privacy &amp; security → Camera</span>, nyalakan <span class="font-semibold text-slate-300">Let desktop apps access your camera</span></li>
+                                                <li>Tekan <span class="font-semibold text-slate-300">Coba Lagi</span>, atau muat ulang halaman kalau masih sama</li>
+                                            </span>
+                                        </template>
+                                    </ol>
+                                    <p x-show="camDetail" x-text="'Detail: ' + camDetail" class="text-[10px] text-slate-500"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-center gap-2 px-4 py-3">
+                                <button type="button" @click="closeCamera(); pickFrom('gallery')"
+                                        class="px-3 py-2 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                    Pilih dari File
+                                </button>
+                                <button type="button" @click="window.location.reload()" x-show="camBlocked" x-cloak
+                                        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium leading-none rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992V4.356m0 4.992-3.181-3.183a8.25 8.25 0 0 0-13.803 3.7M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7"/></svg>
+                                    <span>Muat Ulang</span>
+                                </button>
+                                <button type="button" @click="openCamera()" x-show="camError" x-cloak
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold leading-none rounded-xl bg-primary-600 text-white hover:bg-primary-700 active:scale-95 transition-all shadow-sm">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z"/></svg>
+                                    <span>Coba Lagi</span>
+                                </button>
+                                <button type="button" @click="shoot()" x-show="! camError"
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold leading-none rounded-xl bg-primary-600 text-white hover:bg-primary-700 active:scale-95 transition-all shadow-sm">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z"/></svg>
+                                    <span>Jepret</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Input --}}
