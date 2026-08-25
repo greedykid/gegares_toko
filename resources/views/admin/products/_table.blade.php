@@ -22,8 +22,10 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                     @forelse($products as $product)
-                    <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
-                        :class="isSelected({{ $product->id }}) && 'bg-primary-50/50 dark:bg-primary-950/20'">
+                    <tr class="cursor-pointer hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
+                        :class="isSelected({{ $product->id }}) && 'bg-primary-50/50 dark:bg-primary-950/20'"
+                    {{-- Clicking anywhere on the row opens the editor; real controls keep their own behaviour. --}}
+                    @click="if (! $event.target.closest('a, button, input, select, textarea, label, form, [data-row-ignore]')) { resetGallery(); showModal=true; editMode=true; form={id:{{ $product->id }},slug:'{{ $product->slug }}',name:'{{ addslashes($product->name) }}',category_id:'{{ $product->category_id }}',description:'{{ addslashes($product->description) }}',price:'{{ $product->price }}',stock:'{{ $product->stock }}',reserved_quantity:{{ (int) $product->reserved_quantity }},is_featured:{{ $product->is_featured ? 'true' : 'false' }}, image: '{{ $product->image }}'}; existingGallery={{ $product->images->toJson() }}; variants={{ $product->variants->toJson() }}; }">
                         <td class="admin-select-cell px-4 py-4 w-10">
                             <input type="checkbox" @change="toggle({{ $product->id }})" :checked="isSelected({{ $product->id }})"
                                    class="w-4 h-4 align-middle rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500/30 cursor-pointer">

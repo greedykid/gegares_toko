@@ -19,7 +19,9 @@
             </thead>
             <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                 @forelse($orders as $order)
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors">
+                <tr class="cursor-pointer hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
+                    {{-- Clicking anywhere on the row opens the editor; real controls keep their own behaviour. --}}
+                    @click="if (! $event.target.closest('a, button, input, select, textarea, label, form, [data-row-ignore]')) { selectedOrder = {{ $order->toJson() }}; showDetail = true }">
                     <td data-label="No. Pesanan" class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">
                         {{ $order->order_number }}
                     </td>

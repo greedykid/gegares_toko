@@ -20,8 +20,10 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100/60 dark:divide-slate-800/60">
                     @foreach($categories as $cat)
-                    <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
-                        :class="isSelected({{ $cat->id }}) && 'bg-primary-50/50 dark:bg-primary-950/20'">
+                    <tr class="cursor-pointer hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
+                        :class="isSelected({{ $cat->id }}) && 'bg-primary-50/50 dark:bg-primary-950/20'"
+                    {{-- Clicking anywhere on the row opens the editor; real controls keep their own behaviour. --}}
+                    @click="if (! $event.target.closest('a, button, input, select, textarea, label, form, [data-row-ignore]')) { showModal = true; editMode = true; form = { id: {{ $cat->id }}, slug: '{{ $cat->slug }}', name: '{{ $cat->name }}', description: '{{ addslashes($cat->description) }}', is_active: {{ $cat->is_active ? 'true' : 'false' }}, image: '{{ $cat->image }}' }; imagePreview = null; }">
                         <td class="admin-select-cell px-4 py-4 w-10">
                             <input type="checkbox" @change="toggle({{ $cat->id }})" :checked="isSelected({{ $cat->id }})"
                                    class="w-4 h-4 align-middle rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500/30 cursor-pointer">
